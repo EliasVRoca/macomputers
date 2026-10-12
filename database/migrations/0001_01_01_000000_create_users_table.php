@@ -7,16 +7,20 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Las claves foráneas (persona, rol, sucursal) se agregan en la migración
+     * 2026_10_12_000003, cuando esas tablas ya existen.
      */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('username')->unique();
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->unsignedBigInteger('persona_id')->nullable()->unique();
+            $table->unsignedBigInteger('role_id')->nullable();
+            $table->unsignedBigInteger('sucursal_id')->nullable();
+            $table->boolean('activo')->default(true);
             $table->rememberToken();
             $table->timestamps();
         });
@@ -37,9 +41,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');

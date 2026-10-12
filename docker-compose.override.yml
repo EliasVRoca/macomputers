@@ -1,0 +1,11 @@
+
+# Desarrollo: monta el código fuente en vivo dentro de los contenedores.
+services:
+  app:
+    volumes:
+      - .:/var/www/html
+      - app_storage:/var/www/html/storage
+
+  web:
+    volumes:
+      - .:/var/www/html:ro

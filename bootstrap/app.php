@@ -12,7 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Caddy termina TLS y envía X-Forwarded-Proto; así los assets salen como https.
+        $middleware->trustProxies(at: '*');
+
+        $middleware->alias([
+            'permiso' => \App\Http\Middleware\EnsurePermiso::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
