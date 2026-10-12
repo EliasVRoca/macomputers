@@ -33,6 +33,12 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 Route::middleware('auth')->group(function () {
     Route::get('/inicio', InicioController::class)->name('inicio');
 
+    // Perfil personal (cada usuario administra su propia cuenta)
+    Route::get('/perfil', [\App\Http\Controllers\PerfilController::class, 'edit'])->name('perfil.edit');
+    Route::put('/perfil', [\App\Http\Controllers\PerfilController::class, 'update'])->name('perfil.update');
+    Route::put('/perfil/password', [\App\Http\Controllers\PerfilController::class, 'password'])->name('perfil.password');
+    Route::delete('/perfil/sesiones', [\App\Http\Controllers\PerfilController::class, 'sesiones'])->name('perfil.sesiones');
+
     // Administración (solo Gerente por defecto)
     Route::resource('usuarios', UsuarioController::class)->except('show')->middleware('permiso:usuarios');
     Route::resource('roles', RolController::class)->except('show')->middleware('permiso:roles');

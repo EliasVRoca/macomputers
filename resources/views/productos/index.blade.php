@@ -4,17 +4,19 @@
 @section('encabezado', 'Productos')
 @section('subtitulo', 'Catálogo de equipos, accesorios y repuestos.')
 @section('acciones')
-    <a href="{{ route('productos.create') }}" class="btn btn-primary">Nuevo producto</a>
+    <a href="{{ route('productos.create') }}" class="btn btn-primary"><x-icon name="plus" class="size-4" /> Nuevo producto</a>
 @endsection
 
 @section('contenido')
+@error('eliminar') <p class="error-texto mb-4">{{ $message }}</p> @enderror
+
 <form method="GET" action="{{ route('productos.index') }}" class="mb-4 flex gap-2">
     <input type="search" name="buscar" value="{{ $buscar }}" placeholder="Buscar por nombre, código o marca" class="input max-w-sm" aria-label="Buscar producto">
-    <button type="submit" class="btn btn-secondary">Buscar</button>
+    <button type="submit" class="btn btn-secondary"><x-icon name="search" class="size-4" /> Buscar</button>
 </form>
 
-<div class="card overflow-x-auto p-0">
-    <table class="tabla w-full">
+<div class="card card-flush overflow-x-auto">
+    <table class="tabla">
         <thead>
             <tr><th>Código</th><th>Producto</th><th>Categoría</th><th class="text-right">Precio venta</th><th class="text-right">Stock total</th><th class="text-right">Acciones</th></tr>
         </thead>
@@ -28,25 +30,38 @@
                     <span class="block text-xs text-ink-muted">{{ $producto->marca }}{{ $producto->modelo ? ' · '.$producto->modelo : '' }}</span>
                 </td>
                 <td>{{ $producto->categoria?->nombre }}</td>
-                <td class="text-right">Bs {{ number_format($producto->precio_venta, 2, ',', '.') }}</td>
-                <td class="text-right {{ $bajo ? 'font-medium text-semantic-error' : '' }}">
-                    {{ (int) ($producto->stock_total ?? 0) }}
-                    @if ($bajo)<span class="block text-xs">Bajo stock mínimo</span>@endif
+                <td class="text-right tabular-nums">Bs {{ number_format($producto->precio_venta, 2, ',', '.') }}</td>
+                <td class="text-right">
+                    @if ($bajo)
+                        <span class="badge badge-danger">{{ (int) ($producto->stock_total ?? 0) }} · bajo mínimo</span>
+                    @else
+                        <span class="tabular-nums">{{ (int) ($producto->stock_total ?? 0) }}</span>
+                    @endif
                 </td>
-                <td class="flex justify-end gap-1">
-                    <a href="{{ route('productos.edit', $producto) }}" class="btn btn-ghost !py-1.5 text-sm">Editar</a>
-                    <form method="POST" action="{{ route('productos.destroy', $producto) }}" onsubmit="return confirm('¿Eliminar el producto {{ $producto->nombre }}?')">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-ghost !py-1.5 text-sm text-semantic-error">Eliminar</button>
-                    </form>
+                <td>
+                    <div class="flex justify-end gap-1">
+                        <a href="{{ route('productos.edit', $producto) }}" class="btn btn-ghost btn-icon" title="Editar" aria-label="Editar"><x-icon name="pencil" class="size-4" /></a>
+                        <form method="POST" action="{{ route('productos.destroy', $producto) }}" onsubmit="return confirm('¿Eliminar el producto {{ $producto->nombre }}?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-ghost btn-icon text-danger" title="Eliminar" aria-label="Eliminar"><x-icon name="trash" class="size-4" /></button>
+                        </form>
+                    </div>
                 </td>
             </tr>
         @empty
-            <tr><td colspan="6" class="text-center text-ink-muted">No se encontraron productos.</td></tr>
+            <tr><td colspan="6">
+                <div class="empty">
+                    <span class="kpi-icon"><x-icon name="package" class="size-5" /></span>
+                    <div>
+                        <p class="font-medium">No se encontraron productos</p>
+                        <p class="text-sm text-ink-muted">Registre el catálogo o ajuste la búsqueda.</p>
+                    </div>
+                    <a href="{{ route('productos.create') }}" class="btn btn-primary btn-sm"><x-icon name="plus" class="size-4" /> Nuevo producto</a>
+                </div>
+            </td></tr>
         @endforelse
         </tbody>
     </table>
 </div>
-@error('eliminar') <p class="error-texto mt-3">{{ $message }}</p> @enderror
 <div class="mt-4">{{ $items->links() }}</div>
 @endsection

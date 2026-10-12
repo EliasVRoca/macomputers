@@ -16,95 +16,140 @@
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-canvas font-sans text-ink antialiased">
+<body class="min-h-screen font-sans">
 @php
     $usuario = auth()->user();
-    $menu = \App\Support\Menu::para($usuario);
+    $grupos = \App\Support\Menu::para($usuario);
+    $grupoActivo = collect($grupos)->firstWhere('activo', true) ?? ($grupos[0] ?? null);
+    $moduloActivo = $grupoActivo ? collect($grupoActivo['modulos'])->firstWhere('activo', true) : null;
 @endphp
 
 <div class="flex min-h-screen">
-    <aside class="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-hairline bg-surface-1 md:flex">
-        <div class="flex items-center gap-3 px-5 py-5">
-            <img src="{{ asset('images/logo-mark.jpg') }}" alt="" class="h-10 w-10 rounded-md object-cover">
-            <div class="min-w-0">
-                <p class="truncate text-sm font-semibold leading-tight">M&amp;A Computers</p>
-                <p class="truncate text-xs text-ink-muted">Gestión de inventario</p>
-            </div>
-        </div>
+    {{-- Riel de iconos --}}
+    <nav class="rail sticky top-0 hidden h-screen md:flex" data-rail aria-label="Grupos de navegación">
+        <a href="{{ route('inicio') }}" class="mb-2 flex h-11 w-11 items-center justify-center" aria-label="Inicio">
+            <img src="{{ asset('images/logo-mark.jpg') }}" alt="M&amp;A Computers" class="h-9 w-9 rounded-lg object-cover">
+        </a>
 
-        <nav class="flex-1 space-y-5 overflow-y-auto px-3 pb-6" aria-label="Navegación principal">
-            @forelse ($menu as $grupo => $items)
-                <div>
-                    <p class="mb-1 px-3 text-xs font-medium uppercase tracking-wide text-ink-subtle">{{ $grupo }}</p>
-                    <ul class="space-y-0.5">
-                        @foreach ($items as $item)
-                            <li>
-                                <a href="{{ route($item['route']) }}"
-                                   @if ($item['activo']) aria-current="page" @endif
-                                   class="flex items-center rounded-md px-3 py-2 text-sm transition-colors {{ $item['activo'] ? 'bg-surface-2 font-medium text-ink' : 'text-ink-muted hover:bg-surface-2 hover:text-ink' }}">
-                                    {{ $item['label'] }}
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            @empty
-                <p class="px-3 text-sm text-ink-muted">Su rol no tiene módulos asignados.</p>
-            @endforelse
-        </nav>
+        <a href="{{ route('inicio') }}"
+           class="rail-link {{ request()->routeIs('inicio') ? 'active' : '' }}"
+           title="Inicio" aria-label="Inicio">
+            <x-icon name="home" />
+        </a>
 
-        <div class="space-y-3 border-t border-hairline p-4">
-            <div class="min-w-0">
-                <p class="truncate text-sm font-medium">{{ $usuario->nombre() }}</p>
-                <p class="truncate text-xs text-ink-muted">
-                    {{ $usuario->role?->nombre }} · {{ $usuario->sucursal?->nombre ?? 'Todas las sucursales' }}
-                </p>
-            </div>
-            <div class="flex items-center gap-2">
-                <button type="button" data-toggle-tema class="btn btn-secondary flex-1 !py-2 text-sm">Tema</button>
-                <form method="POST" action="{{ route('logout') }}" class="flex-1">
-                    @csrf
-                    <button type="submit" class="btn btn-secondary w-full !py-2 text-sm">Salir</button>
-                </form>
-            </div>
-        </div>
-    </aside>
+        @foreach ($grupos as $grupo)
+            <a href="{{ route($grupo['modulos'][0]['route']) }}"
+               data-grupo="{{ $grupo['nombre'] }}"
+               @if ($grupo['activo']) data-activo="1" @endif
+               class="rail-link {{ $grupo['activo'] ? 'active' : '' }}"
+               title="{{ $grupo['nombre'] }}" aria-label="{{ $grupo['nombre'] }}">
+                <x-icon :name="$grupo['icon']" />
+            </a>
+        @endforeach
 
-    <div class="min-w-0 flex-1">
-        {{-- Navegación móvil --}}
-        <header class="flex items-center justify-between gap-3 border-b border-hairline bg-surface-1 px-4 py-3 md:hidden">
-            <div class="flex items-center gap-2">
-                <img src="{{ asset('images/logo-mark.jpg') }}" alt="" class="h-8 w-8 rounded-md object-cover">
-                <span class="text-sm font-semibold">M&amp;A Computers</span>
-            </div>
-            <details class="relative">
-                <summary class="btn btn-secondary cursor-pointer !py-1.5 text-sm">Menú</summary>
-                <div class="absolute right-0 z-20 mt-2 w-64 space-y-4 rounded-xl border border-hairline bg-surface-1 p-3 shadow-lg">
-                    @foreach ($menu as $grupo => $items)
-                        <div>
-                            <p class="px-2 text-xs font-medium uppercase tracking-wide text-ink-subtle">{{ $grupo }}</p>
-                            @foreach ($items as $item)
-                                <a href="{{ route($item['route']) }}" class="block rounded-md px-2 py-1.5 text-sm {{ $item['activo'] ? 'bg-surface-2 font-medium' : 'text-ink-muted' }}">{{ $item['label'] }}</a>
-                            @endforeach
-                        </div>
-                    @endforeach
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="btn btn-secondary w-full text-sm">Salir</button>
-                    </form>
+        <div class="mt-auto flex flex-col items-center gap-1">
+            <button type="button" data-toggle-tema class="rail-link" title="Cambiar tema" aria-label="Cambiar tema">
+                <x-icon name="sun" class="size-5 dark:hidden" />
+                <x-icon name="moon" class="hidden size-5 dark:block" />
+            </button>
+
+            <details class="relative" data-cuenta>
+                <summary class="rail-link cursor-pointer list-none" title="Mi cuenta" aria-label="Mi cuenta">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-medium text-on-primary">
+                        {{ mb_strtoupper(mb_substr($usuario->nombre(), 0, 1)) }}
+                    </span>
+                </summary>
+                <div class="absolute bottom-0 left-14 z-30 w-64 rounded-xl border border-hairline bg-surface-1 p-4">
+                    <p class="truncate text-sm font-medium">{{ $usuario->nombre() }}</p>
+                    <p class="mb-3 truncate text-xs text-ink-muted">{{ $usuario->role?->nombre }} · {{ $usuario->sucursal?->nombre ?? 'Todas las sucursales' }}</p>
+                    <div class="space-y-0.5">
+                        <x-cuenta-links />
+                    </div>
                 </div>
             </details>
+        </div>
+    </nav>
+
+    {{-- Panel contextual --}}
+    <aside class="panel sticky top-0 hidden h-screen overflow-y-auto md:flex" data-panel aria-label="Módulos">
+        @foreach ($grupos as $grupo)
+            <div data-panel-grupo="{{ $grupo['nombre'] }}" @if (! $grupo['activo']) hidden @endif>
+                <p class="panel-title">{{ $grupo['nombre'] }}</p>
+                <ul class="space-y-0.5 px-2 pb-4">
+                    @foreach ($grupo['modulos'] as $modulo)
+                        <li>
+                            <a href="{{ route($modulo['route']) }}"
+                               @if ($modulo['activo']) aria-current="page" @endif
+                               class="nav-link {{ $modulo['activo'] ? 'active' : '' }}">
+                                <x-icon :name="$modulo['icon']" class="size-4 shrink-0" />
+                                {{ $modulo['label'] }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endforeach
+    </aside>
+
+    {{-- Contenido --}}
+    <div class="flex min-w-0 flex-1 flex-col">
+        {{-- Barra superior móvil --}}
+        <header class="flex items-center justify-between gap-3 border-b border-hairline bg-surface-1 px-4 py-3 md:hidden">
+            <a href="{{ route('inicio') }}" class="flex items-center gap-2">
+                <img src="{{ asset('images/logo-mark.jpg') }}" alt="" class="h-8 w-8 rounded-lg object-cover">
+                <span class="text-sm font-semibold">M&amp;A Computers</span>
+            </a>
+            <div class="flex items-center gap-1">
+                <button type="button" data-toggle-tema class="btn btn-ghost btn-icon" aria-label="Cambiar tema">
+                    <x-icon name="sun" class="size-5 dark:hidden" />
+                    <x-icon name="moon" class="hidden size-5 dark:block" />
+                </button>
+                <button type="button" data-menu-abrir class="btn btn-ghost btn-icon" aria-label="Abrir menú">
+                    <x-icon name="menu" class="size-5" />
+                </button>
+            </div>
         </header>
 
-        <main class="mx-auto max-w-7xl p-4 sm:p-6 lg:p-10">
+        {{-- Barra superior de escritorio --}}
+        <header class="topbar sticky top-0 z-20 hidden md:flex">
+            <nav class="flex min-w-0 items-center gap-2 text-sm" aria-label="Migas de pan">
+                <span class="text-ink-muted">{{ $grupoActivo['nombre'] ?? 'Inicio' }}</span>
+                @if ($moduloActivo)
+                    <x-icon name="chevron-right" class="size-4 shrink-0 text-ink-tertiary" />
+                    <span class="truncate font-medium">{{ $moduloActivo['label'] }}</span>
+                @endif
+            </nav>
+            <div class="flex items-center gap-2">
+                <button type="button" data-paleta-abrir class="search-btn">
+                    <x-icon name="search" class="size-4" />
+                    <span class="hidden lg:inline">Buscar o ir a…</span>
+                    <span class="kbd ml-2 hidden lg:inline">Ctrl K</span>
+                </button>
+
+                <details class="relative" data-cuenta>
+                    <summary class="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full bg-brand text-sm font-medium text-on-primary" title="Mi cuenta" aria-label="Mi cuenta">
+                        {{ mb_strtoupper(mb_substr($usuario->nombre(), 0, 1)) }}
+                    </summary>
+                    <div class="absolute right-0 z-30 mt-2 w-64 rounded-xl border border-hairline bg-surface-1 p-4">
+                        <p class="truncate text-sm font-medium">{{ $usuario->nombre() }}</p>
+                        <p class="mb-3 truncate text-xs text-ink-muted">{{ $usuario->role?->nombre }} · {{ $usuario->sucursal?->nombre ?? 'Todas las sucursales' }}</p>
+                        <div class="space-y-0.5">
+                            <x-cuenta-links />
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </header>
+
+        <main class="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-6 lg:p-8">
             @if (session('status'))
-                <div role="status" class="mb-6 rounded-lg border border-hairline bg-surface-1 px-4 py-3 text-sm">
-                    <span class="mr-2 inline-block h-2 w-2 rounded-full bg-semantic-success"></span>{{ session('status') }}
+                <div role="status" class="mb-6 flex items-center gap-2 rounded-lg border border-hairline bg-surface-1 px-4 py-3 text-sm">
+                    <span class="h-2 w-2 shrink-0 rounded-full bg-ok"></span>{{ session('status') }}
                 </div>
             @endif
 
             @if ($errors->any())
-                <div role="alert" class="mb-6 rounded-lg border border-semantic-error px-4 py-3 text-sm text-semantic-error">
+                <div role="alert" class="mb-6 rounded-lg border border-danger px-4 py-3 text-sm text-danger">
                     <p class="font-medium">Revise los datos ingresados:</p>
                     <ul class="mt-1 list-inside list-disc">
                         @foreach ($errors->all() as $error)
@@ -116,7 +161,7 @@
 
             <header class="mb-8 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-medium tracking-tight">@yield('encabezado', 'Inicio')</h1>
+                    <h1 class="text-2xl font-medium tracking-tight lg:text-3xl">@yield('encabezado', 'Inicio')</h1>
                     @hasSection('subtitulo')
                         <p class="mt-1 text-sm text-ink-muted">@yield('subtitulo')</p>
                     @endif
@@ -130,5 +175,42 @@
         </main>
     </div>
 </div>
+
+{{-- Navegación móvil --}}
+<div data-menu-movil hidden class="fixed inset-0 z-40 md:hidden">
+    <div class="absolute inset-0 bg-black/50" data-menu-cerrar></div>
+    <div class="absolute inset-y-0 right-0 flex w-80 max-w-[85vw] flex-col overflow-y-auto border-l border-hairline bg-surface-1">
+        <div class="flex items-center justify-between border-b border-hairline px-4 py-3">
+            <span class="text-sm font-semibold">Módulos</span>
+            <button type="button" data-menu-cerrar class="btn btn-ghost btn-icon" aria-label="Cerrar menú">
+                <x-icon name="x" class="size-5" />
+            </button>
+        </div>
+        <nav class="p-3">
+            @foreach ($grupos as $grupo)
+                <p class="px-2 pt-4 pb-1 text-xs font-medium tracking-wide text-ink-tertiary uppercase">{{ $grupo['nombre'] }}</p>
+                @foreach ($grupo['modulos'] as $modulo)
+                    <a href="{{ route($modulo['route']) }}" class="nav-link {{ $modulo['activo'] ? 'active' : '' }}">
+                        <x-icon :name="$modulo['icon']" class="size-4 shrink-0" /> {{ $modulo['label'] }}
+                    </a>
+                @endforeach
+            @endforeach
+        </nav>
+        <div class="mt-auto border-t border-hairline p-4">
+            <p class="truncate text-sm font-medium">{{ $usuario->nombre() }}</p>
+            <p class="mb-3 truncate text-xs text-ink-muted">{{ $usuario->role?->nombre }}</p>
+            <div class="space-y-0.5">
+                <x-cuenta-links />
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Paleta de comandos --}}
+<dialog id="paleta" class="paleta">
+    <input type="search" data-paleta-input class="paleta-input" placeholder="Buscar módulo o acción…" aria-label="Buscar módulo o acción" autocomplete="off">
+    <div data-paleta-lista class="paleta-lista"></div>
+</dialog>
+<script type="application/json" id="paleta-datos">@json(\App\Support\Menu::paleta($usuario))</script>
 </body>
 </html>

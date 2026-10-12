@@ -48,7 +48,11 @@ class ServicioController extends Controller
         $usuario = $request->user();
 
         $datos = $request->validate([
-            'cliente_id' => ['required', Rule::exists('clientes', 'id')],
+            'modo_cliente' => ['required', Rule::in(['existente', 'nuevo'])],
+            'cliente_id' => ['nullable', 'required_if:modo_cliente,existente', Rule::exists('clientes', 'id')],
+            'cliente_nombre' => ['nullable', 'required_if:modo_cliente,nuevo', 'string', 'max:150'],
+            'cliente_telefono' => ['nullable', 'string', 'max:30'],
+            'cliente_carnet' => ['nullable', 'string', 'max:30', Rule::unique('clientes', 'carnet')],
             'sucursal_id' => [$usuario->esGerente() ? 'required' : 'nullable', Rule::exists('sucursales', 'id')],
             'equipo' => ['required', 'string', 'max:150'],
             'diagnostico' => ['nullable', 'string', 'max:1000'],
@@ -56,15 +60,29 @@ class ServicioController extends Controller
             'estado' => ['required', Rule::in(array_keys(Servicio::ESTADOS))],
         ], [], [
             'cliente_id' => 'cliente',
+            'cliente_nombre' => 'nombre del cliente',
+            'cliente_telefono' => 'teléfono',
+            'cliente_carnet' => 'carnet',
             'sucursal_id' => 'sucursal',
         ]);
 
         $sucursalId = $usuario->esGerente() ? (int) $datos['sucursal_id'] : (int) $usuario->sucursal_id;
 
         DB::transaction(function () use ($datos, $sucursalId, $usuario) {
+            // El técnico puede registrar el cliente en el mismo paso (alta rápida).
+            $clienteId = $datos['cliente_id'] ?? null;
+
+            if ($datos['modo_cliente'] === 'nuevo' || ! $clienteId) {
+                $clienteId = Cliente::create([
+                    'nombre' => $datos['cliente_nombre'],
+                    'telefono' => $datos['cliente_telefono'] ?? null,
+                    'carnet' => $datos['cliente_carnet'] ?? null,
+                ])->id;
+            }
+
             $venta = Venta::create([
                 'sucursal_id' => $sucursalId,
-                'cliente_id' => $datos['cliente_id'],
+                'cliente_id' => $clienteId,
                 'user_id' => $usuario->id,
                 'tipo' => Venta::TIPO_SERVICIO,
                 'fecha' => now(),
@@ -84,7 +102,7 @@ class ServicioController extends Controller
 
             Servicio::create([
                 'venta_id' => $venta->id,
-                'cliente_id' => $datos['cliente_id'],
+                'cliente_id' => $clienteId,
                 'sucursal_id' => $sucursalId,
                 'tecnico_id' => $usuario->id,
                 'equipo' => $datos['equipo'],

@@ -78,7 +78,7 @@ class PantallasTest extends TestCase
         ])->assertRedirect();
 
         $this->actingAs($gerente)->post(route('servicios.store'), [
-            'cliente_id' => $cliente->id, 'sucursal_id' => $segunda->id, 'equipo' => 'Laptop HP',
+            'modo_cliente' => 'existente', 'cliente_id' => $cliente->id, 'sucursal_id' => $segunda->id, 'equipo' => 'Laptop HP',
             'diagnostico' => 'Limpieza', 'costo' => 150, 'estado' => 'recibido',
         ])->assertRedirect();
         $servicio = Servicio::firstOrFail();

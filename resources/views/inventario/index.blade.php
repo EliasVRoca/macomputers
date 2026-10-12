@@ -4,17 +4,17 @@
 @section('encabezado', 'Inventario')
 @section('subtitulo', 'Existencias por sucursal, movimientos y kardex.')
 @section('acciones')
-    @if ($puedeElegirSucursal)
-        <a href="{{ route('inventario.sucursal', $sucursalFiltro ?? $sucursales->first()) }}" class="btn btn-secondary">Ver sucursal</a>
+    @if ($puedeElegirSucursal && $sucursales->isNotEmpty())
+        <a href="{{ route('inventario.sucursal', $sucursalFiltro ?? $sucursales->first()) }}" class="btn btn-secondary"><x-icon name="building" class="size-4" /> Ver sucursal</a>
     @endif
 @endsection
 
 @section('contenido')
 <div class="grid gap-6 lg:grid-cols-3">
     {{-- Registrar movimiento --}}
-    <form method="POST" action="{{ route('inventario.movimientos.store') }}" class="card space-y-4 lg:col-span-1 h-fit">
+    <form method="POST" action="{{ route('inventario.movimientos.store') }}" class="card card-pad h-fit space-y-5 lg:col-span-1">
         @csrf
-        <h2 class="text-lg font-medium">Registrar movimiento</h2>
+        <h2 class="text-sm font-medium text-ink-muted">Registrar movimiento</h2>
 
         <div>
             <label for="producto_id" class="label">Producto</label>
@@ -57,20 +57,20 @@
         </div>
 
         <div>
-            <label for="referencia" class="label">Motivo o referencia (opcional)</label>
+            <label for="referencia" class="label">Motivo o referencia <span class="font-normal text-ink-subtle">(opcional)</span></label>
             <input id="referencia" name="referencia" class="input" value="{{ old('referencia') }}" maxlength="150">
         </div>
 
-        <button type="submit" class="btn btn-primary w-full">Guardar</button>
+        <button type="submit" class="btn btn-primary w-full"><x-icon name="check" class="size-4" /> Guardar movimiento</button>
     </form>
 
     <div class="space-y-6 lg:col-span-2">
         {{-- Existencias --}}
         <section>
             <div class="mb-3 flex items-center justify-between gap-3">
-                <h2 class="text-lg font-medium">Existencias</h2>
+                <h2 class="text-sm font-medium text-ink-muted">Existencias</h2>
                 @if ($puedeElegirSucursal)
-                    <form method="GET" action="{{ route('inventario.index') }}" class="flex gap-2">
+                    <form method="GET" action="{{ route('inventario.index') }}">
                         <select name="sucursal_id" class="input !w-auto" aria-label="Filtrar por sucursal" onchange="this.form.submit()">
                             <option value="">Todas las sucursales</option>
                             @foreach ($sucursales as $sucursal)
@@ -80,18 +80,24 @@
                     </form>
                 @endif
             </div>
-            <div class="card overflow-x-auto p-0">
-                <table class="tabla w-full">
+            <div class="card card-flush overflow-x-auto">
+                <table class="tabla">
                     <thead><tr><th>Producto</th><th>Sucursal</th><th class="text-right">Cantidad</th></tr></thead>
                     <tbody>
                     @forelse ($existencias as $fila)
                         <tr>
                             <td>{{ $fila->producto?->nombre }}</td>
-                            <td>{{ $fila->sucursal?->nombre }}</td>
-                            <td class="text-right font-medium {{ $fila->cantidad <= ($fila->producto?->stock_minimo ?? 0) ? 'text-semantic-error' : '' }}">{{ $fila->cantidad }}</td>
+                            <td class="text-ink-muted">{{ $fila->sucursal?->nombre }}</td>
+                            <td class="text-right">
+                                @if ($fila->cantidad <= ($fila->producto?->stock_minimo ?? 0))
+                                    <span class="badge badge-danger">{{ $fila->cantidad }} · bajo mínimo</span>
+                                @else
+                                    <span class="font-medium tabular-nums">{{ $fila->cantidad }}</span>
+                                @endif
+                            </td>
                         </tr>
                     @empty
-                        <tr><td colspan="3" class="text-center text-ink-muted">Sin existencias registradas.</td></tr>
+                        <tr><td colspan="3"><div class="empty py-10"><p class="text-sm text-ink-muted">Sin existencias registradas.</p></div></td></tr>
                     @endforelse
                     </tbody>
                 </table>
@@ -101,23 +107,23 @@
 
         {{-- Kardex --}}
         <section>
-            <h2 class="mb-3 text-lg font-medium">Kardex (movimientos)</h2>
-            <div class="card overflow-x-auto p-0">
-                <table class="tabla w-full">
+            <h2 class="mb-3 text-sm font-medium text-ink-muted">Kardex (movimientos)</h2>
+            <div class="card card-flush overflow-x-auto">
+                <table class="tabla">
                     <thead><tr><th>Fecha</th><th>Producto</th><th>Sucursal</th><th>Tipo</th><th class="text-right">Cant.</th><th class="text-right">Saldo</th><th>Usuario</th></tr></thead>
                     <tbody>
                     @forelse ($kardex as $mov)
                         <tr>
-                            <td class="whitespace-nowrap text-xs">{{ $mov->created_at->format('d/m/Y H:i') }}</td>
+                            <td class="whitespace-nowrap text-xs text-ink-muted">{{ $mov->created_at->format('d/m/Y H:i') }}</td>
                             <td>{{ $mov->producto?->nombre }}</td>
-                            <td>{{ $mov->sucursal?->nombre }}</td>
-                            <td><span class="badge">{{ str_replace('_', ' ', $mov->tipo) }}</span></td>
-                            <td class="text-right">{{ $mov->cantidad > 0 ? '+' : '' }}{{ $mov->cantidad }}</td>
-                            <td class="text-right">{{ $mov->saldo }}</td>
-                            <td>{{ $mov->usuario?->username ?? '—' }}</td>
+                            <td class="text-ink-muted">{{ $mov->sucursal?->nombre }}</td>
+                            <td><span class="badge badge-neutral">{{ str_replace('_', ' ', $mov->tipo) }}</span></td>
+                            <td class="text-right tabular-nums {{ $mov->cantidad < 0 ? 'text-danger' : 'text-ok' }}">{{ $mov->cantidad > 0 ? '+' : '' }}{{ $mov->cantidad }}</td>
+                            <td class="text-right tabular-nums">{{ $mov->saldo }}</td>
+                            <td class="text-ink-muted">{{ $mov->usuario?->username ?? '—' }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center text-ink-muted">Sin movimientos.</td></tr>
+                        <tr><td colspan="7"><div class="empty py-10"><p class="text-sm text-ink-muted">Sin movimientos.</p></div></td></tr>
                     @endforelse
                     </tbody>
                 </table>

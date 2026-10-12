@@ -27,7 +27,7 @@
         @csrf
 
         @if ($errors->any())
-            <div role="alert" class="rounded-md border border-semantic-error px-3 py-2 text-sm text-semantic-error">
+            <div role="alert" class="rounded-md border border-danger px-3 py-2 text-sm text-danger">
                 {{ $errors->first() }}
             </div>
         @endif
