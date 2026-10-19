@@ -10,6 +10,19 @@ document.addEventListener('click', (event) => {
     localStorage.setItem('tema', oscuro ? 'oscuro' : 'claro');
 });
 
+// ---------------------------------------------------------- Confirmaciones
+document.addEventListener('submit', (event) => {
+    const formulario = event.target.closest('form[data-confirm]');
+
+    if (!formulario || !formulario.dataset.confirm) {
+        return;
+    }
+
+    if (!window.confirm(formulario.dataset.confirm)) {
+        event.preventDefault();
+    }
+});
+
 // ------------------------------------------------- Panel contextual (riel)
 (function () {
     const rail = document.querySelector('[data-rail]');

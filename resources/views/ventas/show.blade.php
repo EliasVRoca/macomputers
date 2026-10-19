@@ -6,8 +6,8 @@
 @section('acciones')
     <a href="{{ route('ventas.index') }}" class="btn btn-secondary"><x-icon name="chevron-left" class="size-4" /> Volver</a>
     <a href="{{ route('ventas.imprimir', $venta) }}" target="_blank" class="btn btn-secondary"><x-icon name="printer" class="size-4" /> Imprimir</a>
-    @if ($venta->estado === \App\Models\Venta::ESTADO_ACTIVA && ! $venta->apartado && $venta->cambios->isEmpty())
-        <form method="POST" action="{{ route('ventas.anular', $venta) }}" onsubmit="return confirm('¿Anular la venta {{ $venta->numero() }}? El stock volverá a la sucursal.')">
+    @if ($venta->tipo === \App\Models\Venta::TIPO_VENTA && $venta->estado === \App\Models\Venta::ESTADO_ACTIVA && ! $venta->apartado && $venta->cambios->isEmpty())
+        <form method="POST" action="{{ route('ventas.anular', $venta) }}" data-confirm="¿Anular la venta {{ $venta->numero() }}? El stock volverá a la sucursal.">
             @csrf @method('PATCH')
             <button type="submit" class="btn btn-danger"><x-icon name="x" class="size-4" /> Anular venta</button>
         </form>

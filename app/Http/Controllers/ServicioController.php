@@ -35,6 +35,7 @@ class ServicioController extends Controller
 
         $conteos = Servicio::query()
             ->when(! $usuario->esGerente(), fn (Builder $q) => $q->where('sucursal_id', $usuario->sucursal_id))
+            ->when($usuario->esGerente() && ($filtros['sucursal_id'] ?? null), fn (Builder $q) => $q->where('sucursal_id', (int) $filtros['sucursal_id']))
             ->selectRaw('estado, count(*) as total')
             ->groupBy('estado')
             ->pluck('total', 'estado');

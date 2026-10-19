@@ -40,7 +40,7 @@
                     <div class="flex justify-end gap-1">
                         <a href="{{ route('proveedores.show', $proveedor) }}" class="btn btn-ghost btn-icon" title="Ver detalle" aria-label="Ver detalle"><x-icon name="eye" class="size-4" /></a>
                         <a href="{{ route('proveedores.edit', $proveedor) }}" class="btn btn-ghost btn-icon" title="Editar" aria-label="Editar"><x-icon name="pencil" class="size-4" /></a>
-                        <form method="POST" action="{{ route('proveedores.destroy', $proveedor) }}" onsubmit="return confirm('¿Eliminar al proveedor {{ $proveedor->nombre }}?')">
+                        <form method="POST" action="{{ route('proveedores.destroy', $proveedor) }}" data-confirm="¿Eliminar al proveedor {{ $proveedor->nombre }}?">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-ghost btn-icon text-danger" title="Eliminar" aria-label="Eliminar"><x-icon name="trash" class="size-4" /></button>
                         </form>

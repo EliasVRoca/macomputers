@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Persona;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,13 +31,15 @@ class PerfilController extends Controller
         ]);
 
         DB::transaction(function () use ($datos, $usuario) {
-            $usuario->persona()->updateOrCreate([], [
+            $persona = $usuario->persona ?? new Persona;
+            $persona->fill([
                 'nombre' => $datos['nombre'],
-                'ci' => $usuario->persona?->ci ?? ('S/C-'.$usuario->id),
+                'ci' => $persona->ci ?? ('S/C-'.$usuario->id),
                 'telefono' => $datos['telefono'] ?? null,
                 'direccion' => $datos['direccion'] ?? null,
-            ]);
+            ])->save();
 
+            $usuario->persona()->associate($persona);
             $usuario->update(['email' => $datos['email']]);
         });
 
@@ -54,7 +57,12 @@ class PerfilController extends Controller
 
         $request->user()->update(['password' => $datos['password']]);
 
-        return redirect()->route('perfil.edit')->with('status', 'Contraseña actualizada.');
+        DB::table('sessions')
+            ->where('user_id', $request->user()->id)
+            ->where('id', '!=', $request->session()->getId())
+            ->delete();
+
+        return redirect()->route('perfil.edit')->with('status', 'Contraseña actualizada. Se cerraron las demás sesiones.');
     }
 
     public function sesiones(Request $request): RedirectResponse

@@ -24,9 +24,9 @@ class RegistrarTraspasoRapidoRequest extends FormRequest
         $esGerente = $this->user()?->esGerente() === true;
 
         return [
-            'producto_id' => ['required', 'integer', Rule::exists('productos', 'id')],
-            'sucursal_origen_id' => ['required', 'integer', Rule::exists('sucursales', 'id')],
-            'sucursal_destino_id' => [$esGerente ? 'required' : 'nullable', 'integer', Rule::exists('sucursales', 'id')],
+            'producto_id' => ['required', 'integer', Rule::exists('productos', 'id')->where('activo', true)],
+            'sucursal_origen_id' => ['required', 'integer', Rule::exists('sucursales', 'id')->where('activa', true)],
+            'sucursal_destino_id' => [$esGerente ? 'required' : 'nullable', 'integer', Rule::exists('sucursales', 'id')->where('activa', true)],
             'cantidad' => ['required', 'integer', 'min:1'],
         ];
     }

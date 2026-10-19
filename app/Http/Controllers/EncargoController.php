@@ -15,6 +15,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EncargoController extends Controller
@@ -47,7 +49,9 @@ class EncargoController extends Controller
             'accion' => route('encargos.store'),
             'metodo' => 'POST',
             'clientes' => Cliente::where('activo', true)->orderBy('nombre')->get(),
-            'productos' => Producto::where('activo', true)->orderBy('nombre')->get(),
+            'productoSeleccionado' => $request->old('producto_id')
+                ? Producto::find($request->old('producto_id'))
+                : null,
             'sucursales' => $this->sucursales($request),
             'puedeElegirSucursal' => $request->user()->esGerente(),
         ]);
@@ -58,23 +62,25 @@ class EncargoController extends Controller
         $usuario = $request->user();
         $datos = $request->validated();
 
-        $clienteId = $this->clientes->resolver($datos);
-        $producto = ($datos['producto_id'] ?? null) ? Producto::find($datos['producto_id']) : null;
-        $total = round((float) $datos['total'], 2);
-        $saldo = round($total - (float) $datos['anticipo'], 2);
+        DB::transaction(function () use ($datos, $usuario): void {
+            $clienteId = $this->clientes->resolver($datos);
+            $producto = ($datos['producto_id'] ?? null) ? Producto::find($datos['producto_id']) : null;
+            $total = round((float) $datos['total'], 2);
+            $saldo = round($total - (float) $datos['anticipo'], 2);
 
-        Encargo::create([
-            'cliente_id' => $clienteId,
-            'sucursal_id' => $usuario->esGerente() ? (int) $datos['sucursal_id'] : (int) $usuario->sucursal_id,
-            'user_id' => $usuario->id,
-            'producto_id' => $producto?->id,
-            'descripcion' => $datos['descripcion'] ?? $producto?->nombre,
-            'total' => $total,
-            'anticipo' => $datos['anticipo'],
-            'saldo' => $saldo,
-            'estado' => $saldo <= 0 ? Encargo::ESTADO_COMPLETADO : Encargo::ESTADO_PENDIENTE,
-            'fecha' => $datos['fecha'],
-        ]);
+            Encargo::create([
+                'cliente_id' => $clienteId,
+                'sucursal_id' => $usuario->esGerente() ? (int) $datos['sucursal_id'] : (int) $usuario->sucursal_id,
+                'user_id' => $usuario->id,
+                'producto_id' => $producto?->id,
+                'descripcion' => $datos['descripcion'] ?? $producto?->nombre,
+                'total' => $total,
+                'anticipo' => $datos['anticipo'],
+                'saldo' => $saldo,
+                'estado' => $saldo <= 0 ? Encargo::ESTADO_COMPLETADO : Encargo::ESTADO_PENDIENTE,
+                'fecha' => $datos['fecha'],
+            ]);
+        });
 
         return redirect()->route('encargos.index')->with('status', 'Encargo registrado.');
     }
@@ -108,17 +114,28 @@ class EncargoController extends Controller
     {
         $this->autorizarSucursal($request, $encargo);
 
-        if ($encargo->estado === Encargo::ESTADO_COMPLETADO) {
-            return redirect()->route('encargos.index')->withErrors(['encargo' => 'El encargo ya está completado.']);
-        }
-
         $datos = $request->validated();
-        $saldo = round((float) $encargo->saldo - (float) $datos['abono'], 2);
 
-        $encargo->update([
-            'saldo' => $saldo,
-            'estado' => $saldo <= 0 ? Encargo::ESTADO_COMPLETADO : Encargo::ESTADO_PENDIENTE,
-        ]);
+        $saldo = DB::transaction(function () use ($encargo, $datos): float {
+            $encargo = Encargo::query()->lockForUpdate()->findOrFail($encargo->id);
+
+            if ($encargo->estado === Encargo::ESTADO_COMPLETADO) {
+                throw ValidationException::withMessages(['encargo' => 'El encargo ya está completado.']);
+            }
+
+            if ((float) $datos['abono'] > (float) $encargo->saldo) {
+                throw ValidationException::withMessages(['abono' => 'El pago no puede ser mayor al saldo pendiente.']);
+            }
+
+            $saldo = round((float) $encargo->saldo - (float) $datos['abono'], 2);
+
+            $encargo->update([
+                'saldo' => $saldo,
+                'estado' => $saldo <= 0 ? Encargo::ESTADO_COMPLETADO : Encargo::ESTADO_PENDIENTE,
+            ]);
+
+            return $saldo;
+        });
 
         return redirect()->route('encargos.index')->with('status', $saldo <= 0
             ? 'Saldo completado. El encargo queda finalizado.'

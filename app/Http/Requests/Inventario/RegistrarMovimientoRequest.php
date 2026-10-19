@@ -33,7 +33,7 @@ class RegistrarMovimientoRequest extends FormRequest
 
         return [
             'producto_id' => ['required', 'integer', Rule::exists('productos', 'id')],
-            'sucursal_id' => [$esGerente ? 'required' : 'nullable', 'integer', Rule::exists('sucursales', 'id')],
+            'sucursal_id' => [$esGerente ? 'required' : 'nullable', 'integer', Rule::exists('sucursales', 'id')->where('activa', true)],
             'tipo' => ['required', Rule::in(TipoMovimiento::valoresManuales())],
             'cantidad' => ['required', 'integer', 'min:0'],
             'referencia' => ['nullable', 'string', 'max:150', 'regex:'.self::PATRON_REFERENCIA],

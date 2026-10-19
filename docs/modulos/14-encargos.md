@@ -21,6 +21,8 @@ inventario.
 Resource `encargos` completo con `permiso:encargos` (`index`, `create`, `store`, `show`, `edit`,
 `update`, `destroy`) + `GET /encargos/export` (`encargos.export`).
 
+El selector opcional de producto consume `GET /productos/opciones` (`productos.opciones`; ver módulo 06).
+
 ## 4. Capas y archivos
 
 `app/Http/Controllers/EncargoController.php` · `ClienteService` ·
@@ -43,6 +45,11 @@ vistas `resources/views/encargos/{index,form,show}.blade.php`.
 `.tabla` con acciones pagar/ver; `.badge` de estado; `form` compartido alta/pago (saldo en vivo por
 JS) con alta de cliente en línea; `show` de detalle.
 
+El producto opcional se elige con `<x-producto-picker>` (`resources/js/producto-picker.js`), con
+búsqueda remota contra `productos.opciones` por nombre/código/marca/modelo. Al seleccionarlo se
+completa `total` con su `precio_venta` si el campo estaba vacío o en 0; el selector se puede limpiar
+y entonces vuelve a aplicar la descripción libre. No se carga el catálogo completo en el HTML.
+
 ## 8. Estado
 
 - ✅ Crear, registrar pagos, eliminar.
@@ -55,6 +62,7 @@ JS) con alta de cliente en línea; `show` de detalle.
 ## 9. Pruebas
 
 `ModulosVentasTest.php` (`test_encargo_calcula_saldo_y_asocia_producto`),
+`ProductoOpcionesTest.php` (búsqueda remota y selección previa),
 `FormulariosTest.php` (`test_vendedor_crea_cliente_apartado_encargo`), `PantallasTest.php`.
 
 ## 10. Decisiones y restricciones acordadas

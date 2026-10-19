@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ApartadoController extends Controller
@@ -43,13 +44,23 @@ class ApartadoController extends Controller
 
     public function create(Request $request): View
     {
+        $sucursales = $this->sucursales($request);
+        $sucursalId = (int) ($request->old('sucursal_id') ?: $sucursales->first()?->id);
+        $productoSeleccionado = $request->old('producto_id')
+            ? Producto::find($request->old('producto_id'))
+            : null;
+
         return view('apartados.form', [
             'apartado' => new Apartado(['cantidad' => 1, 'sena' => 0, 'fecha' => now()->toDateString()]),
             'accion' => route('apartados.store'),
             'metodo' => 'POST',
             'clientes' => Cliente::where('activo', true)->orderBy('nombre')->get(),
-            'productos' => Producto::where('activo', true)->orderBy('nombre')->get(),
-            'sucursales' => $this->sucursales($request),
+            'productoSeleccionado' => $productoSeleccionado,
+            'stockSeleccionado' => $productoSeleccionado && $sucursalId > 0
+                ? $this->stock->disponible($productoSeleccionado->id, $sucursalId)
+                : null,
+            'sucursalSeleccionadaId' => $sucursalId > 0 ? $sucursalId : null,
+            'sucursales' => $sucursales,
             'puedeElegirSucursal' => $request->user()->esGerente(),
         ]);
     }
@@ -60,12 +71,13 @@ class ApartadoController extends Controller
         $datos = $request->validated();
 
         $sucursalId = $usuario->esGerente() ? (int) $datos['sucursal_id'] : (int) $usuario->sucursal_id;
-        $clienteId = $this->clientes->resolver($datos);
         $producto = Producto::findOrFail($datos['producto_id']);
         $total = round((int) $datos['cantidad'] * (float) $producto->precio_venta, 2);
         $saldo = round($total - (float) $datos['sena'], 2);
 
-        DB::transaction(function () use ($datos, $sucursalId, $usuario, $clienteId, $producto, $saldo) {
+        DB::transaction(function () use ($datos, $sucursalId, $usuario, $producto, $saldo) {
+            $clienteId = $this->clientes->resolver($datos);
+
             $apartado = Apartado::create([
                 'cliente_id' => $clienteId,
                 'sucursal_id' => $sucursalId,
@@ -117,14 +129,21 @@ class ApartadoController extends Controller
     {
         $this->autorizarSucursal($request, $apartado);
 
-        if ($apartado->estado !== Apartado::ESTADO_ACTIVO) {
-            return redirect()->route('apartados.index')->withErrors(['apartado' => 'Solo los apartados activos admiten más pagos.']);
-        }
-
         $datos = $request->validated();
-        $saldo = round((float) $apartado->saldo - (float) $datos['abono'], 2);
 
-        DB::transaction(function () use ($apartado, $datos, $saldo, $request) {
+        $saldo = DB::transaction(function () use ($apartado, $datos, $request): float {
+            $apartado = Apartado::query()->lockForUpdate()->findOrFail($apartado->id);
+
+            if ($apartado->estado !== Apartado::ESTADO_ACTIVO) {
+                throw ValidationException::withMessages(['apartado' => 'Solo los apartados activos admiten más pagos.']);
+            }
+
+            if ((float) $datos['abono'] > (float) $apartado->saldo) {
+                throw ValidationException::withMessages(['abono' => 'El pago no puede ser mayor al saldo pendiente.']);
+            }
+
+            $saldo = round((float) $apartado->saldo - (float) $datos['abono'], 2);
+
             $apartado->update([
                 'saldo' => $saldo,
                 'estado' => $saldo <= 0 ? Apartado::ESTADO_COMPLETADO : Apartado::ESTADO_ACTIVO,
@@ -133,6 +152,8 @@ class ApartadoController extends Controller
             if ($saldo <= 0) {
                 $this->generarVenta($apartado->fresh(), $datos['medio_pago'] ?? null, $request->user()->id);
             }
+
+            return $saldo;
         });
 
         return redirect()->route('apartados.index')->with('status', $saldo <= 0
@@ -144,13 +165,15 @@ class ApartadoController extends Controller
     {
         $this->autorizarSucursal($request, $apartado);
 
-        if ($apartado->estado !== Apartado::ESTADO_ACTIVO) {
-            return redirect()->route('apartados.index')->withErrors(['apartado' => 'Solo se pueden cancelar apartados activos.']);
-        }
-
         $datos = $request->validated();
 
-        DB::transaction(function () use ($apartado, $datos, $request) {
+        DB::transaction(function () use ($apartado, $datos, $request): void {
+            $apartado = Apartado::query()->lockForUpdate()->findOrFail($apartado->id);
+
+            if ($apartado->estado !== Apartado::ESTADO_ACTIVO) {
+                throw ValidationException::withMessages(['apartado' => 'Solo se pueden cancelar apartados activos.']);
+            }
+
             $this->stock->mover($apartado->producto_id, $apartado->sucursal_id, (int) $apartado->cantidad, TipoMovimiento::LiberacionApartado->value, "Apartado #{$apartado->id} cancelado", $request->user()->id);
 
             $apartado->update([

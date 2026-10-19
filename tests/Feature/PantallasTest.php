@@ -87,7 +87,7 @@ class PantallasTest extends TestCase
         $compra = Compra::firstOrFail();
         $traspaso = Traspaso::firstOrFail();
 
-        $this->actingAs($gerente)->get(route('inicio'))->assertRedirect(route('usuarios.index'));
+        $this->actingAs($gerente)->get(route('inicio'))->assertOk()->assertSee('Ventas del día');
 
         $rutas = [
             'usuarios.index', 'usuarios.create', 'usuarios.edit', 'roles.index', 'roles.create', 'roles.edit',

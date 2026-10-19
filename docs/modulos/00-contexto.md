@@ -185,7 +185,7 @@ Estas decisiones están cerradas. Cualquier sesión debe respetarlas:
 | **Buscador insignia** | Permiso propio `buscador`; imágenes por **subida + URL + búsqueda en internet**; atributos **clave/valor libre**; log global con dedupe de 5 s. |
 | **Imágenes externas** | **Brave** recomendado (key); **Wikimedia Commons** sin clave; Openverse opcional. Copia local WebP ≤1600 px y fuente/autor/licencia. |
 | **Diseño del buscador** | Hero de búsqueda, tarjetas con imagen y stock por sucursal, similares y filtros colapsables; tokens de `app.css`. |
-| **Dashboard** | 5 métricas: ventas del día, bajo mínimo, OT pendientes/listas, traspasos de hoy, búsquedas sin resultado. |
+| **Dashboard** | 5 métricas: ventas del día (solo productos), bajo mínimo **global**, OT pendientes/listas, traspasos de hoy y búsquedas sin resultado. Gerente con selector de sucursal (“Todas” por defecto); el resto ve su sucursal. |
 | **UI** | `app.css` es la fuente de verdad; `DESIGN.md` = referencia parcial. |
 | **Git** | Lo maneja el usuario. |
 

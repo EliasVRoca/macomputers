@@ -33,6 +33,8 @@ class ServicioService
             $clienteId = $this->resolverCliente($datos);
             $sucursalId = (int) $datos['sucursal_id'];
             $manoDeObra = round((float) ($datos['mano_de_obra'] ?? 0), 2);
+            $descuento = round((float) ($datos['descuento'] ?? 0), 2);
+            $totalInicial = round(max($manoDeObra - $descuento, 0), 2);
 
             $venta = Venta::create([
                 'sucursal_id' => $sucursalId,
@@ -41,7 +43,7 @@ class ServicioService
                 'tipo' => Venta::TIPO_SERVICIO,
                 'fecha' => now(),
                 'medio_pago' => null,
-                'total' => $manoDeObra,
+                'total' => $totalInicial,
                 'estado' => Venta::ESTADO_ACTIVA,
             ]);
 
@@ -50,8 +52,8 @@ class ServicioService
                 'producto_id' => null,
                 'descripcion' => 'Servicio técnico: '.$datos['equipo'],
                 'cantidad' => 1,
-                'precio_unitario' => $manoDeObra,
-                'subtotal' => $manoDeObra,
+                'precio_unitario' => $totalInicial,
+                'subtotal' => $totalInicial,
             ]);
 
             $servicio = Servicio::create([
@@ -67,7 +69,7 @@ class ServicioService
                 'prioridad' => $datos['prioridad'] ?? 'normal',
                 'accesorios_recibidos' => $datos['accesorios_recibidos'] ?? null,
                 'mano_de_obra' => $manoDeObra,
-                'descuento' => 0,
+                'descuento' => $descuento,
                 'garantia_dias' => (int) ($datos['garantia_dias'] ?? 0),
                 'observaciones' => $datos['observaciones'] ?? null,
             ]);
@@ -137,33 +139,34 @@ class ServicioService
      */
     public function cambiarEstado(Servicio $servicio, EstadoServicio $nuevo, User $usuario, ?string $comentario = null, ?string $medioPago = null): Servicio
     {
-        $actual = $servicio->estadoEnum();
+        return DB::transaction(function () use ($servicio, $nuevo, $usuario, $comentario, $medioPago) {
+            $servicio = Servicio::query()->lockForUpdate()->findOrFail($servicio->id);
+            $actual = $servicio->estadoEnum();
 
-        if ($actual === $nuevo) {
-            throw ValidationException::withMessages([
-                'estado' => "La orden ya se encuentra en estado «{$nuevo->etiqueta()}».",
-            ]);
-        }
+            if ($actual === $nuevo) {
+                throw ValidationException::withMessages([
+                    'estado' => "La orden ya se encuentra en estado «{$nuevo->etiqueta()}».",
+                ]);
+            }
 
-        if (! $actual->puedeTransicionarA($nuevo)) {
-            throw ValidationException::withMessages([
-                'estado' => "No se puede pasar de «{$actual->etiqueta()}» a «{$nuevo->etiqueta()}».",
-            ]);
-        }
+            if (! $actual->puedeTransicionarA($nuevo)) {
+                throw ValidationException::withMessages([
+                    'estado' => "No se puede pasar de «{$actual->etiqueta()}» a «{$nuevo->etiqueta()}».",
+                ]);
+            }
 
-        if ($nuevo === EstadoServicio::Listo && blank($servicio->diagnostico)) {
-            throw ValidationException::withMessages([
-                'estado' => 'Registre el diagnóstico del trabajo antes de marcar la orden como lista.',
-            ]);
-        }
+            if ($nuevo === EstadoServicio::Listo && blank($servicio->diagnostico)) {
+                throw ValidationException::withMessages([
+                    'estado' => 'Registre el diagnóstico del trabajo antes de marcar la orden como lista.',
+                ]);
+            }
 
-        if ($nuevo === EstadoServicio::Entregado && blank($medioPago)) {
-            throw ValidationException::withMessages([
-                'medio_pago' => 'Seleccione el medio de pago para entregar la orden.',
-            ]);
-        }
+            if ($nuevo === EstadoServicio::Entregado && blank($medioPago)) {
+                throw ValidationException::withMessages([
+                    'medio_pago' => 'Seleccione el medio de pago para entregar la orden.',
+                ]);
+            }
 
-        return DB::transaction(function () use ($servicio, $actual, $nuevo, $usuario, $comentario, $medioPago) {
             $cambios = ['estado' => $nuevo->value];
 
             if ($nuevo === EstadoServicio::Entregado) {
@@ -200,9 +203,10 @@ class ServicioService
      */
     public function agregarRepuesto(Servicio $servicio, int $productoId, int $cantidad, User $usuario): ServicioRepuesto
     {
-        $this->asegurarEditable($servicio);
-
         return DB::transaction(function () use ($servicio, $productoId, $cantidad, $usuario) {
+            $servicio = Servicio::query()->lockForUpdate()->findOrFail($servicio->id);
+            $this->asegurarEditable($servicio);
+
             $producto = Producto::findOrFail($productoId);
             $precio = round((float) $producto->precio_venta, 2);
 
@@ -219,10 +223,11 @@ class ServicioService
 
             if ($repuesto) {
                 $nuevaCantidad = $repuesto->cantidad + $cantidad;
+                $precioUnitario = round((float) $repuesto->precio_unitario, 2);
+
                 $repuesto->update([
                     'cantidad' => $nuevaCantidad,
-                    'precio_unitario' => $precio,
-                    'subtotal' => round($nuevaCantidad * $precio, 2),
+                    'subtotal' => round($nuevaCantidad * $precioUnitario, 2),
                 ]);
             } else {
                 $repuesto = $servicio->repuestos()->create([
@@ -244,9 +249,12 @@ class ServicioService
      */
     public function quitarRepuesto(Servicio $servicio, ServicioRepuesto $repuesto, User $usuario): void
     {
-        $this->asegurarEditable($servicio);
-
         DB::transaction(function () use ($servicio, $repuesto, $usuario) {
+            $servicio = Servicio::query()->lockForUpdate()->findOrFail($servicio->id);
+            $this->asegurarEditable($servicio);
+
+            $repuesto = $servicio->repuestos()->whereKey($repuesto->id)->firstOrFail();
+
             $this->stock->mover(
                 $repuesto->producto_id,
                 $servicio->sucursal_id,
@@ -272,6 +280,12 @@ class ServicioService
     public function eliminar(Servicio $servicio, User $usuario): void
     {
         DB::transaction(function () use ($servicio, $usuario) {
+            $servicio = Servicio::withTrashed()->lockForUpdate()->findOrFail($servicio->id);
+
+            if ($servicio->trashed()) {
+                return;
+            }
+
             if (! $servicio->estadoEnum()->esFinal()) {
                 $this->liberarRepuestos($servicio, $usuario);
             }

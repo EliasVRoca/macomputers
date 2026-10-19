@@ -52,7 +52,7 @@ class Csv
 
         $texto = (string) ($valor ?? '');
 
-        if ($texto !== '' && ! is_numeric($texto) && preg_match('/^[=+\-@\t\r]/', $texto) === 1) {
+        if ($texto !== '' && ! is_numeric(trim($texto)) && preg_match('/^\s*[=+\-@\t\r]/', $texto) === 1) {
             return "'".$texto;
         }
 

@@ -32,14 +32,14 @@ class GuardarVentaRequest extends FormRequest
 
         return [
             'modo_cliente' => ['nullable', Rule::in(['existente', 'nuevo'])],
-            'cliente_id' => ['nullable', 'integer', Rule::exists('clientes', 'id')],
+            'cliente_id' => ['nullable', 'integer', Rule::exists('clientes', 'id')->where('activo', true)],
             'cliente_nombre' => ['nullable', 'required_if:modo_cliente,nuevo', 'string', 'max:150'],
             'cliente_telefono' => ['nullable', 'string', 'max:30'],
             'cliente_carnet' => ['nullable', 'string', 'max:30', Rule::unique('clientes', 'carnet')],
-            'sucursal_id' => [$esGerente ? 'required' : 'nullable', 'integer', Rule::exists('sucursales', 'id')],
+            'sucursal_id' => [$esGerente ? 'required' : 'nullable', 'integer', Rule::exists('sucursales', 'id')->where('activa', true)],
             'medio_pago' => ['required', Rule::in(Venta::MEDIOS_PAGO)],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.producto_id' => ['required', 'integer', Rule::exists('productos', 'id')],
+            'items.*.producto_id' => ['required', 'integer', Rule::exists('productos', 'id')->where('activo', true)],
             'items.*.cantidad' => ['required', 'integer', 'min:1'],
         ];
     }

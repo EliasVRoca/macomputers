@@ -6,10 +6,12 @@ use App\Http\Requests\Clientes\CambiarEstadoClienteRequest;
 use App\Http\Requests\Clientes\FiltrarClientesRequest;
 use App\Http\Requests\Clientes\GuardarClienteRequest;
 use App\Models\Cliente;
+use App\Models\Venta;
 use App\Support\Csv;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ClienteController extends Controller
@@ -36,14 +38,16 @@ class ClienteController extends Controller
         return redirect()->route('clientes.index')->with('status', 'Cliente registrado.');
     }
 
-    public function show(Cliente $cliente): View
+    public function show(Request $request, Cliente $cliente): View
     {
         return view('clientes.show', [
             'cliente' => $cliente,
-            'ventas' => $cliente->ventas()->with('sucursal')->latest('fecha')->limit(10)->get(),
+            'ventas' => $cliente->ventas()->where('tipo', Venta::TIPO_VENTA)->with('sucursal')->latest('fecha')->limit(10)->get(),
             'apartados' => $cliente->apartados()->with('producto')->latest('id')->limit(10)->get(),
             'encargos' => $cliente->encargos()->latest('id')->limit(10)->get(),
-            'servicios' => $cliente->servicios()->latest('id')->limit(10)->get(),
+            'servicios' => $request->user()->tienePermiso('servicios')
+                ? $cliente->servicios()->latest('id')->limit(10)->get()
+                : collect(),
         ]);
     }
 

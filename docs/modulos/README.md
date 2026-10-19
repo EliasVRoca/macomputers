@@ -38,7 +38,7 @@ cumple el *Definition of Done* de más abajo.
 | 17 | [Servicio técnico (OT)](17-servicios.md) | RF16 · CU14 | ✅ | ✅ | Servicio técnico |
 | 18 | [Núcleo (permisos, menú, stock)](18-nucleo.md) | Transversal | ✅ | ✅ | Transversal |
 | 20 | [Buscador inteligente 🔧](20-buscador.md) | RF20 · CU19 | ✅ | ✅ | Extensión |
-| 21 | [Dashboard 🔧](21-dashboard.md) | RF21 · CU20 | ⬜ | — | Extensión |
+| 21 | [Dashboard 🔧](21-dashboard.md) | RF21 · CU20 | ✅ | ✅ | Extensión |
 
 > Los briefs **20** y **21** son **extensiones** fuera del alcance de la tesis (aunque ya aprobadas
 > para desarrollar).
@@ -47,9 +47,10 @@ cumple el *Definition of Done* de más abajo.
 > rutas propias y se resuelve como acciones de exportación dentro de cada módulo que ya muestra esos
 > datos. El brief [`19-reportes.md`](19-reportes.md) documenta la decisión y el estado.
 >
-> **Criterio de la revisión:** los módulos **01–18** y la extensión **20 (Buscador)** quedaron ✅.
+> **Criterio de la revisión:** los módulos **01–18** y las extensiones **20 (Buscador)** y
+> **21 (Dashboard)** quedaron ✅.
 > **02 (Roles)** y **04 (Sesión)** se marcaron con el FormRequest *documentado* en su brief; el
-> resto lo **implementa**. **21 (Dashboard)** queda en «—» hasta construirse.
+> resto lo **implementa**.
 
 ## Definition of Done (para marcar la revisión ✅)
 

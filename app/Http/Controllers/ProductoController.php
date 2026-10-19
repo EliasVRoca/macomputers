@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\CondicionProducto;
+use App\Http\Requests\Productos\BuscarOpcionesProductoRequest;
 use App\Http\Requests\Productos\FiltrarProductosRequest;
 use App\Http\Requests\Productos\GuardarProductoRequest;
 use App\Models\Categoria;
@@ -12,6 +13,7 @@ use App\Support\Csv;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -27,6 +29,55 @@ class ProductoController extends Controller
             'categorias' => Categoria::orderBy('nombre')->get(),
             'condiciones' => CondicionProducto::opciones(),
             'filtros' => $filtros,
+        ]);
+    }
+
+    public function opciones(BuscarOpcionesProductoRequest $request): JsonResponse
+    {
+        $datos = $request->validated();
+        $termino = (string) $datos['q'];
+        $tokens = $this->tokensBusqueda($termino);
+        $sucursalId = isset($datos['sucursal_id']) ? (int) $datos['sucursal_id'] : null;
+
+        if ($tokens === []) {
+            return response()->json(['data' => []]);
+        }
+
+        $productos = Producto::query()
+            ->select(['id', 'nombre', 'codigo', 'marca', 'precio_venta'])
+            ->where('activo', true)
+            ->where(function (Builder $query) use ($tokens): void {
+                foreach ($tokens as $token) {
+                    $like = '%'.$token.'%';
+
+                    $query->where(function (Builder $where) use ($like): void {
+                        $where->where('nombre', 'like', $like)
+                            ->orWhere('codigo', 'like', $like)
+                            ->orWhere('marca', 'like', $like)
+                            ->orWhere('modelo', 'like', $like);
+                    });
+                }
+            })
+            ->when($sucursalId !== null, fn (Builder $query) => $query->withSum(
+                ['inventarios as stock_sucursal' => fn (Builder $inventario) => $inventario->where('sucursal_id', $sucursalId)],
+                'cantidad',
+            ))
+            ->orderByRaw('CASE WHEN LOWER(codigo) = ? THEN 0 ELSE 1 END', [mb_strtolower($termino)])
+            ->orderBy('nombre')
+            ->limit(15)
+            ->get();
+
+        return response()->json([
+            'data' => $productos
+                ->map(fn (Producto $producto): array => [
+                    'id' => $producto->id,
+                    'nombre' => $producto->nombre,
+                    'codigo' => $producto->codigo,
+                    'marca' => $producto->marca,
+                    'precio_venta' => (float) $producto->precio_venta,
+                    'stock' => $sucursalId !== null ? (int) ($producto->stock_sucursal ?? 0) : null,
+                ])
+                ->values(),
         ]);
     }
 
@@ -129,6 +180,19 @@ class ProductoController extends Controller
             'categorias' => Categoria::orderBy('nombre')->get(),
             'condiciones' => CondicionProducto::opciones(),
         ]);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function tokensBusqueda(string $termino): array
+    {
+        return collect(preg_split('/\s+/u', mb_strtolower($termino)) ?: [])
+            ->filter(fn (string $token): bool => mb_strlen($token) >= 2)
+            ->unique()
+            ->take(8)
+            ->values()
+            ->all();
     }
 
     /**

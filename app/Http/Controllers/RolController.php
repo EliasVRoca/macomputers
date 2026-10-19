@@ -15,25 +15,33 @@ class RolController extends Controller
         return view('roles.index', ['items' => Role::withCount('users')->orderBy('nombre')->paginate(15)]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
+        $this->autorizarGerente($request);
+
         return view('roles.form', ['rol' => new Role(['permisos' => []]), 'accion' => route('roles.store'), 'metodo' => 'POST']);
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $this->autorizarGerente($request);
+
         Role::create($this->validar($request));
 
         return redirect()->route('roles.index')->with('status', 'Rol registrado.');
     }
 
-    public function edit(Role $role): View
+    public function edit(Request $request, Role $role): View
     {
+        $this->autorizarGerente($request);
+
         return view('roles.form', ['rol' => $role, 'accion' => route('roles.update', $role), 'metodo' => 'PUT']);
     }
 
     public function update(Request $request, Role $role): RedirectResponse
     {
+        $this->autorizarGerente($request);
+
         if ($role->es_sistema) {
             return back()->withErrors(['rol' => 'El rol Gerente es de sistema y no puede modificarse.']);
         }
@@ -43,8 +51,10 @@ class RolController extends Controller
         return redirect()->route('roles.index')->with('status', 'Rol actualizado.');
     }
 
-    public function destroy(Role $role): RedirectResponse
+    public function destroy(Request $request, Role $role): RedirectResponse
     {
+        $this->autorizarGerente($request);
+
         if ($role->es_sistema) {
             return back()->withErrors(['eliminar' => 'El rol Gerente es de sistema y no puede eliminarse.']);
         }
@@ -69,9 +79,18 @@ class RolController extends Controller
             'permisos.*' => ['string', Rule::in($claves)],
         ]);
 
+        $datos['nombre'] = trim(strip_tags((string) $datos['nombre']));
+        $datos['descripcion'] = isset($datos['descripcion'])
+            ? trim(strip_tags((string) $datos['descripcion']))
+            : null;
         $datos['permisos'] = array_values($datos['permisos'] ?? []);
         $datos['es_sistema'] = false;
 
         return $datos;
+    }
+
+    private function autorizarGerente(Request $request): void
+    {
+        abort_unless($request->user()?->esGerente(), 403, 'Solo un gerente puede gestionar roles.');
     }
 }

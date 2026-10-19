@@ -22,8 +22,13 @@ class InventarioResumenService
         return [
             'productos' => Producto::where('activo', true)->count(),
             'unidades' => (int) Inventario::sum('cantidad'),
-            'bajo_minimo' => Producto::where('activo', true)->whereRaw(self::BAJO_MINIMO)->count(),
+            'bajo_minimo' => $this->bajoMinimo(),
             'movimientos_hoy' => MovimientoInventario::whereDate('created_at', today())->count(),
         ];
+    }
+
+    public function bajoMinimo(): int
+    {
+        return Producto::where('activo', true)->whereRaw(self::BAJO_MINIMO)->count();
     }
 }

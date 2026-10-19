@@ -6,6 +6,7 @@ use App\Http\Requests\Concerns\SaneaTexto;
 use App\Models\Cambio;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 /**
  * Filtros del listado de cambios, compartidos por el índice y la exportación CSV.
@@ -37,5 +38,21 @@ class FiltrarCambiosRequest extends FormRequest
         $this->merge([
             'buscar' => $this->limpiarTexto($this->input('buscar')),
         ]);
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validador): void {
+            if ($validador->errors()->has('desde') || $validador->errors()->has('hasta')) {
+                return;
+            }
+
+            $desde = $this->input('desde');
+            $hasta = $this->input('hasta');
+
+            if ($desde && $hasta && $hasta < $desde) {
+                $validador->errors()->add('hasta', 'La fecha «hasta» no puede ser anterior a «desde».');
+            }
+        });
     }
 }

@@ -1,25 +1,30 @@
 # 21 · Dashboard (panel de inicio) 🔧
 
 **Grupo:** Extensión · **RF:** RF21 · **CU:** CU20 · **Permiso:** según métricas
-**Estado:** ⬜ a construir (hoy `/inicio` redirige al primer módulo)
+**Estado:** ✅ implementado
 
-> **Extensión:** no está en la tesis. Se agrega para reducir clics y dar el pulso del negocio al
+> **Extensión:** no está en la tesis. Se agregó para reducir clics y dar el pulso del negocio al
 > abrir.
 
 ## 1. Resumen
 
-Panel de inicio con indicadores y accesos rápidos. Hoy `InicioController` (invocable) solo redirige
-a `Menu::primerModulo`.
+`/inicio` muestra un panel de solo lectura con cinco indicadores y accesos directos a los módulos.
+Si el rol no tiene ningún módulo, se mantiene el fallback informativo de `inicio.blade.php`.
 
-## 2. Métricas (5, confirmadas)
+## 2. Métricas
 
-| Métrica | Fuente |
-|---|---|
-| **Ventas del día** (total y nº) | `ventas` del día, `estado = activa` |
-| **Productos bajo mínimo** | `inventarios` vs `productos.stock_minimo` |
-| **OT pendientes / listas** | `servicios` por `EstadoServicio` |
-| **Traspasos de hoy** | `traspasos` del día |
-| **Búsquedas sin resultado** | `busquedas_producto` (`sin_stock`/`no_existe`) — requiere el buscador |
+| Métrica | Alcance | Fuente |
+|---|---|---|
+| **Ventas del día** (total y nº) | Sucursal visible | `ventas` de hoy, `estado = activa`, `tipo = venta` |
+| **Bajo mínimo** | Global | `inventarios` + `productos.stock_minimo` |
+| **OT pendientes / listas** | Sucursal visible | `servicios` por `EstadoServicio` |
+| **Traspasos de hoy** | Sucursal visible (origen o destino) | `traspasos.fecha = hoy` |
+| **Búsquedas sin resultado** | Sucursal visible | `busquedas_producto` de hoy (`sin_stock` / `no_existe`) |
+
+- **Pendientes** = `recibido` + `en_proceso`; **Listas** = `listo`. Entregadas y canceladas no cuentan.
+- **Bajo mínimo** reutiliza la regla de Inventario: producto activo cuyo stock total en todas las
+  sucursales es ≤ `stock_minimo`.
+- Las ventas de servicio no entran en “Ventas del día”; se reflejan en la tarjeta de OT.
 
 ## 3. Rutas y endpoints
 
@@ -27,57 +32,92 @@ a `Menu::primerModulo`.
 |---|---|---|
 | GET | `/inicio` | `inicio` |
 
-Cambiar `InicioController` (o `inicio.blade.php`) para mostrar el panel en lugar de redirigir (o
-redirigir solo si el rol no tiene módulos). Respetar permisos: mostrar cada tarjeta si el usuario
-tiene el permiso del módulo fuente.
+El gerente puede usar `?sucursal_id={id}` para filtrar; “Todas” es el valor por defecto. Los demás
+roles siempre ven su propia sucursal.
 
 ## 4. Capas y archivos
 
-`app/Http/Controllers/InicioController.php` · `resources/views/inicio.blade.php` (hoy *fallback*).
+- `app/Http/Controllers/InicioController.php` (delgado).
+- `app/Services/DashboardService.php` (métricas y permisos).
+- `app/Http/Requests/DashboardRequest.php` (valida `sucursal_id` del gerente).
+- `app/Services/InventarioResumenService.php` (`bajoMinimo()` reutilizable).
+- `resources/views/dashboard/index.blade.php`.
+- `resources/views/inicio.blade.php` (fallback sin módulos).
+- `tests/Feature/DashboardTest.php`.
 
 ## 5. UI y patrones
 
-Reutilizar `.kpi` / `.kpi-icon` de `app.css`; tarjetas con enlace al módulo; `.badge` para estados.
-Modo oscuro soportado.
+- Grid responsive de 5 tarjetas `.kpi` (1 columna móvil, 2 tablet, 3 escritorio); tarjetas
+  enlazadas a Ventas, Inventario, Servicios, Traspasos y Buscador/Reporte.
+- Ventas: total en Bs + cantidad. Bajo mínimo: borde/valor `danger` si hay pendientes. OT: dos
+  mini-valores. Traspasos y búsquedas: conteo y enlace.
+- Selector de sucursal en la cabecera para el gerente; subtítulo con sucursal y fecha en español.
+- Tokens de `app.css`; claro/oscuro; sin gráficos ni widgets pesados.
+- El panel contextual del layout se oculta en `/inicio`; la barra superior muestra “Inicio”.
 
 ## 6. Reglas de negocio
 
-- Aislamiento por sucursal: el no gerente ve métricas de **su** sucursal; el gerente puede ver todo
-  (o un selector).
-- Cada tarjeta se oculta si el usuario no tiene el permiso del módulo.
+- Aislamiento por sucursal para ventas, OT, traspasos y búsquedas. El gerente puede ver todas.
+- **Bajo mínimo es global** para todos (coincide con el KPI de Inventario).
+- Cada tarjeta se oculta si el usuario no tiene el permiso fuente:
+  `ventas`, `inventario`, `servicios`, `traspasos` o `buscador`.
+- Rol sin módulos → fallback; rol con módulos pero sin métricas → estado vacío.
+- Fechas: ventas/búsquedas por rango del día; traspasos por `fecha`; OT por estado actual.
+- Sin migraciones ni permisos nuevos.
 
 ## 7. Estado / checklist
 
-- [ ] Ventas del día
-- [ ] Productos bajo mínimo
-- [ ] OT pendientes / listas
-- [ ] Traspasos de hoy
-- [ ] Búsquedas sin resultado (depende de `20-buscador.md`)
-- [ ] Respetar permisos y sucursal
+- [x] Ventas del día
+- [x] Productos bajo mínimo
+- [x] OT pendientes / listas
+- [x] Traspasos de hoy
+- [x] Búsquedas sin resultado
+- [x] Respetar permisos y sucursal
+- [x] Selector de sucursal para gerente
+- [x] Fallback para roles sin módulos
+- [x] Tests y documentación
 
 ## 8. Pruebas
 
-Feature test: el gerente ve las tarjetas; un rol sin permiso no ve la tarjeta correspondiente; el
-conteo por sucursal respeta el aislamiento.
+`tests/Feature/DashboardTest.php` cubre:
+- Gerente con las 5 tarjetas y valores exactos.
+- Vendedor (4 tarjetas, sin OT) y técnico (OT + búsquedas).
+- Aislamiento por sucursal y selector del gerente.
+- Validación de `sucursal_id` y parámetro ignorado para no gerentes.
+- Ventas solo activas, de hoy y `tipo = venta`.
+- Bajo mínimo global (incluye producto sin inventario).
+- OT pendientes/listas y exclusión de finales.
+- Traspasos de hoy por origen/destino; búsquedas de hoy sin resultado.
+- Fallback de rol sin módulos.
+
+También se actualizaron `PantallasTest` y `AutenticacionYPermisosTest` porque `/inicio` ya no
+redirige.
 
 ## 9. Decisiones y restricciones acordadas
 
-- **No** agregar gráficos ni widgets pesados: solo las 5 tarjetas acordadas (RNF10, simplicidad).
+- **Gerente con selector**; “Todas” por defecto.
+- **Bajo mínimo global**, no por sucursal.
+- **Ventas del día solo productos**; las OT tienen su propia tarjeta.
+- **OT del técnico por sucursal**, no solo las asignadas a él.
+- **Sin gráficos ni widgets pesados**: solo las 5 tarjetas.
 - `/inicio` deja de redirigir para usuarios con módulos; mantiene el fallback para roles sin módulos.
 
 ## 10. Seguridad de entrada (tipado y saneado)
 
-- Sin entrada de usuario (panel de solo lectura); si se agrega un selector de sucursal, validarlo `integer` + `exists`.
-- Las métricas respetan el **aislamiento por sucursal**.
+- Panel de solo lectura; el único parámetro es `sucursal_id`.
+- `DashboardRequest`: `nullable|integer` + `exists` de sucursal **activa**, solo para gerente.
+- No gerente: el parámetro se ignora y se usa su `sucursal_id`.
+- Reglas de permisos evaluadas en el servicio y en la vista.
 - Política completa: `docs/modulos/00-contexto.md` §13.
 
 ## 11. Estructura de archivos
 
-- **Actual:** `app/Http/Controllers/InicioController.php` + `resources/views/inicio.blade.php`.
-- **Objetivo:** controlador delgado + `resources/views/inicio.blade.php` (o `dashboard/index.blade.php` con parciales `_kpi*.blade.php`) y un servicio de métricas al estilo `InventarioResumenService`.
-- **Pendiente:** extraer parciales de métricas si el panel crece.
+- **Actual:** controlador delgado + `DashboardService` + `DashboardRequest` +
+  `resources/views/dashboard/index.blade.php`; fallback en `resources/views/inicio.blade.php`.
+- **Pendiente:** *(opcional)* extraer parciales `_kpi*.blade.php` si el panel crece.
 
 ## 12. Cómo probar a mano
 
-Entrar como `gerente` → ver las 5 tarjetas con datos; entrar como `vendedor` → las de su sucursal y
-solo sus módulos; entrar con un rol sin módulos → ver el mensaje de fallback.
+Entrar como `gerente` → `/inicio` → ver las 5 tarjetas → cambiar el selector entre “Todas” y una
+sucursal → abrir los enlaces. Entrar como `vendedor` → 4 tarjetas de su sucursal, sin OT. Entrar como
+`tecnico` → solo OT y búsquedas de su sucursal. Probar claro/oscuro y móvil.

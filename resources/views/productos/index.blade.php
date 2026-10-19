@@ -86,7 +86,7 @@
                     <div class="flex justify-end gap-1">
                         <a href="{{ route('productos.show', $producto) }}" class="btn btn-ghost btn-icon" title="Ver detalle" aria-label="Ver detalle"><x-icon name="eye" class="size-4" /></a>
                         <a href="{{ route('productos.edit', $producto) }}" class="btn btn-ghost btn-icon" title="Editar" aria-label="Editar"><x-icon name="pencil" class="size-4" /></a>
-                        <form method="POST" action="{{ route('productos.destroy', $producto) }}" onsubmit="return confirm('¿Eliminar el producto {{ $producto->nombre }}?')">
+                        <form method="POST" action="{{ route('productos.destroy', $producto) }}" data-confirm="¿Eliminar el producto {{ $producto->nombre }}?">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-ghost btn-icon text-danger" title="Eliminar" aria-label="Eliminar"><x-icon name="trash" class="size-4" /></button>
                         </form>

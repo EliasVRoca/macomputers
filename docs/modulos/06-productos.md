@@ -25,8 +25,13 @@ base del módulo estrella (buscador).
 ## 3. Rutas y endpoints
 
 Resource `productos` completo (`index`, `create`, `store`, `show`, `edit`, `update`, `destroy`) con
-`permiso:productos`, más `GET /productos/export` → `productos.export` (declarada **antes** del
-resource).
+`permiso:productos`, más `GET /productos/export` → `productos.export` y
+`GET /productos/opciones` → `productos.opciones` (ambas declaradas **antes** del resource).
+
+`productos.opciones` es la búsqueda remota liviana del selector de productos: recibe `q` (mín. 2
+caracteres) y `sucursal_id` opcional, busca por nombre/código/marca/modelo, devuelve hasta 15
+coincidencias con precio y stock de la sucursal, y no registra la búsqueda en el reporte del
+buscador.
 
 Imágenes (`permiso:productos`):
 

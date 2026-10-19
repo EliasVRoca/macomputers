@@ -29,7 +29,7 @@ Route::get('/', fn () => redirect()->route('inicio'));
 // Autenticación
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'mostrarLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.store');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login.store');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
     // Catálogo
     Route::get('/categorias/export', [CategoriaController::class, 'export'])->name('categorias.export')->middleware('permiso:categorias');
     Route::resource('categorias', CategoriaController::class)->except('show')->middleware('permiso:categorias');
+    Route::get('/productos/opciones', [ProductoController::class, 'opciones'])->name('productos.opciones')->middleware('permiso:apartados,encargos,ventas,compras,traspasos,buscador');
     Route::get('/productos/export', [ProductoController::class, 'export'])->name('productos.export')->middleware('permiso:productos');
     Route::get('/productos/{producto}/imagenes/buscar', [ProductoImagenInternetController::class, 'buscar'])->name('productos.imagenes.buscar')->middleware(['permiso:productos', 'throttle:30,1']);
     Route::post('/productos/{producto}/imagenes/internet', [ProductoImagenInternetController::class, 'guardar'])->name('productos.imagenes.internet')->middleware(['permiso:productos', 'throttle:20,1']);

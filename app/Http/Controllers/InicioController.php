@@ -2,21 +2,36 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DashboardRequest;
+use App\Models\Sucursal;
+use App\Services\DashboardService;
 use App\Support\Menu;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class InicioController extends Controller
 {
-    public function __invoke(Request $request): RedirectResponse|View
+    public function __invoke(DashboardRequest $request, DashboardService $dashboard): View
     {
-        $ruta = Menu::primerModulo($request->user());
+        $usuario = $request->user();
 
-        if ($ruta) {
-            return redirect()->route($ruta);
+        if (Menu::para($usuario) === []) {
+            return view('inicio');
         }
 
-        return view('inicio');
+        $datos = $request->validated();
+        $puedeElegirSucursal = $usuario->esGerente();
+        $sucursalId = $puedeElegirSucursal
+            ? ($datos['sucursal_id'] ?? null)
+            : (int) $usuario->sucursal_id;
+
+        return view('dashboard.index', [
+            'metricas' => $dashboard->metricas($usuario, $sucursalId),
+            'sucursalActual' => $sucursalId ? Sucursal::find($sucursalId) : null,
+            'sucursales' => $puedeElegirSucursal
+                ? Sucursal::where('activa', true)->orderBy('nombre')->get()
+                : collect(),
+            'puedeElegirSucursal' => $puedeElegirSucursal,
+            'hoy' => today(),
+        ]);
     }
 }

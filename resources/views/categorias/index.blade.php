@@ -36,7 +36,7 @@
                 <td>
                     <div class="flex justify-end gap-1">
                         <a href="{{ route('categorias.edit', $categoria) }}" class="btn btn-ghost btn-icon" title="Editar" aria-label="Editar"><x-icon name="pencil" class="size-4" /></a>
-                        <form method="POST" action="{{ route('categorias.destroy', $categoria) }}" onsubmit="return confirm('¿Eliminar la categoría {{ $categoria->nombre }}?')">
+                        <form method="POST" action="{{ route('categorias.destroy', $categoria) }}" data-confirm="¿Eliminar la categoría {{ $categoria->nombre }}?">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-ghost btn-icon text-danger" title="Eliminar" aria-label="Eliminar"><x-icon name="trash" class="size-4" /></button>
                         </form>

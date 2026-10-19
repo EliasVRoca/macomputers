@@ -57,7 +57,7 @@
                             <input type="hidden" name="activo" value="{{ $cliente->activo ? 0 : 1 }}">
                             <button type="submit" class="btn btn-ghost btn-icon" title="{{ $cliente->activo ? 'Desactivar' : 'Activar' }}" aria-label="{{ $cliente->activo ? 'Desactivar' : 'Activar' }}"><x-icon name="{{ $cliente->activo ? 'lock' : 'unlock' }}" class="size-4" /></button>
                         </form>
-                        <form method="POST" action="{{ route('clientes.destroy', $cliente) }}" onsubmit="return confirm('¿Eliminar al cliente {{ $cliente->nombre }}? Si tiene historial, se desactivará.')">
+                        <form method="POST" action="{{ route('clientes.destroy', $cliente) }}" data-confirm="¿Eliminar al cliente {{ $cliente->nombre }}? Si tiene historial, se desactivará.">
                             @csrf @method('DELETE')
                             <button type="submit" class="btn btn-ghost btn-icon text-danger" title="Eliminar" aria-label="Eliminar"><x-icon name="trash" class="size-4" /></button>
                         </form>

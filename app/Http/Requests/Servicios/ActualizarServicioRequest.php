@@ -50,7 +50,7 @@ class ActualizarServicioRequest extends FormRequest
             $reglas['cliente_id'] = ['nullable', 'integer', Rule::exists('clientes', 'id')];
 
             if ($esGerente) {
-                $reglas['sucursal_id'] = ['nullable', 'integer', Rule::exists('sucursales', 'id')];
+                $reglas['sucursal_id'] = ['nullable', 'integer', Rule::exists('sucursales', 'id')->where('activa', true)];
                 $reglas['tecnico_id'] = ['nullable', 'integer', Rule::exists('users', 'id')->where('activo', true)];
             }
         }

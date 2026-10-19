@@ -58,6 +58,13 @@ class CambioController extends Controller
         $datos = $request->validated();
 
         $venta = Venta::findOrFail($datos['venta_id']);
+
+        abort_unless(
+            $usuario->esGerente() || $usuario->sucursal_id === $venta->sucursal_id,
+            403,
+            'La venta pertenece a otra sucursal.',
+        );
+
         $cantidad = (int) $datos['cantidad'];
 
         DB::transaction(function () use ($datos, $venta, $usuario, $cantidad) {

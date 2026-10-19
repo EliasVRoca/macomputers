@@ -74,7 +74,7 @@
                     <div class="flex justify-end gap-1">
                         <a href="{{ route('compras.show', $compra) }}" class="btn btn-ghost btn-icon" title="Ver detalle" aria-label="Ver detalle"><x-icon name="eye" class="size-4" /></a>
                         @unless ($compra->estaAnulada())
-                            <form method="POST" action="{{ route('compras.anular', $compra) }}" onsubmit="return confirm('¿Anular la compra #{{ $compra->id }}? Se revertirá el stock que ingresó.')">
+                            <form method="POST" action="{{ route('compras.anular', $compra) }}" data-confirm="¿Anular la compra #{{ $compra->id }}? Se revertirá el stock que ingresó.">
                                 @csrf
                                 @method('PATCH')
                                 <button type="submit" class="btn btn-ghost btn-icon text-danger" title="Anular compra" aria-label="Anular compra"><x-icon name="x" class="size-4" /></button>

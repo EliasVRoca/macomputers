@@ -89,25 +89,27 @@
             </div>
         </section>
 
-        <section>
-            <h2 class="mb-3 text-sm font-medium text-ink">Servicios técnicos</h2>
-            <div class="card card-flush overflow-x-auto">
-                <table class="tabla">
-                    <thead><tr><th>OT</th><th>Equipo</th><th>Estado</th></tr></thead>
-                    <tbody>
-                    @forelse ($servicios as $servicio)
-                        <tr>
-                            <td class="font-mono text-xs"><a href="{{ route('servicios.show', $servicio) }}" class="text-brand hover:underline">{{ $servicio->numero }}</a></td>
-                            <td>{{ $servicio->equipo }}</td>
-                            <td>{{ $servicio->estadoEnum()->etiqueta() }}</td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="3" class="text-ink-muted">Sin servicios.</td></tr>
-                    @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </section>
+        @if (auth()->user()->tienePermiso('servicios'))
+            <section>
+                <h2 class="mb-3 text-sm font-medium text-ink">Servicios técnicos</h2>
+                <div class="card card-flush overflow-x-auto">
+                    <table class="tabla">
+                        <thead><tr><th>OT</th><th>Equipo</th><th>Estado</th></tr></thead>
+                        <tbody>
+                        @forelse ($servicios as $servicio)
+                            <tr>
+                                <td class="font-mono text-xs"><a href="{{ route('servicios.show', $servicio) }}" class="text-brand hover:underline">{{ $servicio->numero }}</a></td>
+                                <td>{{ $servicio->equipo }}</td>
+                                <td>{{ $servicio->estadoEnum()->etiqueta() }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="3" class="text-ink-muted">Sin servicios.</td></tr>
+                        @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        @endif
     </div>
 </div>
 @endsection

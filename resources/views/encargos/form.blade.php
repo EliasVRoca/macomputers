@@ -93,16 +93,13 @@
 
         <section class="space-y-5 border-t border-hairline pt-8">
             <h2 class="text-sm font-medium text-ink-muted">Producto y anticipo</h2>
-            <div>
-                <label for="producto_id" class="label">Producto del catálogo <span class="font-normal text-ink-subtle">(opcional)</span></label>
-                <select id="producto_id" name="producto_id" class="input" data-producto>
-                    <option value="">No está en el catálogo</option>
-                    @foreach ($productos as $producto)
-                        <option value="{{ $producto->id }}" data-precio="{{ $producto->precio_venta }}" @selected(old('producto_id') == $producto->id)>{{ $producto->nombre }} · Bs {{ number_format($producto->precio_venta, 2, ',', '.') }}</option>
-                    @endforeach
-                </select>
-                @error('producto_id') <p class="error-texto">{{ $message }}</p> @enderror
-            </div>
+            <x-producto-picker
+                label="Producto del catálogo"
+                :value="old('producto_id')"
+                :producto="$productoSeleccionado"
+                :url="route('productos.opciones')"
+                optional
+            />
             <div>
                 <label for="descripcion" class="label">Descripción <span class="font-normal text-ink-subtle">(si no está en el catálogo)</span></label>
                 <input id="descripcion" name="descripcion" class="input" value="{{ old('descripcion', $encargo->descripcion) }}" maxlength="255" placeholder="Ej. Monitor Samsung 27 pulgadas">
@@ -140,6 +137,7 @@
 </form>
 
 @if (! $encargo->exists)
+@vite('resources/js/producto-picker.js')
 <script>
     (function () {
         var nuevo = document.getElementById('cliente-nuevo');
@@ -158,17 +156,16 @@
         var total = document.getElementById('total');
         var anticipo = document.getElementById('anticipo');
         var saldo = document.getElementById('saldo');
-        var producto = document.querySelector('[data-producto]');
         function recalcular() {
             var s = (parseFloat(total.value) || 0) - (parseFloat(anticipo.value) || 0);
             saldo.value = (s > 0 ? s : 0).toFixed(2);
         }
         total.addEventListener('input', recalcular);
         anticipo.addEventListener('input', recalcular);
-        producto.addEventListener('change', function () {
-            var opt = producto.options[producto.selectedIndex];
-            if (opt && opt.dataset.precio && (! total.value || parseFloat(total.value) === 0)) {
-                total.value = opt.dataset.precio;
+        document.addEventListener('producto-seleccionado', function (event) {
+            var producto = event.detail && event.detail.producto;
+            if (producto && producto.precio_venta && (! total.value || parseFloat(total.value) === 0)) {
+                total.value = Number(producto.precio_venta).toFixed(2);
             }
             recalcular();
         });

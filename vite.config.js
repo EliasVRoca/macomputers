@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/buscador.js', 'resources/js/producto-imagenes.js'],
+            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/buscador.js', 'resources/js/producto-imagenes.js', 'resources/js/producto-picker.js'],
             refresh: true,
             fonts: [
                 bunny('Inter', {

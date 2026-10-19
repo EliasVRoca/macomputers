@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Inventario;
 use App\Models\MovimientoInventario;
 use App\Models\Producto;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -39,11 +40,22 @@ class StockService
                 ->first();
 
             if (! $inventario) {
-                Inventario::create([
-                    'producto_id' => $productoId,
-                    'sucursal_id' => $sucursalId,
-                    'cantidad' => 0,
-                ]);
+                try {
+                    Inventario::create([
+                        'producto_id' => $productoId,
+                        'sucursal_id' => $sucursalId,
+                        'cantidad' => 0,
+                    ]);
+                } catch (QueryException $e) {
+                    $existe = Inventario::query()
+                        ->where('producto_id', $productoId)
+                        ->where('sucursal_id', $sucursalId)
+                        ->exists();
+
+                    if (! $existe) {
+                        throw $e;
+                    }
+                }
 
                 $inventario = Inventario::query()
                     ->where('producto_id', $productoId)

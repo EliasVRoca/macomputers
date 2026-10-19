@@ -112,12 +112,11 @@ class AutenticacionYPermisosTest extends TestCase
 
     public function test_gerente_ve_todos_los_modulos(): void
     {
-        $html = $this->actingAs(User::where('username', 'gerente')->first())
+        $this->actingAs(User::where('username', 'gerente')->first())
             ->get(route('inicio'))
-            ->assertRedirect()
-            ->getTargetUrl();
+            ->assertOk()
+            ->assertSee('Ventas del día');
 
-        $this->assertNotEmpty($html);
         $this->actingAs(User::where('username', 'gerente')->first())->get(route('usuarios.index'))->assertOk();
         $this->actingAs(User::where('username', 'gerente')->first())->get(route('roles.index'))->assertOk();
     }

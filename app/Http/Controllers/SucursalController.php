@@ -37,7 +37,17 @@ class SucursalController extends Controller
 
     public function update(GuardarSucursalRequest $request, Sucursal $sucursal): RedirectResponse
     {
-        $sucursal->update($request->validated());
+        $datos = $request->validated();
+
+        if (! $request->boolean('activa')) {
+            $motivo = $this->sucursales->desactivar($sucursal);
+
+            if ($motivo !== null) {
+                return back()->withErrors(['activa' => 'No se puede desactivar: '.$motivo])->withInput();
+            }
+        }
+
+        $sucursal->update($datos);
 
         return redirect()->route('sucursales.index')->with('status', 'Sucursal actualizada.');
     }
@@ -67,13 +77,11 @@ class SucursalController extends Controller
             return redirect()->route('sucursales.index')->with('status', 'La sucursal ya está dada de baja.');
         }
 
-        $motivo = $this->sucursales->motivoNoDesactivable($sucursal);
+        $motivo = $this->sucursales->desactivar($sucursal);
 
         if ($motivo !== null) {
             return back()->withErrors([$errorKey => 'No se puede dar de baja: '.$motivo]);
         }
-
-        $sucursal->update(['activa' => false]);
 
         return redirect()->route('sucursales.index')
             ->with('status', 'Sucursal dada de baja. Puede reactivarla cuando lo necesite.');

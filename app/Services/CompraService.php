@@ -75,28 +75,30 @@ class CompraService
      */
     public function anular(Compra $compra, User $usuario, ?string $motivo = null): void
     {
-        if ($compra->estaAnulada()) {
-            throw ValidationException::withMessages([
-                'compra' => 'Esta compra ya fue anulada.',
-            ]);
-        }
-
-        $compra->load('items.producto');
-
-        $faltantes = $compra->items->filter(fn (CompraItem $item): bool => $this->stock->disponible((int) $item->producto_id, (int) $compra->sucursal_id) < $item->cantidad);
-
-        if ($faltantes->isNotEmpty()) {
-            $nombres = $faltantes
-                ->map(fn (CompraItem $item): string => $item->producto?->nombre ?? "producto #{$item->producto_id}")
-                ->unique()
-                ->implode(', ');
-
-            throw ValidationException::withMessages([
-                'compra' => "No se puede anular: el stock ya no alcanza para revertir {$nombres}.",
-            ]);
-        }
-
         DB::transaction(function () use ($compra, $usuario, $motivo): void {
+            $compra = Compra::query()->lockForUpdate()->findOrFail($compra->id);
+
+            if ($compra->estaAnulada()) {
+                throw ValidationException::withMessages([
+                    'compra' => 'Esta compra ya fue anulada.',
+                ]);
+            }
+
+            $compra->load('items.producto');
+
+            $faltantes = $compra->items->filter(fn (CompraItem $item): bool => $this->stock->disponible((int) $item->producto_id, (int) $compra->sucursal_id) < $item->cantidad);
+
+            if ($faltantes->isNotEmpty()) {
+                $nombres = $faltantes
+                    ->map(fn (CompraItem $item): string => $item->producto?->nombre ?? "producto #{$item->producto_id}")
+                    ->unique()
+                    ->implode(', ');
+
+                throw ValidationException::withMessages([
+                    'compra' => "No se puede anular: el stock ya no alcanza para revertir {$nombres}.",
+                ]);
+            }
+
             $referencia = "Anulación compra #{$compra->id}";
 
             foreach ($compra->items as $item) {

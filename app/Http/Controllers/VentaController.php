@@ -21,6 +21,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VentaController extends Controller
@@ -65,9 +66,10 @@ class VentaController extends Controller
         $datos = $request->validated();
 
         $sucursalId = $usuario->esGerente() ? (int) $datos['sucursal_id'] : (int) $usuario->sucursal_id;
-        $clienteId = $this->clientes->resolver($datos);
 
-        $venta = DB::transaction(function () use ($datos, $sucursalId, $clienteId, $usuario) {
+        $venta = DB::transaction(function () use ($datos, $sucursalId, $usuario) {
+            $clienteId = $this->clientes->resolver($datos);
+
             $venta = Venta::create([
                 'sucursal_id' => $sucursalId,
                 'cliente_id' => $clienteId,
@@ -108,23 +110,25 @@ class VentaController extends Controller
         $usuario = $request->user();
         $this->autorizarSucursal($request, $venta);
 
-        if ($venta->tipo !== Venta::TIPO_VENTA) {
-            return back()->withErrors(['anular' => 'Solo se pueden anular ventas de productos.']);
-        }
+        DB::transaction(function () use ($venta, $usuario): void {
+            $venta = Venta::query()->lockForUpdate()->findOrFail($venta->id);
 
-        if ($venta->estado === Venta::ESTADO_ANULADA) {
-            return back()->withErrors(['anular' => 'La venta ya se encuentra anulada.']);
-        }
+            if ($venta->tipo !== Venta::TIPO_VENTA) {
+                throw ValidationException::withMessages(['anular' => 'Solo se pueden anular ventas de productos.']);
+            }
 
-        if ($venta->apartado()->exists()) {
-            return back()->withErrors(['anular' => 'La venta proviene de un apartado y no puede anularse desde aquí.']);
-        }
+            if ($venta->estado === Venta::ESTADO_ANULADA) {
+                throw ValidationException::withMessages(['anular' => 'La venta ya se encuentra anulada.']);
+            }
 
-        if ($venta->cambios()->exists()) {
-            return back()->withErrors(['anular' => 'La venta tiene cambios o devoluciones registrados; no puede anularse.']);
-        }
+            if ($venta->apartado()->exists()) {
+                throw ValidationException::withMessages(['anular' => 'La venta proviene de un apartado y no puede anularse desde aquí.']);
+            }
 
-        DB::transaction(function () use ($venta, $usuario) {
+            if ($venta->cambios()->exists()) {
+                throw ValidationException::withMessages(['anular' => 'La venta tiene cambios o devoluciones registrados; no puede anularse.']);
+            }
+
             foreach ($venta->items()->whereNotNull('producto_id')->get() as $item) {
                 $this->stock->mover($item->producto_id, $venta->sucursal_id, $item->cantidad, 'anulacion_venta', 'Anulación '.$venta->numero(), $usuario->id);
             }
@@ -214,6 +218,9 @@ class VentaController extends Controller
     private function listado($usuario, array $filtros): Builder
     {
         $buscar = (string) ($filtros['buscar'] ?? '');
+        $notaId = preg_match('/^(?:NV-)?0*(\d+)$/i', $buscar, $coincidencia) === 1
+            ? (int) $coincidencia[1]
+            : null;
 
         return Venta::query()
             ->with(['cliente', 'sucursal', 'usuario'])
@@ -226,7 +233,8 @@ class VentaController extends Controller
             ->when($filtros['hasta'] ?? null, fn (Builder $q) => $q->whereDate('fecha', '<=', $filtros['hasta']))
             ->when($buscar !== '', fn (Builder $q) => $q->where(fn (Builder $w) => $w
                 ->whereHas('cliente', fn (Builder $c) => $c->where('nombre', 'like', "%{$buscar}%"))
-                ->orWhereHas('items', fn (Builder $i) => $i->where('descripcion', 'like', "%{$buscar}%"))))
+                ->orWhereHas('items', fn (Builder $i) => $i->where('descripcion', 'like', "%{$buscar}%"))
+                ->orWhere('id', $notaId ?? 0)))
             ->latest('fecha')
             ->latest('id');
     }

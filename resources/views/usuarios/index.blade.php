@@ -38,8 +38,8 @@
         <label for="f-activo" class="label">Estado</label>
         <select id="f-activo" name="activo" class="input">
             <option value="">Todos</option>
-            <option value="1" @selected(($filtros['activo'] ?? null) === true)>Activos</option>
-            <option value="0" @selected(($filtros['activo'] ?? null) === false)>Inactivos</option>
+            <option value="1" @selected((string) ($filtros['activo'] ?? '') === '1')>Activos</option>
+            <option value="0" @selected((string) ($filtros['activo'] ?? '') === '0')>Inactivos</option>
         </select>
     </div>
     <div class="flex items-end gap-2">

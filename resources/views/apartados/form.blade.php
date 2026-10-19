@@ -101,16 +101,16 @@
                 </div>
             </div>
 
-            <div>
-                <label for="producto_id" class="label">Producto</label>
-                <select id="producto_id" name="producto_id" class="input" required>
-                    <option value="">Seleccione…</option>
-                    @foreach ($productos as $producto)
-                        <option value="{{ $producto->id }}" @selected(old('producto_id') == $producto->id)>{{ $producto->nombre }} · Bs {{ number_format($producto->precio_venta, 2, ',', '.') }}</option>
-                    @endforeach
-                </select>
-                @error('producto_id') <p class="error-texto">{{ $message }}</p> @enderror
-            </div>
+            <x-producto-picker
+                label="Producto"
+                :value="old('producto_id')"
+                :producto="$productoSeleccionado"
+                :stock="$stockSeleccionado"
+                :url="route('productos.opciones')"
+                :sucursal-id="$sucursalSeleccionadaId"
+                sucursal-selector="#sucursal_id"
+                required
+            />
         </section>
 
         <section class="space-y-4">
@@ -145,6 +145,7 @@
 </form>
 
 @if (! $apartado->exists)
+@vite('resources/js/producto-picker.js')
 <script>
     (function () {
         var nuevo = document.getElementById('cliente-nuevo');

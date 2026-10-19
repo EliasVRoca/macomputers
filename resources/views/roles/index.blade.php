@@ -4,7 +4,9 @@
 @section('encabezado', 'Roles y permisos')
 @section('subtitulo', 'Cada rol define a qué módulos puede acceder su personal.')
 @section('acciones')
-    <a href="{{ route('roles.create') }}" class="btn btn-primary"><x-icon name="plus" class="size-4" /> Nuevo rol</a>
+    @if (auth()->user()->esGerente())
+        <a href="{{ route('roles.create') }}" class="btn btn-primary"><x-icon name="plus" class="size-4" /> Nuevo rol</a>
+    @endif
 @endsection
 
 @section('contenido')
@@ -27,17 +29,19 @@
                 <td>{{ $rol->es_sistema ? 'Todos' : count($rol->permisos ?? []) }}</td>
                 <td>{{ $rol->users_count }}</td>
                 <td>
-                    <div class="flex justify-end gap-1">
-                        <a href="{{ route('roles.edit', $rol) }}" class="btn btn-ghost btn-icon" title="{{ $rol->es_sistema ? 'Ver' : 'Editar' }}" aria-label="{{ $rol->es_sistema ? 'Ver' : 'Editar' }}">
-                            <x-icon :name="$rol->es_sistema ? 'eye' : 'pencil'" class="size-4" />
-                        </a>
-                        @unless ($rol->es_sistema)
-                            <form method="POST" action="{{ route('roles.destroy', $rol) }}" onsubmit="return confirm('¿Eliminar el rol {{ $rol->nombre }}?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-ghost btn-icon text-danger" title="Eliminar" aria-label="Eliminar"><x-icon name="trash" class="size-4" /></button>
-                            </form>
-                        @endunless
-                    </div>
+                    @if (auth()->user()->esGerente())
+                        <div class="flex justify-end gap-1">
+                            <a href="{{ route('roles.edit', $rol) }}" class="btn btn-ghost btn-icon" title="{{ $rol->es_sistema ? 'Ver' : 'Editar' }}" aria-label="{{ $rol->es_sistema ? 'Ver' : 'Editar' }}">
+                                <x-icon :name="$rol->es_sistema ? 'eye' : 'pencil'" class="size-4" />
+                            </a>
+                            @unless ($rol->es_sistema)
+                                <form method="POST" action="{{ route('roles.destroy', $rol) }}" data-confirm="¿Eliminar el rol {{ $rol->nombre }}?">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn btn-ghost btn-icon text-danger" title="Eliminar" aria-label="Eliminar"><x-icon name="trash" class="size-4" /></button>
+                                </form>
+                            @endunless
+                        </div>
+                    @endif
                 </td>
             </tr>
         @empty

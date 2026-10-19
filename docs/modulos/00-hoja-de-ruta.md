@@ -39,7 +39,7 @@ documento debe reflejar fielmente lo que la aplicación hace.
 | RF18 | Consultar y exportar reportes | — *(transversal)* | Exportación dentro de los módulos | ✅ |
 | RF19 | Gestionar perfil de cuenta propia *(nuevo)* | CU18 *(nuevo)* | Sesión · Perfil | ✅ (sin RF/CU aún) |
 | RF20 | Buscar producto (buscador inteligente) *(extensión)* | CU19 *(extensión)* | 🔧 Módulo estrella | ✅ |
-| RF21 | Consultar panel de inicio *(extensión, opcional)* | CU20 *(extensión)* | 🔧 Dashboard | ⬜ |
+| RF21 | Consultar panel de inicio *(extensión, opcional)* | CU20 *(extensión)* | 🔧 Dashboard | ✅ |
 
 > **RF18 (reportes):** por criterio del docente, los reportes **no son un caso de uso ni un módulo
 > propio**, porque solo presentan/exportan datos. Se resuelven como **acciones de exportación**
@@ -202,7 +202,7 @@ documento debe reflejar fielmente lo que la aplicación hace.
 | **Imágenes de producto** | `producto_imagenes` (principal + galería). | Soporte RF20 | ✅ |
 | **Atributos / ficha técnica** | `producto_atributos` para búsqueda por atributos y cálculo de similitud. | Soporte RF20 | ✅ |
 | **Log de búsquedas** | `busquedas_producto` (término, sucursal, usuario, fecha, resultado). | Soporte RF20 | ✅ |
-| **Panel de inicio (dashboard)** | Indicadores básicos (disponibilidad, bajo mínimo, ventas recientes). | RF21 / CU20 | ⬜ |
+| **Panel de inicio (dashboard)** | 5 tarjetas: ventas del día, bajo mínimo global, OT pendientes/listas, traspasos y búsquedas sin resultado; selector de sucursal para gerente. | RF21 / CU20 | ✅ |
 | **Anulación de traspasos** | Reverso de un traspaso ya registrado (las **compras** ya se anulan). | — | ⬜ |
 
 **Checklist del módulo estrella (RF20 / CU19)**

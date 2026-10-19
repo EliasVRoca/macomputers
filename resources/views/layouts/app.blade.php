@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('titulo', 'Inicio') · M&amp;A Computers</title>
+    <title>{{ $__env->yieldContent('titulo', 'Inicio') }} · M&amp;A Computers</title>
     <link rel="icon" href="{{ asset('images/logo-mark.jpg') }}">
     <script>
         (function () {
@@ -20,7 +20,7 @@
 @php
     $usuario = auth()->user();
     $grupos = \App\Support\Menu::para($usuario);
-    $grupoActivo = collect($grupos)->firstWhere('activo', true) ?? ($grupos[0] ?? null);
+    $grupoActivo = collect($grupos)->firstWhere('activo', true);
     $moduloActivo = $grupoActivo ? collect($grupoActivo['modulos'])->firstWhere('activo', true) : null;
 @endphp
 
@@ -70,26 +70,28 @@
         </div>
     </nav>
 
-    {{-- Panel contextual --}}
-    <aside class="panel sticky top-0 hidden h-screen overflow-y-auto md:flex" data-panel aria-label="Módulos">
-        @foreach ($grupos as $grupo)
-            <div data-panel-grupo="{{ $grupo['nombre'] }}" @if (! $grupo['activo']) hidden @endif>
-                <p class="panel-title">{{ $grupo['nombre'] }}</p>
-                <ul class="space-y-0.5 px-2 pb-4">
-                    @foreach ($grupo['modulos'] as $modulo)
-                        <li>
-                            <a href="{{ route($modulo['route']) }}"
-                               @if ($modulo['activo']) aria-current="page" @endif
-                               class="nav-link {{ $modulo['activo'] ? 'active' : '' }}">
-                                <x-icon :name="$modulo['icon']" class="size-4 shrink-0" />
-                                {{ $modulo['label'] }}
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-        @endforeach
-    </aside>
+    @if ($grupoActivo)
+        {{-- Panel contextual --}}
+        <aside class="panel sticky top-0 hidden h-screen overflow-y-auto md:flex" data-panel aria-label="Módulos">
+            @foreach ($grupos as $grupo)
+                <div data-panel-grupo="{{ $grupo['nombre'] }}" @if (! $grupo['activo']) hidden @endif>
+                    <p class="panel-title">{{ $grupo['nombre'] }}</p>
+                    <ul class="space-y-0.5 px-2 pb-4">
+                        @foreach ($grupo['modulos'] as $modulo)
+                            <li>
+                                <a href="{{ route($modulo['route']) }}"
+                                   @if ($modulo['activo']) aria-current="page" @endif
+                                   class="nav-link {{ $modulo['activo'] ? 'active' : '' }}">
+                                    <x-icon :name="$modulo['icon']" class="size-4 shrink-0" />
+                                    {{ $modulo['label'] }}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endforeach
+        </aside>
+    @endif
 
     {{-- Contenido --}}
     <div class="flex min-w-0 flex-1 flex-col">
@@ -161,9 +163,9 @@
 
             <header class="mb-8 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <h1 class="text-2xl font-medium tracking-tight lg:text-3xl">@yield('encabezado', 'Inicio')</h1>
+                    <h1 class="text-2xl font-medium tracking-tight lg:text-3xl">{{ $__env->yieldContent('encabezado', 'Inicio') }}</h1>
                     @hasSection('subtitulo')
-                        <p class="mt-1 text-sm text-ink-muted">@yield('subtitulo')</p>
+                        <p class="mt-1 text-sm text-ink-muted">{{ $__env->yieldContent('subtitulo') }}</p>
                     @endif
                 </div>
                 @hasSection('acciones')

@@ -32,12 +32,12 @@ class GuardarApartadoRequest extends FormRequest
 
         return [
             'modo_cliente' => ['nullable', Rule::in(['existente', 'nuevo'])],
-            'cliente_id' => ['nullable', 'required_if:modo_cliente,existente', 'integer', Rule::exists('clientes', 'id')],
+            'cliente_id' => ['nullable', 'required_if:modo_cliente,existente', 'integer', Rule::exists('clientes', 'id')->where('activo', true)],
             'cliente_nombre' => ['nullable', 'required_if:modo_cliente,nuevo', 'string', 'max:150'],
             'cliente_telefono' => ['nullable', 'string', 'max:30'],
             'cliente_carnet' => ['nullable', 'string', 'max:30', Rule::unique('clientes', 'carnet')],
-            'sucursal_id' => [$esGerente ? 'required' : 'nullable', 'integer', Rule::exists('sucursales', 'id')],
-            'producto_id' => ['required', 'integer', Rule::exists('productos', 'id')],
+            'sucursal_id' => [$esGerente ? 'required' : 'nullable', 'integer', Rule::exists('sucursales', 'id')->where('activa', true)],
+            'producto_id' => ['required', 'integer', Rule::exists('productos', 'id')->where('activo', true)],
             'cantidad' => ['required', 'integer', 'min:1'],
             'sena' => ['required', 'numeric', 'min:0'],
             'fecha' => ['required', 'date_format:Y-m-d'],

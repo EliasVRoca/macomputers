@@ -37,7 +37,7 @@ class GuardarServicioRequest extends FormRequest
             'cliente_nombre' => ['nullable', 'required_if:modo_cliente,nuevo', 'string', 'max:150'],
             'cliente_telefono' => ['nullable', 'string', 'max:30'],
             'cliente_carnet' => ['nullable', 'string', 'max:30', Rule::unique('clientes', 'carnet')],
-            'sucursal_id' => [$esGerente ? 'required' : 'nullable', 'integer', Rule::exists('sucursales', 'id')],
+            'sucursal_id' => [$esGerente ? 'required' : 'nullable', 'integer', Rule::exists('sucursales', 'id')->where('activa', true)],
             'tecnico_id' => ['nullable', 'integer', Rule::exists('users', 'id')->where('activo', true)],
             'equipo' => ['required', 'string', 'max:150'],
             'diagnostico' => ['nullable', 'string', 'max:1000'],

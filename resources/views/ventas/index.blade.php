@@ -9,7 +9,7 @@
 @endsection
 
 @section('contenido')
-<form method="GET" action="{{ route('ventas.index') }}" class="card card-pad mb-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+<form method="GET" action="{{ route('ventas.index') }}" class="card card-pad mb-4 grid gap-3 sm:grid-cols-3 lg:grid-cols-8">
     <div class="sm:col-span-3 lg:col-span-2">
         <label for="buscar" class="label">Buscar</label>
         <input type="search" id="buscar" name="buscar" value="{{ $filtros['buscar'] ?? '' }}" placeholder="Nota, cliente o producto" class="input">
@@ -41,6 +41,14 @@
             <option value="activa" @selected(($filtros['estado'] ?? null) === 'activa')>Activa</option>
             <option value="anulada" @selected(($filtros['estado'] ?? null) === 'anulada')>Anulada</option>
         </select>
+    </div>
+    <div>
+        <label for="f-desde" class="label">Desde</label>
+        <input id="f-desde" name="desde" type="date" value="{{ $filtros['desde'] ?? '' }}" class="input">
+    </div>
+    <div>
+        <label for="f-hasta" class="label">Hasta</label>
+        <input id="f-hasta" name="hasta" type="date" value="{{ $filtros['hasta'] ?? '' }}" class="input">
     </div>
     <div class="flex items-end gap-2">
         <button type="submit" class="btn btn-secondary"><x-icon name="search" class="size-4" /> Filtrar</button>

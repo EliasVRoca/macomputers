@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Sucursal;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Reglas de baja lógica de sucursales.
@@ -29,5 +30,32 @@ class SucursalService
         }
 
         return null;
+    }
+
+    public function desactivar(Sucursal $sucursal): ?string
+    {
+        return DB::transaction(function () use ($sucursal): ?string {
+            Sucursal::query()
+                ->where('activa', true)
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+
+            $sucursal = Sucursal::query()->lockForUpdate()->findOrFail($sucursal->id);
+
+            if (! $sucursal->activa) {
+                return null;
+            }
+
+            $motivo = $this->motivoNoDesactivable($sucursal);
+
+            if ($motivo !== null) {
+                return $motivo;
+            }
+
+            $sucursal->update(['activa' => false]);
+
+            return null;
+        });
     }
 }

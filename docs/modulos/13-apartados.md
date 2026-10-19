@@ -23,6 +23,8 @@ Resource `apartados` `except('destroy')` con `permiso:apartados`: `index`, `crea
 `edit`, `update`. Además `GET /apartados/export` (`apartados.export`) y
 `PATCH /apartados/{apartado}/cancelar` (`apartados.cancelar`).
 
+El selector de producto consume `GET /productos/opciones` (`productos.opciones`; ver módulo 06).
+
 ## 4. Capas y archivos
 
 `app/Http/Controllers/ApartadoController.php` · `StockService` · `ClienteService` ·
@@ -52,6 +54,12 @@ vistas `resources/views/apartados/{index,form,show}.blade.php`.
 `.tabla` con acciones pagar/ver; `.badge` de estado (activo/completado/cancelado); `show` con detalle
 y formulario de cancelación; `form` compartido alta/pago con alta de cliente en línea.
 
+El producto se elige con `<x-producto-picker>` (`resources/js/producto-picker.js`), un combobox con
+búsqueda remota contra `productos.opciones` (nombre/código/marca/modelo, debounce y navegación por
+teclado). Ya no se carga el catálogo completo en el HTML. Muestra precio y **stock de la sucursal**;
+si es 0 lo advierte en rojo, pero deja elegir y el servidor sigue validando el stock al guardar. Al
+cambiar de sucursal se limpia la selección para evitar datos desactualizados.
+
 ## 8. Estado
 
 - ✅ Crear (reserva stock), registrar pagos, **cancelar** (libera stock + retención de seña).
@@ -66,7 +74,8 @@ y formulario de cancelación; `form` compartido alta/pago con alta de cliente en
 
 `StockTest.php` (`test_apartado_reserva_stock_y_al_eliminarlo_se_libera`, `test_apartado_se_completa_al_pagar_el_saldo`),
 `ModulosVentasTest.php` (`test_apartado_con_sena_total_se_completa_y_genera_venta`,
-`test_apartado_cancelar_libera_stock_y_retiene_sena`), `FormulariosTest.php`, `PantallasTest.php`.
+`test_apartado_cancelar_libera_stock_y_retiene_sena`), `ProductoOpcionesTest.php` (búsqueda remota,
+stock por sucursal y selección previa), `FormulariosTest.php`, `PantallasTest.php`.
 
 ## 10. Decisiones y restricciones acordadas ⚠️
 

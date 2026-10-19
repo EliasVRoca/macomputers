@@ -23,11 +23,11 @@ class GuardarTraspasoRequest extends FormRequest
         $esGerente = $this->user()?->esGerente() === true;
 
         return [
-            'sucursal_origen_id' => [$esGerente ? 'required' : 'nullable', 'integer', Rule::exists('sucursales', 'id')],
-            'sucursal_destino_id' => ['required', 'integer', Rule::exists('sucursales', 'id')],
+            'sucursal_origen_id' => [$esGerente ? 'required' : 'nullable', 'integer', Rule::exists('sucursales', 'id')->where('activa', true)],
+            'sucursal_destino_id' => ['required', 'integer', Rule::exists('sucursales', 'id')->where('activa', true)],
             'fecha' => ['required', 'date_format:Y-m-d'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.producto_id' => ['required', 'integer', Rule::exists('productos', 'id')],
+            'items.*.producto_id' => ['required', 'integer', Rule::exists('productos', 'id')->where('activo', true)],
             'items.*.cantidad' => ['required', 'integer', 'min:1'],
         ];
     }

@@ -38,6 +38,10 @@ class UsuarioController extends Controller
     {
         $datos = $request->validated();
 
+        if (! $request->user()->esGerente() && Role::query()->whereKey($datos['role_id'])->where('es_sistema', true)->exists()) {
+            return back()->withErrors(['role_id' => 'Solo un gerente puede asignar el rol de sistema.'])->withInput();
+        }
+
         DB::transaction(function () use ($datos) {
             $persona = Persona::create($this->datosPersona($datos));
             User::create([...$this->datosCuenta($datos), 'persona_id' => $persona->id]);
@@ -46,14 +50,32 @@ class UsuarioController extends Controller
         return redirect()->route('usuarios.index')->with('status', 'Usuario registrado.');
     }
 
-    public function edit(User $usuario): View
+    public function edit(Request $request, User $usuario): View
     {
+        $this->autorizarGestionUsuario($request, $usuario);
+
         return $this->formulario($usuario, $usuario->persona ?? new Persona, route('usuarios.update', $usuario), 'PUT');
     }
 
     public function update(GuardarUsuarioRequest $request, User $usuario): RedirectResponse
     {
+        $this->autorizarGestionUsuario($request, $usuario);
+
         $datos = $request->validated();
+        $nuevoRol = Role::query()->find($datos['role_id']);
+        $nuevoActivo = (bool) ($datos['activo'] ?? false);
+
+        if (! $request->user()->esGerente() && $nuevoRol?->es_sistema) {
+            return back()->withErrors(['role_id' => 'Solo un gerente puede asignar el rol de sistema.'])->withInput();
+        }
+
+        if ($usuario->is($request->user()) && (int) $datos['role_id'] !== (int) $usuario->role_id) {
+            return back()->withErrors(['role_id' => 'No puede cambiar su propio rol.'])->withInput();
+        }
+
+        if ($this->esUltimoGerenteActivo($usuario) && ((int) $datos['role_id'] !== (int) $usuario->role_id || ! $nuevoActivo)) {
+            return back()->withErrors(['role_id' => 'Debe quedar al menos un gerente activo en el sistema.'])->withInput();
+        }
 
         DB::transaction(function () use ($datos, $usuario) {
             $persona = $usuario->persona ?? new Persona;
@@ -75,8 +97,14 @@ class UsuarioController extends Controller
      */
     public function destroy(Request $request, User $usuario): RedirectResponse
     {
+        $this->autorizarGestionUsuario($request, $usuario);
+
         if ($request->user()->is($usuario)) {
             return back()->withErrors(['eliminar' => 'No puede dar de baja su propio usuario.']);
+        }
+
+        if ($this->esUltimoGerenteActivo($usuario)) {
+            return back()->withErrors(['eliminar' => 'Debe quedar al menos un gerente activo en el sistema.']);
         }
 
         $this->desactivar($usuario);
@@ -87,6 +115,8 @@ class UsuarioController extends Controller
 
     public function estado(CambiarEstadoUsuarioRequest $request, User $usuario): RedirectResponse
     {
+        $this->autorizarGestionUsuario($request, $usuario);
+
         if ($request->user()->is($usuario) && ! $request->boolean('activo')) {
             return back()->withErrors(['estado' => 'No puede desactivar su propia cuenta.']);
         }
@@ -95,6 +125,10 @@ class UsuarioController extends Controller
             $usuario->update(['activo' => true]);
 
             return redirect()->route('usuarios.index')->with('status', 'Usuario activado.');
+        }
+
+        if ($this->esUltimoGerenteActivo($usuario)) {
+            return back()->withErrors(['estado' => 'Debe quedar al menos un gerente activo en el sistema.']);
         }
 
         $this->desactivar($usuario);
@@ -109,6 +143,28 @@ class UsuarioController extends Controller
         DB::table('sessions')->where('user_id', $usuario->id)->delete();
     }
 
+    private function autorizarGestionUsuario(Request $request, User $usuario): void
+    {
+        abort_if(
+            $usuario->esGerente() && ! $request->user()->esGerente(),
+            403,
+            'Solo un gerente puede gestionar a un usuario gerente.',
+        );
+    }
+
+    private function esUltimoGerenteActivo(User $usuario): bool
+    {
+        if (! $usuario->esGerente() || ! $usuario->activo) {
+            return false;
+        }
+
+        return ! User::query()
+            ->whereKeyNot($usuario->id)
+            ->where('activo', true)
+            ->whereHas('role', fn (Builder $query) => $query->where('es_sistema', true))
+            ->exists();
+    }
+
     private function formulario(User $usuario, Persona $persona, string $accion, string $metodo): View
     {
         return view('usuarios.form', [
@@ -116,7 +172,9 @@ class UsuarioController extends Controller
             'persona' => $persona,
             'accion' => $accion,
             'metodo' => $metodo,
-            'roles' => Role::orderBy('nombre')->get(),
+            'roles' => auth()->user()?->esGerente()
+                ? Role::orderBy('nombre')->get()
+                : Role::where('es_sistema', false)->orderBy('nombre')->get(),
             'sucursales' => Sucursal::orderBy('nombre')->get(),
         ]);
     }

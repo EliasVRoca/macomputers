@@ -50,7 +50,7 @@
             <h2 class="text-sm font-medium">Anular compra</h2>
             <p class="text-sm text-ink-muted">Revierte el stock que ingresó esta compra. No se puede anular si la mercadería ya se vendió o traspasó.</p>
         </div>
-        <form method="POST" action="{{ route('compras.anular', $compra) }}" class="space-y-4" onsubmit="return confirm('¿Anular la compra #{{ $compra->id }}? Se revertirá el stock que ingresó.')">
+        <form method="POST" action="{{ route('compras.anular', $compra) }}" class="space-y-4" data-confirm="¿Anular la compra #{{ $compra->id }}? Se revertirá el stock que ingresó.">
             @csrf
             @method('PATCH')
             <div>
