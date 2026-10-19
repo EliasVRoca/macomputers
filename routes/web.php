@@ -10,6 +10,7 @@ use App\Http\Controllers\DisponibilidadController;
 use App\Http\Controllers\EncargoController;
 use App\Http\Controllers\InicioController;
 use App\Http\Controllers\InventarioController;
+use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\RolController;
@@ -34,10 +35,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/inicio', InicioController::class)->name('inicio');
 
     // Perfil personal (cada usuario administra su propia cuenta)
-    Route::get('/perfil', [\App\Http\Controllers\PerfilController::class, 'edit'])->name('perfil.edit');
-    Route::put('/perfil', [\App\Http\Controllers\PerfilController::class, 'update'])->name('perfil.update');
-    Route::put('/perfil/password', [\App\Http\Controllers\PerfilController::class, 'password'])->name('perfil.password');
-    Route::delete('/perfil/sesiones', [\App\Http\Controllers\PerfilController::class, 'sesiones'])->name('perfil.sesiones');
+    Route::get('/perfil', [PerfilController::class, 'edit'])->name('perfil.edit');
+    Route::put('/perfil', [PerfilController::class, 'update'])->name('perfil.update');
+    Route::put('/perfil/password', [PerfilController::class, 'password'])->name('perfil.password');
+    Route::delete('/perfil/sesiones', [PerfilController::class, 'sesiones'])->name('perfil.sesiones');
 
     // Administración (solo Gerente por defecto)
     Route::resource('usuarios', UsuarioController::class)->except('show')->middleware('permiso:usuarios');
@@ -55,6 +56,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/inventario', [InventarioController::class, 'index'])->name('inventario.index')->middleware('permiso:inventario');
     Route::get('/inventario/sucursal/{sucursal}', [InventarioController::class, 'sucursal'])->name('inventario.sucursal')->middleware('permiso:inventario');
     Route::post('/inventario/movimientos', [InventarioController::class, 'movimiento'])->name('inventario.movimientos.store')->middleware('permiso:inventario');
+    Route::get('/inventario/kardex/export', [InventarioController::class, 'exportKardex'])->name('inventario.kardex.export')->middleware('permiso:inventario');
+    Route::get('/inventario/existencias/export', [InventarioController::class, 'exportExistencias'])->name('inventario.existencias.export')->middleware('permiso:inventario');
+    Route::post('/inventario/traer', [InventarioController::class, 'traer'])->name('inventario.traer')->middleware('permiso:traspasos');
 
     Route::resource('traspasos', TraspasoController::class)->only(['index', 'create', 'store', 'show'])->middleware('permiso:traspasos');
     Route::resource('compras', CompraController::class)->only(['index', 'create', 'store', 'show'])->middleware('permiso:compras');
@@ -67,6 +71,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('cambios', CambioController::class)->only(['index', 'create', 'store', 'show'])->middleware('permiso:cambios');
     Route::resource('clientes', ClienteController::class)->except('show')->middleware('permiso:clientes');
 
-    // Servicio técnico (registrado como venta de servicio)
-    Route::resource('servicios', ServicioController::class)->except('show')->middleware('permiso:servicios');
+    // Servicio técnico (orden de trabajo, registrada como venta de servicio)
+    Route::resource('servicios', ServicioController::class)->middleware('permiso:servicios');
+    Route::patch('/servicios/{servicio}/estado', [ServicioController::class, 'cambiarEstado'])->name('servicios.estado')->middleware('permiso:servicios');
+    Route::post('/servicios/{servicio}/repuestos', [ServicioController::class, 'agregarRepuesto'])->name('servicios.repuestos.store')->middleware('permiso:servicios');
+    Route::delete('/servicios/{servicio}/repuestos/{repuesto}', [ServicioController::class, 'quitarRepuesto'])->name('servicios.repuestos.destroy')->middleware('permiso:servicios');
+    Route::get('/servicios/{servicio}/imprimir', [ServicioController::class, 'imprimir'])->name('servicios.imprimir')->middleware('permiso:servicios');
 });

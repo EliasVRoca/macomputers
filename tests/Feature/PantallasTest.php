@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Apartado;
+use App\Models\Cambio;
 use App\Models\Categoria;
 use App\Models\Cliente;
 use App\Models\Compra;
@@ -79,7 +80,7 @@ class PantallasTest extends TestCase
 
         $this->actingAs($gerente)->post(route('servicios.store'), [
             'modo_cliente' => 'existente', 'cliente_id' => $cliente->id, 'sucursal_id' => $segunda->id, 'equipo' => 'Laptop HP',
-            'diagnostico' => 'Limpieza', 'costo' => 150, 'estado' => 'recibido',
+            'diagnostico' => 'Limpieza', 'mano_de_obra' => 150, 'prioridad' => 'normal', 'fecha_recepcion' => now()->toDateString(),
         ])->assertRedirect();
         $servicio = Servicio::firstOrFail();
 
@@ -101,7 +102,7 @@ class PantallasTest extends TestCase
             'encargos.index', 'encargos.create', 'encargos.edit',
             'cambios.index', 'cambios.create', 'cambios.show',
             'clientes.index', 'clientes.create', 'clientes.edit',
-            'servicios.index', 'servicios.create', 'servicios.edit',
+            'servicios.index', 'servicios.create', 'servicios.edit', 'servicios.show', 'servicios.imprimir',
         ];
 
         $parametros = [
@@ -116,9 +117,11 @@ class PantallasTest extends TestCase
             'ventas.show' => [$venta],
             'apartados.edit' => [$apartado],
             'encargos.edit' => [$encargo],
-            'cambios.show' => [\App\Models\Cambio::firstOrFail()],
+            'cambios.show' => [Cambio::firstOrFail()],
             'clientes.edit' => [$cliente],
             'servicios.edit' => [$servicio],
+            'servicios.show' => [$servicio],
+            'servicios.imprimir' => [$servicio],
         ];
 
         foreach ($rutas as $ruta) {

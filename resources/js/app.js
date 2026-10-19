@@ -166,3 +166,134 @@ document.addEventListener('click', (event) => {
         }
     });
 })();
+
+// ------------------------------------------------------------- Modales
+(function () {
+    document.addEventListener('click', (event) => {
+        const abridor = event.target.closest('[data-modal-abrir]');
+        if (abridor) {
+            document.getElementById(abridor.dataset.modalAbrir)?.showModal();
+            return;
+        }
+
+        const cerrador = event.target.closest('[data-modal-cerrar]');
+        if (cerrador) {
+            cerrador.closest('dialog')?.close();
+        }
+    });
+
+    // Cierra al hacer clic fuera del contenido del modal.
+    document.querySelectorAll('dialog.modal').forEach((dialog) => {
+        dialog.addEventListener('click', (event) => {
+            if (event.target === dialog) {
+                dialog.close();
+            }
+        });
+    });
+})();
+
+// ------------------------------ Previsualización del saldo (movimiento)
+(function () {
+    const form = document.querySelector('[data-preview-movimiento]');
+    const datos = document.getElementById('stock-datos');
+
+    if (!form || !datos) {
+        return;
+    }
+
+    const mapa = JSON.parse(datos.textContent || '{}');
+    const producto = form.querySelector('[data-preview-producto]');
+    const sucursal = form.querySelector('[data-preview-sucursal]');
+    const tipo = form.querySelector('[data-preview-tipo]');
+    const cantidad = form.querySelector('[data-preview-cantidad]');
+    const salida = form.querySelector('[data-preview-salida]');
+
+    const neutro = 'rounded-lg bg-surface-2 px-3 py-2 text-sm text-ink-muted';
+
+    const pintar = () => {
+        const pid = producto.value;
+        const sid = sucursal ? sucursal.value : '';
+        const n = parseInt(cantidad.value, 10);
+
+        if (!pid || !sid || !Number.isInteger(n) || n < 0) {
+            salida.textContent = 'Elige producto, sucursal y cantidad para ver el saldo resultante.';
+            salida.className = neutro;
+            return;
+        }
+
+        const actual = Number((mapa[pid] || {})[sid] || 0);
+        let resultado = n;
+
+        if (tipo.value === 'entrada') {
+            resultado = actual + n;
+        } else if (tipo.value === 'salida') {
+            resultado = actual - n;
+        }
+
+        if (resultado < 0) {
+            salida.textContent = `No alcanza: hay ${actual} y quieres sacar ${n}.`;
+            salida.className = 'rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger';
+        } else {
+            salida.textContent = `Saldo resultante: ${resultado} (ahora hay ${actual}).`;
+            salida.className = 'rounded-lg bg-surface-2 px-3 py-2 text-sm text-ink';
+        }
+    };
+
+    form.addEventListener('input', pintar);
+    form.addEventListener('change', pintar);
+    pintar();
+})();
+
+// ------------------------------------------- Traer de la otra sucursal
+(function () {
+    const dialog = document.getElementById('modal-traspaso');
+
+    if (!dialog) {
+        return;
+    }
+
+    const sucursales = JSON.parse(document.getElementById('sucursales-datos')?.textContent || '{}');
+    const esGerente = dialog.dataset.gerente === '1';
+    const campoProducto = dialog.querySelector('[name="producto_id"]');
+    const nombre = dialog.querySelector('[data-traspaso-nombre]');
+    const origen = dialog.querySelector('[name="sucursal_origen_id"]');
+    const destino = dialog.querySelector('[name="sucursal_destino_id"]');
+
+    const ajustarDestino = () => {
+        if (!esGerente || !destino || destino.tagName !== 'SELECT') {
+            return;
+        }
+
+        Array.from(destino.options).forEach((opcion) => {
+            opcion.disabled = opcion.value === origen.value;
+        });
+
+        if (destino.value === origen.value) {
+            const otra = Array.from(destino.options).find((opcion) => opcion.value !== origen.value);
+            if (otra) {
+                destino.value = otra.value;
+            }
+        }
+    };
+
+    document.addEventListener('click', (event) => {
+        const boton = event.target.closest('[data-traer]');
+        if (!boton) {
+            return;
+        }
+
+        const info = JSON.parse(boton.dataset.traer);
+        campoProducto.value = info.producto;
+        nombre.textContent = info.nombre;
+
+        origen.innerHTML = Object.entries(info.stock)
+            .filter(([, stock]) => Number(stock) > 0)
+            .map(([sid, stock]) => `<option value="${sid}">${sucursales[sid] ?? sid} (${stock} disp.)</option>`)
+            .join('');
+
+        ajustarDestino();
+        dialog.showModal();
+    });
+
+    origen.addEventListener('change', ajustarDestino);
+})();

@@ -48,7 +48,7 @@
                     <tr>
                         <td class="whitespace-nowrap text-xs text-ink-muted">{{ $mov->created_at->format('d/m/Y H:i') }}</td>
                         <td>{{ $mov->producto?->nombre }}</td>
-                        <td><span class="badge badge-neutral">{{ str_replace('_', ' ', $mov->tipo) }}</span></td>
+                        <td><span class="badge badge-neutral">{{ \App\Enums\TipoMovimiento::desde($mov->tipo)->etiqueta() }}</span></td>
                         <td class="text-right tabular-nums {{ $mov->cantidad < 0 ? 'text-danger' : 'text-ok' }}">{{ $mov->cantidad > 0 ? '+' : '' }}{{ $mov->cantidad }}</td>
                     </tr>
                 @empty

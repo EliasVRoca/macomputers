@@ -276,4 +276,39 @@
     .kpi-icon {
         @apply flex h-10 w-10 items-center justify-center rounded-lg bg-surface-2 text-ink-muted;
     }
+
+    /* Pestañas */
+    .tabs {
+        @apply flex flex-wrap gap-1 border-b border-hairline;
+    }
+
+    .tab {
+        @apply -mb-px border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-ink-muted transition-colors hover:text-ink;
+    }
+
+    .tab.activa {
+        @apply border-brand text-brand;
+    }
+
+    /* Modales */
+    .modal {
+        @apply w-[min(560px,92vw)] rounded-xl border border-hairline bg-surface-1 p-0 text-ink;
+        margin: 10vh auto auto;
+    }
+
+    .modal::backdrop {
+        background: rgb(0 0 0 / 0.45);
+    }
+
+    .modal-cabecera {
+        @apply flex items-center justify-between gap-3 border-b border-hairline px-5 py-4;
+    }
+
+    .modal-cuerpo {
+        @apply space-y-4 px-5 py-5;
+    }
+
+    .modal-pie {
+        @apply flex justify-end gap-2 border-t border-hairline px-5 py-4;
+    }
 }

@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Apartado;
-use App\Models\Categoria;
 use App\Models\Cambio;
+use App\Models\Categoria;
 use App\Models\Cliente;
 use App\Models\Compra;
 use App\Models\Encargo;
@@ -189,20 +189,22 @@ class FormulariosTest extends TestCase
 
         $this->actingAs($this->tecnico)->post(route('servicios.store'), [
             'modo_cliente' => 'existente', 'cliente_id' => $cliente->id, 'equipo' => 'Laptop HP', 'diagnostico' => 'Limpieza interna',
-            'costo' => 150, 'estado' => 'recibido',
-        ])->assertRedirect(route('servicios.index'));
+            'mano_de_obra' => 150, 'prioridad' => 'normal', 'fecha_recepcion' => now()->toDateString(),
+        ])->assertRedirect();
 
         $servicio = Servicio::firstOrFail();
         $this->assertSame('recibido', $servicio->estado);
         $this->assertSame('servicio', $servicio->venta->tipo);
         $this->assertSame(150.0, (float) $servicio->venta->total);
+        $this->assertMatchesRegularExpression('/^OT-\d{6}$/', $servicio->numero);
 
         $this->actingAs($this->tecnico)->put(route('servicios.update', $servicio), [
-            'equipo' => 'Laptop HP', 'diagnostico' => 'Limpieza interna', 'costo' => 200, 'estado' => 'entregado',
-        ])->assertRedirect(route('servicios.index'));
+            'equipo' => 'Laptop HP', 'diagnostico' => 'Limpieza interna', 'mano_de_obra' => 200,
+            'prioridad' => 'alta', 'fecha_recepcion' => now()->toDateString(),
+        ])->assertRedirect();
 
-        $this->assertSame('entregado', $servicio->fresh()->estado);
         $this->assertSame(200.0, (float) $servicio->fresh()->venta->total);
+        $this->assertSame('alta', $servicio->fresh()->prioridad);
     }
 
     public function test_tecnico_registra_servicio_creando_el_cliente(): void
@@ -213,8 +215,8 @@ class FormulariosTest extends TestCase
             'cliente_telefono' => '70055555',
             'cliente_carnet' => '9988776',
             'equipo' => 'PC de escritorio', 'diagnostico' => 'Formateo e instalación',
-            'costo' => 250, 'estado' => 'recibido',
-        ])->assertRedirect(route('servicios.index'));
+            'mano_de_obra' => 250, 'prioridad' => 'normal', 'fecha_recepcion' => now()->toDateString(),
+        ])->assertRedirect();
 
         $cliente = Cliente::where('carnet', '9988776')->firstOrFail();
         $servicio = Servicio::firstOrFail();
@@ -228,7 +230,8 @@ class FormulariosTest extends TestCase
     public function test_cliente_nuevo_sin_nombre_es_rechazado(): void
     {
         $this->actingAs($this->tecnico)->post(route('servicios.store'), [
-            'modo_cliente' => 'nuevo', 'equipo' => 'PC', 'costo' => 100, 'estado' => 'recibido',
+            'modo_cliente' => 'nuevo', 'equipo' => 'PC', 'mano_de_obra' => 100,
+            'prioridad' => 'normal', 'fecha_recepcion' => now()->toDateString(),
         ])->assertSessionHasErrors('cliente_nombre');
 
         $this->assertDatabaseCount('clientes', 0);
@@ -241,7 +244,7 @@ class FormulariosTest extends TestCase
 
         $this->actingAs($this->tecnico)->post(route('servicios.store'), [
             'modo_cliente' => 'nuevo', 'cliente_nombre' => 'Otro Cliente', 'cliente_carnet' => '1111111',
-            'equipo' => 'PC', 'costo' => 100, 'estado' => 'recibido',
+            'equipo' => 'PC', 'mano_de_obra' => 100, 'prioridad' => 'normal', 'fecha_recepcion' => now()->toDateString(),
         ])->assertSessionHasErrors('cliente_carnet');
 
         $this->assertDatabaseCount('clientes', 1);

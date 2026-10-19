@@ -5,19 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Producto;
 use App\Models\Sucursal;
 use App\Models\Traspaso;
-use App\Models\TraspasoItem;
-use App\Services\StockService;
+use App\Services\TraspasoService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class TraspasoController extends Controller
 {
-    public function __construct(private StockService $stock)
-    {
-    }
+    public function __construct(private TraspasoService $traspasos) {}
 
     public function index(): View
     {
@@ -57,33 +53,7 @@ class TraspasoController extends Controller
         $origenId = $usuario->esGerente() ? (int) $datos['sucursal_origen_id'] : (int) $usuario->sucursal_id;
         $destinoId = (int) $datos['sucursal_destino_id'];
 
-        if ($origenId === $destinoId) {
-            return back()->withErrors(['sucursal_destino_id' => 'La sucursal de origen y la de destino son la misma.'])->withInput();
-        }
-
-        DB::transaction(function () use ($datos, $origenId, $destinoId, $usuario) {
-            $traspaso = Traspaso::create([
-                'sucursal_origen_id' => $origenId,
-                'sucursal_destino_id' => $destinoId,
-                'user_id' => $usuario->id,
-                'fecha' => $datos['fecha'],
-            ]);
-
-            foreach ($datos['items'] as $item) {
-                $productoId = (int) $item['producto_id'];
-                $cantidad = (int) $item['cantidad'];
-                $referencia = "Traspaso #{$traspaso->id}";
-
-                TraspasoItem::create([
-                    'traspaso_id' => $traspaso->id,
-                    'producto_id' => $productoId,
-                    'cantidad' => $cantidad,
-                ]);
-
-                $this->stock->mover($productoId, $origenId, -$cantidad, 'traspaso_salida', $referencia, $usuario->id);
-                $this->stock->mover($productoId, $destinoId, $cantidad, 'traspaso_entrada', $referencia, $usuario->id);
-            }
-        });
+        $this->traspasos->crear($origenId, $destinoId, $datos['items'], $usuario, $datos['fecha']);
 
         return redirect()->route('traspasos.index')->with('status', 'Traspaso registrado y stock actualizado en ambas sucursales.');
     }
