@@ -82,9 +82,11 @@
         </label>
     </section>
 
-    <div class="flex gap-2 border-t border-hairline pt-6">
+    <div class="flex flex-wrap gap-2 border-t border-hairline pt-6">
         <button type="submit" class="btn btn-primary"><x-icon name="check" class="size-4" /> Guardar</button>
+        <button type="submit" name="destino" value="imagenes" class="btn btn-secondary"><x-icon name="sparkles" class="size-4" /> Guardar y agregar imágenes</button>
         <a href="{{ route('productos.index') }}" class="btn btn-secondary">Cancelar</a>
     </div>
+    <p class="-mt-3 text-xs text-ink-subtle">Después de guardar podés subir imágenes o buscarlas en internet desde la ficha.</p>
 </form>
 @endsection

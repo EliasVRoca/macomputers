@@ -6,6 +6,7 @@ use App\Enums\CondicionProducto;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Producto extends Model
 {
@@ -40,6 +41,21 @@ class Producto extends Model
     public function movimientos(): HasMany
     {
         return $this->hasMany(MovimientoInventario::class);
+    }
+
+    public function imagenes(): HasMany
+    {
+        return $this->hasMany(ProductoImagen::class)->orderBy('orden')->orderBy('id');
+    }
+
+    public function imagenPrincipal(): HasOne
+    {
+        return $this->hasOne(ProductoImagen::class)->where('es_principal', true)->orderBy('orden');
+    }
+
+    public function atributos(): HasMany
+    {
+        return $this->hasMany(ProductoAtributo::class);
     }
 
     public function stockTotal(): int

@@ -1,103 +1,174 @@
 # 20 · Buscador inteligente de productos 🔧
 
-**Grupo:** Módulo estrella (extensión) · **RF:** RF20 · **CU:** CU19 · **Permiso:** `disponibilidad`
-(o uno propio, ver §8) · **Estado:** ⬜ a construir
+**Grupo:** Módulo estrella (extensión) · **RF:** RF20 · **CU:** CU19 · **Permiso:** `buscador`
+**Estado:** ✅ implementado
 
 > **Extensión fuera del alcance de la tesis.** RF6 no contempla imágenes ni atributos; este módulo
 > fue aprobado para desarrollarse igual.
 
 ## 1. Resumen
 
-Buscador rápido (uso diario en el mostrador) que encuentra un producto por texto o atributos, muestra
-su **imagen** y su **existencia por sucursal**, ofrece **productos similares** cuando no hay
-coincidencia exacta, y **registra las búsquedas sin resultado** para saber qué piden los clientes y no
-se tiene.
+Buscador rápido de mostrador que encuentra un producto por **nombre, código, marca, modelo o
+atributos**, muestra su **imagen** y su **existencia por sucursal**, ofrece **productos similares**
+cuando no hay coincidencia exacta y **registra las búsquedas sin resultado** para el reporte
+*"lo más buscado que no tenemos"*.
 
-## 2. Alcance funcional
+El diseño sigue `resources/css/app.css` (tokens y componentes del proyecto): hero de búsqueda,
+tarjetas de producto, chips de stock por sucursal, filtros colapsables y estados de carga/vacío
+cuidados en claro y oscuro.
 
-1. **Búsqueda instantánea** por nombre, código, marca, modelo y **atributos** (`teclado 60%`) →
-   objetivo **< 2 s** (RNF4).
-2. **Resultados con imagen** + existencia **por sucursal** (y total) + alerta de bajo mínimo.
-3. **Productos similares** si no hay coincidencia exacta.
-4. **Log de búsquedas sin resultado** → reporte *"lo más buscado que no tenemos"*.
+## 2. Modelo de datos
 
-## 3. Modelo de datos propuesto
+- **`producto_imagenes`**: `producto_id` (FK cascade), `ruta` (disco `public`), `url` (externa),
+  `orden`, `es_principal`, timestamps. Una sola principal por producto.
+- **`producto_atributos`**: `producto_id` (FK cascade), `atributo` (clave, 50), `valor` (100),
+  timestamps; único `[producto_id, atributo]`; índice `[atributo, valor]`.
+- **`busquedas_producto`**: `termino` (normalizado), `sucursal_id` (FK nullOnDelete), `user_id`
+  (FK nullOnDelete), `resultado` (`encontrado|sin_stock|no_existe`), `producto_id` (FK nullOnDelete),
+  timestamps; índices `[termino, resultado]`, `resultado`, `created_at`.
+- Modelos: `ProductoImagen` (`src()`), `ProductoAtributo`, `BusquedaProducto`; enum
+  `App\Enums\ResultadoBusqueda`. Relaciones en `Producto`: `imagenes()`, `imagenPrincipal()`,
+  `atributos()`.
+- Índices de búsqueda en `productos.nombre`, `marca` y `modelo` (`codigo` ya es único).
 
-- **`producto_imagenes`**: `producto_id`, `ruta` (o `url`), `orden`, `es_principal` (bool).
-- **`producto_atributos`**: `producto_id`, `atributo` (clave, p. ej. `tamano`), `valor` (`60%`).
-  Modelo **clave/valor libre** (no columnas fijas por categoría).
-- **`busquedas_producto`**: `termino`, `sucursal_id`, `user_id`, `fecha`,
-  `resultado` (`encontrado` | `sin_stock` | `no_existe`), `producto_id` (null).
+## 3. Rutas y endpoints
 
-## 4. Rutas y endpoints propuestos
+Todas con `permiso:buscador`:
 
 | Método | Ruta | Nombre | Acción |
 |---|---|---|---|
-| GET | `/buscar` | `buscar.index` | Pantalla del buscador |
-| GET | `/buscar/json` | `buscar.json` | Búsqueda en vivo (AJAX, JSON) |
+| GET | `/buscador` | `buscador.index` | Pantalla del buscador |
+| GET | `/buscador/json` | `buscador.json` | Búsqueda en vivo (AJAX, JSON) |
+| GET | `/buscador/reporte` | `buscador.reporte` | Reporte (solo gerente) |
+| GET | `/buscador/reporte/export` | `buscador.reporte.export` | Export CSV (solo gerente) |
+
+Imágenes y atributos (con `permiso:productos`):
+
+| Método | Ruta | Nombre |
+|---|---|---|
+| POST | `/productos/{producto}/imagenes` | `productos.imagenes.store` |
+| DELETE | `/productos/{producto}/imagenes/{imagen}` | `productos.imagenes.destroy` |
+| PATCH | `/productos/{producto}/imagenes/{imagen}/principal` | `productos.imagenes.principal` |
+| GET | `/productos/{producto}/imagenes/buscar` | `productos.imagenes.buscar` |
+| POST | `/productos/{producto}/imagenes/internet` | `productos.imagenes.internet` |
+| POST | `/productos/{producto}/atributos` | `productos.atributos.store` |
+| DELETE | `/productos/{producto}/atributos/{atributo}` | `productos.atributos.destroy` |
+
+## 4. Capas y archivos
+
+- `app/Http/Controllers/BuscadorController.php` (index, json, reporte, export).
+- `app/Services/BuscadorService.php` (búsqueda, resultado, similares, registro, reporte).
+- `app/Http/Requests/Buscador/{IndexBuscadorRequest,BuscarRequest,FiltrarBusquedasRequest}.php`.
+- `app/Http/Controllers/ProductoMediaController.php` + `ProductoImagenInternetController.php` +
+  `app/Http/Requests/Productos/{GuardarProductoImagenRequest,GuardarProductoAtributoRequest,BuscarImagenesInternetRequest,GuardarImagenInternetRequest}.php`.
+- `app/Services/Productos/ProductoImagenService.php` y `app/Services/Imagenes/*` (Brave, Wikimedia,
+  Openverse, cache, descarga SSRF-safe y optimización WebP).
+- `resources/views/buscador/{index,reporte}.blade.php`;
+  `resources/views/productos/show.blade.php` (imágenes, búsqueda en internet y ficha técnica).
+- `resources/js/buscador.js` + `resources/js/producto-imagenes.js` (entradas Vite propias) + clases
+  del buscador en `app.css`.
 
 ## 5. Flujos
 
-- **Buscar:** el usuario escribe → petición AJAX con debounce → resultados (imagen + stock por
-  sucursal). Si no hay coincidencia, se muestran **similares**.
-- **Registrar búsqueda:** cada término se registra con su `resultado`; los que caen en
-  `sin_stock`/`no_existe` alimentan el reporte.
-- **Acción "Traer de la otra sucursal":** desde un resultado sin stock local pero con stock en la
-  otra → precrea el **traspaso** (`10-traspasos.md`), y opcionalmente sigue a la **venta**
-  (`12-ventas.md`).
+- **Inicial:** hero con input grande, chips de ejemplo y búsquedas recientes (localStorage).
+- **Buscar:** debounce 350 ms, mínimo 2 caracteres, `AbortController`; búsqueda por tokens en **AND**
+  sobre nombre/código/marca/modelo/atributos; coincidencia exacta de código primero; tope 24.
+- **Resultados:** tarjetas con imagen principal, condición, bajo mínimo, precio, stock por sucursal
+  (se resalta la del usuario) y acciones: **Traer de la otra sucursal**, **Disponibilidad** y
+  **Ver ficha** (solo gerente).
+- **Filtros:** colapsables; categoría, marca, condición, sucursal de referencia (gerente) y “solo con
+  stock”. Se reflejan en la URL (`?termino=...`).
+- **Similares:** si no hay coincidencias completas, productos de la misma categoría con atributos
+  compartidos y marca distinta (máx. 6).
+- **Registro:** cada búsqueda debounced se guarda con término normalizado, sucursal, usuario,
+  resultado global (stock total) y primer producto; dedupe de 5 s por usuario+término.
+- **Reporte:** agrupado por término (veces, `no_existe`, `sin_stock`, última fecha), KPIs, filtros y
+  export CSV; enlaces a Compras y Encargos.
+- **Imágenes/atributos:** se administran desde la ficha del producto (solo gerente); la imagen
+  principal es la que ve el buscador. **Buscar en internet** permite elegir hasta 5 imágenes de
+  Brave (recomendado) o Wikimedia Commons, descargarlas como WebP ≤1600 px y guardar fuente,
+  autor y licencia. `?imagenes=1#imagenes` abre el modal tras “Guardar y agregar imágenes”.
 
 ## 6. Reglas de negocio
 
-- **Regla de similitud:** misma `categoria_id` + coincidencia de **atributos clave** (p. ej. tipo,
-  tamaño), marca distinta; ordenar por nº de coincidencias.
-- Solo productos `activo` y sucursales `activa`.
-- Rendimiento: **índices** en `productos.codigo`, `productos.nombre`, `producto_atributos.atributo/valor`.
+- Solo productos `activo` y sucursales `activa`; el stock total del resultado usa sucursales activas.
+- `resultado = encontrado` si hay coincidencias y stock total > 0; `sin_stock` si hay coincidencias
+  sin stock; `no_existe` si no hay ninguna.
+- El gerente puede elegir la sucursal de referencia; el resto queda en la suya.
+- Una sola imagen principal: la primera se marca automáticamente; al quitarla se promueve la
+  siguiente; al borrar el producto se eliminan sus archivos.
+- Atributos clave/valor libre; la clave se normaliza a minúsculas y se actualiza si se repite.
+- El reporte es **exclusivo del gerente**.
+- Rendimiento: índices, eager loading, tope de resultados y búsqueda parametrizada (RNF4 < 2 s).
 
 ## 7. UI y patrones
 
-Reutilizar componentes de `app.css` (`.input`, `.card`, `.badge`, `.tabla`); grid de tarjetas de
-resultado con imagen (`.card`, `rounded-xl`). Modo oscuro soportado.
+- Tokens de `app.css`: `canvas`, `surface-1/2`, `ink-*`, `hairline`, `brand`, `ok/warn/danger`.
+- Clases nuevas reutilizables: `.buscador-hero`, `.buscador-input`, `.buscador-sugerencia`,
+  `.producto-card`, `.producto-media`, `.stock-chips`, `.stock-chip`, `.skeleton`.
+- Tarjetas con media 4:3, badges superpuestos, chips de stock y acciones al pie; skeleton de carga;
+  estado vacío con similares y CTAs; `aria-live`, `aria-busy` y foco visible.
+- Atajos: `/` enfoca la búsqueda, `Esc` limpia, `Enter` busca inmediato.
+- Reporte con KPIs, barras de demanda y tabla paginada.
 
-## 8. Estado / checklist
+## 8. Estado
 
-- [ ] Migraciones: `producto_imagenes`, `producto_atributos`, `busquedas_producto`.
-- [ ] Carga de imágenes (**subida a `storage` + opción URL**) en el producto.
-- [ ] Ficha de atributos por producto.
-- [ ] Endpoint de búsqueda en vivo con índices (RNF4 < 2 s).
-- [ ] Resultados con imagen + disponibilidad por sucursal.
-- [ ] Sugerencia de **similares**.
-- [ ] Registro de búsquedas y su reporte *"lo más buscado que no tenemos"* (export CSV).
-- [ ] Acción **"Traer de la otra sucursal"** → traspaso (y venta).
+- ✅ Migraciones, modelos y relaciones.
+- ✅ Imágenes (subida + URL + búsqueda en internet, principal, borrado y promoción) y ficha técnica
+  de atributos.
+- ✅ Endpoint AJAX con debounce, índices, stock por sucursal y bajo mínimo.
+- ✅ Similares, registro de búsquedas y reporte “lo más buscado que no tenemos” + export CSV.
+- ✅ “Traer de la otra sucursal” reutilizando el modal de Inventario.
+- ✅ Filtros, búsquedas recientes y diseño claro/oscuro.
+- ✅ FormRequests y permisos.
 
 ## 9. Pruebas
 
-Feature tests: búsqueda por texto y por atributo, similitud (categoría+atributos), registro de
-búsqueda con y sin resultado, imágenes ligadas al producto, y acción de traspaso precreada.
+`tests/Feature/BuscadorTest.php` (texto/código/marca/modelo/atributo, estados, dedupe del log,
+similares, filtros, reporte, export y permisos), `tests/Feature/ProductoMediaTest.php` (imágenes,
+principal única, borrado/promoción, atributos, ficha, archivos y permisos) y
+`tests/Feature/ProductoImagenInternetTest.php` (Brave/Wikimedia/Openverse, cache, SSRF, descarga
+WebP, atribución y redirect). También `FormulariosTest.php`, `PantallasTest.php` y
+`AutenticacionYPermisosTest.php`.
 
 ## 10. Decisiones y restricciones acordadas ⚠️
 
-- **Imágenes: subida al servidor + URL opcional** (confirmado).
-- **Atributos: clave/valor libre** (confirmado), ligados a la categoría para la similitud.
-- **Sin** motor de búsqueda externo (Elasticsearch/Meilisearch): usar índices de MySQL.
+- **Permiso propio `buscador`** (Gerente, Vendedor y Técnico); el reporte es solo gerente.
+- **Imágenes:** subida al disco `public` + URL opcional + búsqueda en internet. Las imágenes
+  externas se descargan, validan y convierten a WebP ≤1600 px; se guarda fuente/autor/licencia.
+  Brave es el proveedor recomendado; Wikimedia Commons es el fallback sin clave; Openverse queda
+  como driver opcional. Google CSE está cerrado a clientes nuevos.
+- **Atributos: clave/valor libre**, únicos por producto.
+- **Sin** motor de búsqueda externo (Elasticsearch/Meilisearch): índices de MySQL.
+- **Log:** resultado global (stock total) para que “no tenemos” sea real; dedupe de 5 s.
+- **Similares:** misma categoría + atributos compartidos, marca distinta.
+- **Baja de producto:** se eliminan sus archivos de imagen.
 - El traspaso desde aquí sigue la regla del módulo 10 (**simple, inmediato**).
 
 ## 11. Seguridad de entrada (tipado y saneado)
 
-- **FormRequest a crear:** `app/Http/Requests/Buscador/BuscarRequest.php` (texto y atributos).
-- **Texto libre a sanear:** el término de búsqueda y los valores de atributos.
-- **Reglas tipadas:** `termino` `string|max:100`; `producto_id`/`sucursal_id` `integer` + `exists` (cuando apliquen).
-- **Salida/SQL:** resultados escapados con Blade; búsqueda parametrizada con índices.
+- **FormRequests:** `BuscarRequest`, `IndexBuscadorRequest`, `FiltrarBusquedasRequest`,
+  `GuardarProductoImagenRequest`, `GuardarProductoAtributoRequest`.
+- **Texto libre saneado:** término, marca y atributos (`strip_tags`, control, espacios, minúsculas).
+- **Reglas tipadas:** término 2–100; ids `integer` + `exists`; condición/resultado con `Rule::in`;
+  archivo `image|mimes|max:2048`; URL `https?://`; atributo 50 / valor 100.
+- **Salida/SQL/JS:** Blade escapa; JSON con `Accept`; el JS escapa texto y atributos antes de
+  insertarlos; SQL parametrizado.
+- **Archivos:** disco público, nombres aleatorios; se borran al quitar imagen o producto.
 - Política completa: `docs/modulos/00-contexto.md` §13.
 
 ## 12. Estructura de archivos
 
-- **Actual:** no existe (extensión).
-- **Objetivo:** `resources/views/buscador/{index}.blade.php` + `_*.blade.php`; controlador delgado;
-  `app/Http/Requests/Buscador/BuscarRequest.php`; modelos propios (`producto_imagenes`, `producto_atributos`, `busquedas_producto`).
-- **Pendiente:** crear todo conforme a la convención de `00-contexto.md` §12.
+- `buscador/index.blade.php` + `buscador/reporte.blade.php`.
+- `resources/js/buscador.js` (entrada Vite).
+- `productos/show.blade.php` con secciones de imágenes y ficha técnica.
+- `app/Services/BuscadorService.php` y `app/Services/SucursalService.php` (comparten el estilo de
+  servicios del proyecto).
 
 ## 13. Cómo probar a mano
 
-Buscar "teclado 60%": ver resultados con imagen y stock por sucursal; forzar un caso sin stock local
-pero con stock en la otra → usar "Traer de la otra sucursal"; buscar algo inexistente y confirmar que
-aparece en el reporte de búsquedas sin resultado.
+`vendedor`/`password` → **Inventario ▸ Buscador** → buscar “teclado 60%”: ver imagen, stock por
+sucursal y chips. Forzar un producto sin stock local con stock en la otra → **Traer de la otra
+sucursal**. Buscar algo inexistente → ver similares y CTAs. Con `gerente`, abrir **Lo más buscado**,
+ver el término y exportar CSV; en la ficha de un producto, subir una imagen, marcar principal y
+agregar atributos. Repetir en claro y oscuro.

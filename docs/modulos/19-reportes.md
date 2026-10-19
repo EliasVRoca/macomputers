@@ -51,8 +51,8 @@ patrón `@section('acciones')` de `layouts/app.blade.php`.
 - ✅ Complementos (misma mecánica): **Traspasos** (`traspasos.export`), **Compras**
   (`compras.export`), **Catálogo** (`categorias/productos/proveedores.export`) y **Auxiliares de
   Ventas** (`apartados/encargos/cambios/clientes.export`).
-- ⬜ *(opcional)* Exportación CSV en **Servicio técnico**. **RF18 no la exige** (solo pide
-  disponibilidad, historial de ventas, kardex y bajo mínimo), así que queda como mejora.
+- ✅ Exportación CSV en **Servicio técnico** (`servicios.export`). *(RF18 no la exigía; se agregó
+  como complemento del módulo.)*
 
 > **Helper reutilizable:** `App\Support\Csv` (BOM UTF-8 + anti-inyección de fórmulas). Usarlo en
 > cada exportación nueva.
@@ -79,7 +79,7 @@ respeta permisos y filtros, y no rompe con listados vacíos.
 
 - **Actual:** la exportación vive **dentro de cada módulo** (p. ej. `InventarioController::exportKardex/exportExistencias`), sin módulo propio. ✅ (coherente con la decisión de §2).
 - **Objetivo:** un método `export*` por módulo + `App\Support\Csv`.
-- **Pendiente:** sin cambios de estructura; solo la exportación *(opcional)* de Servicio técnico.
+- **Pendiente:** sin cambios de estructura; todas las exportaciones están implementadas.
 
 ## 12. Cómo probar a mano
 

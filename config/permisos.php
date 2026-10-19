@@ -16,7 +16,7 @@ return [
         ],
         'Inventario' => [
             'icon' => 'warehouse',
-            'modulos' => ['disponibilidad', 'inventario', 'traspasos', 'compras'],
+            'modulos' => ['buscador', 'disponibilidad', 'inventario', 'traspasos', 'compras'],
         ],
         'Ventas' => [
             'icon' => 'shopping-cart',
@@ -36,6 +36,7 @@ return [
         'productos' => ['label' => 'Productos', 'route' => 'productos.index', 'icon' => 'package'],
         'proveedores' => ['label' => 'Proveedores', 'route' => 'proveedores.index', 'icon' => 'truck'],
         'disponibilidad' => ['label' => 'Disponibilidad', 'route' => 'disponibilidad.index', 'icon' => 'map-pin'],
+        'buscador' => ['label' => 'Buscador', 'route' => 'buscador.index', 'icon' => 'search'],
         'inventario' => ['label' => 'Inventario', 'route' => 'inventario.index', 'icon' => 'warehouse'],
         'traspasos' => ['label' => 'Traspasos', 'route' => 'traspasos.index', 'icon' => 'arrow-left-right'],
         'compras' => ['label' => 'Compras', 'route' => 'compras.index', 'icon' => 'clipboard-list'],
@@ -61,6 +62,7 @@ return [
         ['label' => 'Nuevo proveedor', 'route' => 'proveedores.create', 'icon' => 'truck', 'permiso' => 'proveedores'],
         ['label' => 'Nuevo usuario', 'route' => 'usuarios.create', 'icon' => 'users', 'permiso' => 'usuarios'],
         ['label' => 'Consultar disponibilidad', 'route' => 'disponibilidad.index', 'icon' => 'map-pin', 'permiso' => 'disponibilidad'],
+        ['label' => 'Buscar producto', 'route' => 'buscador.index', 'icon' => 'search', 'permiso' => 'buscador'],
     ],
 
     // Roles iniciales. El rol "Gerente" es de sistema: siempre tiene todos los módulos.
@@ -72,12 +74,12 @@ return [
         ],
         'Vendedor' => [
             'descripcion' => 'Atiende clientes, ventas, apartados, encargos, cambios e inventario de su sucursal.',
-            'permisos' => ['disponibilidad', 'inventario', 'traspasos', 'ventas', 'apartados', 'encargos', 'cambios', 'clientes'],
+            'permisos' => ['buscador', 'disponibilidad', 'inventario', 'traspasos', 'ventas', 'apartados', 'encargos', 'cambios', 'clientes'],
             'es_sistema' => false,
         ],
         'Técnico' => [
             'descripcion' => 'Registra y actualiza el servicio técnico.',
-            'permisos' => ['disponibilidad', 'servicios'],
+            'permisos' => ['buscador', 'disponibilidad', 'servicios'],
             'es_sistema' => false,
         ],
     ],

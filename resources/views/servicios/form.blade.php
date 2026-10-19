@@ -89,11 +89,53 @@
             </div>
         </section>
     @else
-        <p class="rounded-lg bg-surface-2 px-4 py-3 text-sm">
-            Cliente: <span class="font-medium">{{ $servicio->cliente?->nombre }}</span> ·
-            Sucursal: <span class="font-medium">{{ $servicio->sucursal?->nombre }}</span> ·
-            Estado actual: <span class="font-medium">{{ $servicio->estadoEnum()->etiqueta() }}</span>
-        </p>
+        <section class="space-y-5">
+            <h2 class="text-sm font-medium text-ink-muted">Cliente, sucursal y técnico</h2>
+            <p class="rounded-lg bg-surface-2 px-4 py-3 text-sm">
+                Estado actual: <span class="font-medium">{{ $servicio->estadoEnum()->etiqueta() }}</span>
+            </p>
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                    <label for="cliente_id" class="label">Cliente</label>
+                    @if ($puedeElegirCliente ?? false)
+                        <select id="cliente_id" name="cliente_id" class="input">
+                            @foreach ($clientes as $cliente)
+                                <option value="{{ $cliente->id }}" @selected(old('cliente_id', $servicio->cliente_id) == $cliente->id)>{{ $cliente->nombre }}</option>
+                            @endforeach
+                        </select>
+                        @error('cliente_id') <p class="error-texto">{{ $message }}</p> @enderror
+                    @else
+                        <p class="font-medium">{{ $servicio->cliente?->nombre ?? '—' }}</p>
+                    @endif
+                </div>
+                <div>
+                    <span class="label">Sucursal</span>
+                    @if ($puedeElegirSucursal ?? false)
+                        <select id="sucursal_id" name="sucursal_id" class="input">
+                            @foreach ($sucursales as $sucursal)
+                                <option value="{{ $sucursal->id }}" @selected(old('sucursal_id', $servicio->sucursal_id) == $sucursal->id)>{{ $sucursal->nombre }}</option>
+                            @endforeach
+                        </select>
+                        @error('sucursal_id') <p class="error-texto">{{ $message }}</p> @enderror
+                    @else
+                        <p class="font-medium">{{ $servicio->sucursal?->nombre }}</p>
+                    @endif
+                </div>
+                <div>
+                    <span class="label">Técnico</span>
+                    @if (($puedeElegirTecnico ?? false) && $tecnicos->isNotEmpty())
+                        <select id="tecnico_id" name="tecnico_id" class="input">
+                            @foreach ($tecnicos as $tecnico)
+                                <option value="{{ $tecnico->id }}" @selected(old('tecnico_id', $servicio->tecnico_id) == $tecnico->id)>{{ $tecnico->nombre() }}</option>
+                            @endforeach
+                        </select>
+                        @error('tecnico_id') <p class="error-texto">{{ $message }}</p> @enderror
+                    @else
+                        <p class="font-medium">{{ $servicio->tecnico?->nombre() ?? '—' }}</p>
+                    @endif
+                </div>
+            </div>
+        </section>
     @endif
 
     <section class="space-y-5 border-t border-hairline pt-8">

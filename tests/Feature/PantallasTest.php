@@ -95,7 +95,7 @@ class PantallasTest extends TestCase
             'categorias.index', 'categorias.create', 'categorias.edit',
             'productos.index', 'productos.create', 'productos.edit', 'productos.show',
             'proveedores.index', 'proveedores.create', 'proveedores.edit', 'proveedores.show',
-            'disponibilidad.index', 'inventario.index', 'traspasos.index', 'traspasos.create', 'traspasos.show',
+            'disponibilidad.index', 'buscador.index', 'buscador.reporte', 'inventario.index', 'traspasos.index', 'traspasos.create', 'traspasos.show',
             'compras.index', 'compras.create', 'compras.show',
             'ventas.index', 'ventas.create', 'ventas.show', 'ventas.imprimir',
             'apartados.index', 'apartados.create', 'apartados.edit',

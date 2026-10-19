@@ -13,6 +13,7 @@ services:
   web:
     volumes:
       - .:/var/www/html:ro
+      - app_storage:/var/www/html/storage:ro
 
 volumes:
   node_modules:

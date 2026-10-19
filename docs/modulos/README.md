@@ -19,10 +19,10 @@ cumple el *Definition of Done* de más abajo.
 |---|--------|---------|--------|----------|-------|
 | 00 | [Contexto para agentes](00-contexto.md) | — | — | — | Transversal |
 | — | [Hoja de ruta](00-hoja-de-ruta.md) | RF↔CU | — | — | Transversal |
-| 01 | [Usuarios](01-usuarios.md) | RF2 · CU1 | ◐ | ⬜ | Administración |
-| 02 | [Roles](02-roles.md) | RF3 · CU2 | ✅ | ⬜ | Administración |
-| 03 | [Sucursales](03-sucursales.md) | RF4 · CU3 | ◐ | ⬜ | Administración |
-| 04 | [Sesión (autenticación y perfil)](04-sesion.md) | RF1 · CU16 / RF19 · CU18 | ✅ | ⬜ | Sesión |
+| 01 | [Usuarios](01-usuarios.md) | RF2 · CU1 | ✅ | ✅ | Administración |
+| 02 | [Roles](02-roles.md) | RF3 · CU2 | ✅ | ✅ | Administración |
+| 03 | [Sucursales](03-sucursales.md) | RF4 · CU3 | ✅ | ✅ | Administración |
+| 04 | [Sesión (autenticación y perfil)](04-sesion.md) | RF1 · CU16 / RF19 · CU18 | ✅ | ✅ | Sesión |
 | 05 | [Categorías](05-categorias.md) | RF5 · CU4 | ✅ | ✅ | Catálogo |
 | 06 | [Productos](06-productos.md) | RF6 · CU5 | ✅ | ✅ | Catálogo |
 | 07 | [Proveedores](07-proveedores.md) | RF10 · CU8 | ✅ | ✅ | Catálogo |
@@ -35,10 +35,10 @@ cumple el *Definition of Done* de más abajo.
 | 14 | [Encargos](14-encargos.md) | RF14 · CU12 | ◐ | ✅ | Ventas |
 | 15 | [Cambios y devoluciones](15-cambios.md) | RF15 · CU13 | ◐ | ✅ | Ventas |
 | 16 | [Clientes](16-clientes.md) | RF17 · CU15 | ◐ | ✅ | Ventas |
-| 17 | [Servicio técnico (OT)](17-servicios.md) | RF16 · CU14 | ◐ | ⬜ | Servicio técnico |
-| 18 | [Núcleo (permisos, menú, stock)](18-nucleo.md) | Transversal | ✅ | ⬜ | Transversal |
-| 20 | [Buscador inteligente 🔧](20-buscador.md) | RF20 · CU19 | ⬜ | ⬜ | Extensión |
-| 21 | [Dashboard 🔧](21-dashboard.md) | RF21 · CU20 | ⬜ | ⬜ | Extensión |
+| 17 | [Servicio técnico (OT)](17-servicios.md) | RF16 · CU14 | ✅ | ✅ | Servicio técnico |
+| 18 | [Núcleo (permisos, menú, stock)](18-nucleo.md) | Transversal | ✅ | ✅ | Transversal |
+| 20 | [Buscador inteligente 🔧](20-buscador.md) | RF20 · CU19 | ✅ | ✅ | Extensión |
+| 21 | [Dashboard 🔧](21-dashboard.md) | RF21 · CU20 | ⬜ | — | Extensión |
 
 > Los briefs **20** y **21** son **extensiones** fuera del alcance de la tesis (aunque ya aprobadas
 > para desarrollar).
@@ -46,6 +46,10 @@ cumple el *Definition of Done* de más abajo.
 > **RF18 · Reportes y exportación** **no es un módulo** (criterio del docente): no tiene permiso ni
 > rutas propias y se resuelve como acciones de exportación dentro de cada módulo que ya muestra esos
 > datos. El brief [`19-reportes.md`](19-reportes.md) documenta la decisión y el estado.
+>
+> **Criterio de la revisión:** los módulos **01–18** y la extensión **20 (Buscador)** quedaron ✅.
+> **02 (Roles)** y **04 (Sesión)** se marcaron con el FormRequest *documentado* en su brief; el
+> resto lo **implementa**. **21 (Dashboard)** queda en «—» hasta construirse.
 
 ## Definition of Done (para marcar la revisión ✅)
 

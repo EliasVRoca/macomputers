@@ -2,39 +2,45 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Usuarios\CambiarEstadoUsuarioRequest;
+use App\Http\Requests\Usuarios\FiltrarUsuariosRequest;
+use App\Http\Requests\Usuarios\GuardarUsuarioRequest;
 use App\Models\Persona;
 use App\Models\Role;
 use App\Models\Sucursal;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\QueryException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
 class UsuarioController extends Controller
 {
-    public function index(): View
+    public function index(FiltrarUsuariosRequest $request): View
     {
-        $items = User::with(['persona', 'role', 'sucursal'])->orderBy('username')->paginate(15);
+        $filtros = $request->validated();
 
-        return view('usuarios.index', ['items' => $items]);
+        return view('usuarios.index', [
+            'items' => $this->listado($filtros)->paginate(15)->withQueryString(),
+            'filtros' => $filtros,
+            'roles' => Role::orderBy('nombre')->get(),
+            'sucursales' => Sucursal::orderBy('nombre')->get(),
+        ]);
     }
 
     public function create(): View
     {
-        return $this->formulario(new User(['activo' => true]), new Persona(), route('usuarios.store'), 'POST');
+        return $this->formulario(new User(['activo' => true]), new Persona, route('usuarios.store'), 'POST');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(GuardarUsuarioRequest $request): RedirectResponse
     {
-        $datos = $this->validar($request);
+        $datos = $request->validated();
 
         DB::transaction(function () use ($datos) {
-            $persona = Persona::create($datos['persona']);
-            User::create([...$datos['cuenta'], 'persona_id' => $persona->id]);
+            $persona = Persona::create($this->datosPersona($datos));
+            User::create([...$this->datosCuenta($datos), 'persona_id' => $persona->id]);
         });
 
         return redirect()->route('usuarios.index')->with('status', 'Usuario registrado.');
@@ -42,20 +48,18 @@ class UsuarioController extends Controller
 
     public function edit(User $usuario): View
     {
-        $persona = $usuario->persona ?? new Persona();
-
-        return $this->formulario($usuario, $persona, route('usuarios.update', $usuario), 'PUT');
+        return $this->formulario($usuario, $usuario->persona ?? new Persona, route('usuarios.update', $usuario), 'PUT');
     }
 
-    public function update(Request $request, User $usuario): RedirectResponse
+    public function update(GuardarUsuarioRequest $request, User $usuario): RedirectResponse
     {
-        $datos = $this->validar($request, $usuario);
+        $datos = $request->validated();
 
         DB::transaction(function () use ($datos, $usuario) {
-            $persona = $usuario->persona ?? new Persona();
-            $persona->fill($datos['persona'])->save();
+            $persona = $usuario->persona ?? new Persona;
+            $persona->fill($this->datosPersona($datos))->save();
 
-            $cuenta = $datos['cuenta'];
+            $cuenta = $this->datosCuenta($datos);
             if (blank($cuenta['password'] ?? null)) {
                 unset($cuenta['password']);
             }
@@ -66,23 +70,43 @@ class UsuarioController extends Controller
         return redirect()->route('usuarios.index')->with('status', 'Usuario actualizado.');
     }
 
+    /**
+     * Baja lógica: nunca se borra el usuario ni su persona.
+     */
     public function destroy(Request $request, User $usuario): RedirectResponse
     {
         if ($request->user()->is($usuario)) {
-            return back()->withErrors(['eliminar' => 'No puede eliminar su propio usuario.']);
+            return back()->withErrors(['eliminar' => 'No puede dar de baja su propio usuario.']);
         }
 
-        try {
-            DB::transaction(function () use ($usuario) {
-                $persona = $usuario->persona;
-                $usuario->delete();
-                $persona?->delete();
-            });
-        } catch (QueryException) {
-            return back()->withErrors(['eliminar' => 'No se puede eliminar: el usuario tiene ventas o movimientos registrados. Desactívelo en su lugar.']);
+        $this->desactivar($usuario);
+
+        return redirect()->route('usuarios.index')
+            ->with('status', 'Usuario dado de baja. Puede reactivarlo cuando lo necesite.');
+    }
+
+    public function estado(CambiarEstadoUsuarioRequest $request, User $usuario): RedirectResponse
+    {
+        if ($request->user()->is($usuario) && ! $request->boolean('activo')) {
+            return back()->withErrors(['estado' => 'No puede desactivar su propia cuenta.']);
         }
 
-        return redirect()->route('usuarios.index')->with('status', 'Usuario eliminado.');
+        if ($request->boolean('activo')) {
+            $usuario->update(['activo' => true]);
+
+            return redirect()->route('usuarios.index')->with('status', 'Usuario activado.');
+        }
+
+        $this->desactivar($usuario);
+
+        return redirect()->route('usuarios.index')->with('status', 'Usuario desactivado.');
+    }
+
+    private function desactivar(User $usuario): void
+    {
+        $usuario->update(['activo' => false]);
+
+        DB::table('sessions')->where('user_id', $usuario->id)->delete();
     }
 
     private function formulario(User $usuario, Persona $persona, string $accion, string $metodo): View
@@ -97,39 +121,54 @@ class UsuarioController extends Controller
         ]);
     }
 
-    private function validar(Request $request, ?User $usuario = null): array
+    /**
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    private function datosPersona(array $datos): array
     {
-        $datos = $request->validate([
-            'nombre' => ['required', 'string', 'max:150'],
-            'ci' => ['required', 'string', 'max:20', Rule::unique('personas', 'ci')->ignore($usuario?->persona_id)],
-            'telefono' => ['nullable', 'string', 'max:30'],
-            'direccion' => ['nullable', 'string', 'max:255'],
-            'username' => ['required', 'string', 'alpha_dash', 'max:50', Rule::unique('users', 'username')->ignore($usuario?->id)],
-            'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($usuario?->id)],
-            'password' => [$usuario ? 'nullable' : 'required', 'confirmed', Password::min(8)],
-            'role_id' => ['required', Rule::exists('roles', 'id')],
-            'sucursal_id' => ['required', Rule::exists('sucursales', 'id')],
-        ], [], [
-            'ci' => 'C.I.',
-            'role_id' => 'rol',
-            'sucursal_id' => 'sucursal',
-        ]);
-
         return [
-            'persona' => [
-                'nombre' => $datos['nombre'],
-                'ci' => $datos['ci'],
-                'telefono' => $datos['telefono'] ?? null,
-                'direccion' => $datos['direccion'] ?? null,
-            ],
-            'cuenta' => [
-                'username' => $datos['username'],
-                'email' => $datos['email'],
-                'password' => $datos['password'] ?? null,
-                'role_id' => $datos['role_id'],
-                'sucursal_id' => $datos['sucursal_id'],
-                'activo' => $request->boolean('activo'),
-            ],
+            'nombre' => $datos['nombre'],
+            'ci' => $datos['ci'],
+            'telefono' => $datos['telefono'] ?? null,
+            'direccion' => $datos['direccion'] ?? null,
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $datos
+     * @return array<string, mixed>
+     */
+    private function datosCuenta(array $datos): array
+    {
+        return [
+            'username' => $datos['username'],
+            'email' => $datos['email'],
+            'password' => $datos['password'] ?? null,
+            'role_id' => $datos['role_id'],
+            'sucursal_id' => $datos['sucursal_id'],
+            'activo' => (bool) ($datos['activo'] ?? false),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $filtros
+     */
+    private function listado(array $filtros): Builder
+    {
+        $buscar = (string) ($filtros['buscar'] ?? '');
+
+        return User::query()
+            ->with(['persona', 'role', 'sucursal'])
+            ->when($buscar !== '', fn (Builder $q) => $q->where(fn (Builder $w) => $w
+                ->where('username', 'like', "%{$buscar}%")
+                ->orWhere('email', 'like', "%{$buscar}%")
+                ->orWhereHas('persona', fn (Builder $p) => $p
+                    ->where('nombre', 'like', "%{$buscar}%")
+                    ->orWhere('ci', 'like', "%{$buscar}%"))))
+            ->when($filtros['role_id'] ?? null, fn (Builder $q) => $q->where('role_id', $filtros['role_id']))
+            ->when($filtros['sucursal_id'] ?? null, fn (Builder $q) => $q->where('sucursal_id', $filtros['sucursal_id']))
+            ->when(array_key_exists('activo', $filtros) && $filtros['activo'] !== null, fn (Builder $q) => $q->where('activo', (bool) $filtros['activo']))
+            ->orderBy('username');
     }
 }

@@ -34,8 +34,16 @@ class EncargoController extends Controller
 
     public function create(Request $request): View
     {
+        $descripcion = mb_substr(trim((string) $request->query('descripcion', '')), 0, 255);
+
         return view('encargos.form', [
-            'encargo' => new Encargo(['total' => 0, 'anticipo' => 0, 'saldo' => 0, 'fecha' => now()->toDateString()]),
+            'encargo' => new Encargo([
+                'descripcion' => $descripcion !== '' ? $descripcion : null,
+                'total' => 0,
+                'anticipo' => 0,
+                'saldo' => 0,
+                'fecha' => now()->toDateString(),
+            ]),
             'accion' => route('encargos.store'),
             'metodo' => 'POST',
             'clientes' => Cliente::where('activo', true)->orderBy('nombre')->get(),

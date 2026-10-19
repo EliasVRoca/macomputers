@@ -2,6 +2,7 @@
 
 @php
     use App\Enums\EstadoServicio;
+    use App\Models\Venta;
     $cerrado = $servicio->cerrado();
     $esGerente = auth()->user()?->esGerente() ?? false;
 @endphp
@@ -56,6 +57,18 @@
                             @method('PATCH')
                             <input type="hidden" name="estado" value="{{ $estado->value }}">
                             <input name="comentario" class="input flex-1 min-w-[12rem]" maxlength="500" placeholder="Comentario (opcional)">
+                            @if ($estado === EstadoServicio::Entregado)
+                                <div class="min-w-[11rem]">
+                                    <label for="medio_pago" class="label">Medio de pago</label>
+                                    <select id="medio_pago" name="medio_pago" class="input" required>
+                                        <option value="">Seleccione…</option>
+                                        @foreach ($medios as $medio)
+                                            <option value="{{ $medio }}" @selected(old('medio_pago') === $medio)>{{ $medio }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('medio_pago') <p class="error-texto">{{ $message }}</p> @enderror
+                                </div>
+                            @endif
                             <button type="submit" class="btn {{ $estado === EstadoServicio::Cancelado ? 'btn-danger' : 'btn-primary' }} btn-sm">
                                 <x-icon name="{{ $estado === EstadoServicio::Cancelado ? 'x' : 'check' }}" class="size-4" />
                                 Marcar como {{ $estado->etiqueta() }}
@@ -185,6 +198,13 @@
                 <div class="flex items-center justify-between"><span class="text-ink-muted">Descuento</span><span class="tabular-nums text-danger">− Bs {{ number_format($servicio->descuento, 2, ',', '.') }}</span></div>
             @endif
             <div class="flex items-center justify-between border-t border-hairline pt-3 text-base font-medium"><span>Total</span><span class="tabular-nums">Bs {{ number_format($servicio->totalCalculado(), 2, ',', '.') }}</span></div>
+            <div class="flex items-center justify-between border-t border-hairline pt-3">
+                <span class="text-ink-muted">Medio de pago</span>
+                <span class="font-medium">{{ $servicio->venta?->medio_pago ?? 'Pendiente de cobro' }}</span>
+            </div>
+            @if ($servicio->venta?->estado === Venta::ESTADO_ANULADA)
+                <p class="text-xs text-danger">Venta de servicio anulada.</p>
+            @endif
             <p class="text-xs text-ink-tertiary">Venta de servicio {{ $servicio->venta?->numero() }}</p>
         </section>
     </div>

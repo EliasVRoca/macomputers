@@ -13,6 +13,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProductoController extends Controller
@@ -36,9 +37,9 @@ class ProductoController extends Controller
 
     public function store(GuardarProductoRequest $request): RedirectResponse
     {
-        Producto::create($request->validated());
+        $producto = Producto::create($request->validated());
 
-        return redirect()->route('productos.index')->with('status', 'Producto registrado.');
+        return $this->redirigir($producto, 'Producto registrado.', $request->input('destino') === 'imagenes');
     }
 
     public function show(Producto $producto): View
@@ -46,6 +47,8 @@ class ProductoController extends Controller
         return view('productos.show', [
             'producto' => $producto,
             'existencias' => $producto->inventarios()->with('sucursal')->get(),
+            'imagenes' => $producto->imagenes()->get(),
+            'atributos' => $producto->atributos()->orderBy('atributo')->get(),
             'movimientos' => MovimientoInventario::with(['sucursal', 'usuario'])
                 ->where('producto_id', $producto->id)
                 ->latest('id')
@@ -63,16 +66,20 @@ class ProductoController extends Controller
     {
         $producto->update($request->validated());
 
-        return redirect()->route('productos.index')->with('status', 'Producto actualizado.');
+        return $this->redirigir($producto, 'Producto actualizado.', $request->input('destino') === 'imagenes');
     }
 
     public function destroy(Producto $producto): RedirectResponse
     {
+        $rutas = $producto->imagenes()->whereNotNull('ruta')->pluck('ruta')->all();
+
         try {
             $producto->delete();
         } catch (QueryException) {
             return back()->withErrors(['eliminar' => 'No se puede eliminar: el producto tiene movimientos o ventas registradas. Desactívelo en su lugar.']);
         }
+
+        Storage::disk('public')->delete($rutas);
 
         return redirect()->route('productos.index')->with('status', 'Producto eliminado.');
     }
@@ -100,6 +107,17 @@ class ProductoController extends Controller
             ['Código', 'Nombre', 'Marca', 'Modelo', 'Categoría', 'Condición', 'Precio compra', 'Precio venta', 'Stock total', 'Stock mínimo', 'Activo'],
             $filas,
         );
+    }
+
+    private function redirigir(Producto $producto, string $mensaje, bool $aImagenes): RedirectResponse
+    {
+        if ($aImagenes) {
+            return redirect()
+                ->to(route('productos.show', $producto).'?imagenes=1#imagenes')
+                ->with('status', $mensaje.' Ahora podés agregar imágenes.');
+        }
+
+        return redirect()->route('productos.index')->with('status', $mensaje);
     }
 
     private function formulario(Producto $producto, string $accion, string $metodo): View

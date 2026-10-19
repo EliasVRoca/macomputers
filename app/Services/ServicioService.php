@@ -82,29 +82,60 @@ class ServicioService
 
     /**
      * Edición completa de los datos de la orden. No modifica el estado.
+     * En órdenes abiertas permite reasignar cliente/sucursal/técnico.
      */
     public function actualizar(Servicio $servicio, array $datos): Servicio
     {
-        $servicio->update([
-            'equipo' => $datos['equipo'],
-            'diagnostico' => $datos['diagnostico'] ?? null,
-            'fecha_recepcion' => $datos['fecha_recepcion'] ?? $servicio->fecha_recepcion,
-            'fecha_prometida' => $datos['fecha_prometida'] ?? null,
-            'prioridad' => $datos['prioridad'] ?? $servicio->prioridad,
-            'accesorios_recibidos' => $datos['accesorios_recibidos'] ?? null,
-            'mano_de_obra' => round((float) ($datos['mano_de_obra'] ?? 0), 2),
-            'descuento' => round((float) ($datos['descuento'] ?? 0), 2),
-            'garantia_dias' => (int) ($datos['garantia_dias'] ?? 0),
-            'observaciones' => $datos['observaciones'] ?? null,
-        ]);
+        return DB::transaction(function () use ($servicio, $datos): Servicio {
+            $cambios = [
+                'equipo' => $datos['equipo'],
+                'diagnostico' => $datos['diagnostico'] ?? null,
+                'fecha_recepcion' => $datos['fecha_recepcion'] ?? $servicio->fecha_recepcion,
+                'fecha_prometida' => $datos['fecha_prometida'] ?? null,
+                'prioridad' => $datos['prioridad'] ?? $servicio->prioridad,
+                'accesorios_recibidos' => $datos['accesorios_recibidos'] ?? null,
+                'mano_de_obra' => round((float) ($datos['mano_de_obra'] ?? 0), 2),
+                'descuento' => round((float) ($datos['descuento'] ?? 0), 2),
+                'garantia_dias' => (int) ($datos['garantia_dias'] ?? 0),
+                'observaciones' => $datos['observaciones'] ?? null,
+            ];
 
-        return $this->sincronizarVenta($servicio->fresh());
+            if (! $servicio->cerrado()) {
+                if (! empty($datos['cliente_id'])) {
+                    $cambios['cliente_id'] = (int) $datos['cliente_id'];
+                }
+
+                if (! empty($datos['sucursal_id'])) {
+                    $cambios['sucursal_id'] = (int) $datos['sucursal_id'];
+                }
+
+                if (! empty($datos['tecnico_id'])) {
+                    $cambios['tecnico_id'] = (int) $datos['tecnico_id'];
+                }
+            }
+
+            $servicio->update($cambios);
+
+            $venta = $servicio->venta;
+
+            if ($venta) {
+                $venta->update(array_filter([
+                    'cliente_id' => $cambios['cliente_id'] ?? null,
+                    'sucursal_id' => $cambios['sucursal_id'] ?? null,
+                ], fn (mixed $valor): bool => $valor !== null));
+            }
+
+            return $this->sincronizarVenta($servicio->fresh());
+        });
     }
 
     /**
      * Cambia el estado validando la transición y dejando constancia en el historial.
+     *
+     * Al entregar exige el medio de pago y lo registra en la venta de servicio;
+     * al cancelar libera los repuestos y anula la venta.
      */
-    public function cambiarEstado(Servicio $servicio, EstadoServicio $nuevo, User $usuario, ?string $comentario = null): Servicio
+    public function cambiarEstado(Servicio $servicio, EstadoServicio $nuevo, User $usuario, ?string $comentario = null, ?string $medioPago = null): Servicio
     {
         $actual = $servicio->estadoEnum();
 
@@ -126,7 +157,13 @@ class ServicioService
             ]);
         }
 
-        return DB::transaction(function () use ($servicio, $actual, $nuevo, $usuario, $comentario) {
+        if ($nuevo === EstadoServicio::Entregado && blank($medioPago)) {
+            throw ValidationException::withMessages([
+                'medio_pago' => 'Seleccione el medio de pago para entregar la orden.',
+            ]);
+        }
+
+        return DB::transaction(function () use ($servicio, $actual, $nuevo, $usuario, $comentario, $medioPago) {
             $cambios = ['estado' => $nuevo->value];
 
             if ($nuevo === EstadoServicio::Entregado) {
@@ -138,6 +175,19 @@ class ServicioService
             }
 
             $servicio->update($cambios);
+
+            if ($nuevo === EstadoServicio::Entregado) {
+                $servicio->venta->update([
+                    'medio_pago' => $medioPago,
+                    'estado' => Venta::ESTADO_ACTIVA,
+                ]);
+
+                $this->sincronizarVenta($servicio->fresh());
+            }
+
+            if ($nuevo === EstadoServicio::Cancelado) {
+                $servicio->venta?->update(['estado' => Venta::ESTADO_ANULADA]);
+            }
 
             $this->registrarHistorial($servicio, $actual, $nuevo, $usuario, $comentario);
 
@@ -209,6 +259,26 @@ class ServicioService
             $repuesto->delete();
 
             $this->sincronizarVenta($servicio->fresh());
+        });
+    }
+
+    /**
+     * Baja lógica de la orden: nunca se borra físicamente.
+     *
+     * Devuelve los repuestos solo si la orden sigue abierta. Una orden entregada
+     * los conserva como consumibles y una cancelada ya los devolvió al cancelar.
+     * La venta de servicio queda anulada.
+     */
+    public function eliminar(Servicio $servicio, User $usuario): void
+    {
+        DB::transaction(function () use ($servicio, $usuario) {
+            if (! $servicio->estadoEnum()->esFinal()) {
+                $this->liberarRepuestos($servicio, $usuario);
+            }
+
+            $servicio->venta?->update(['estado' => Venta::ESTADO_ANULADA]);
+
+            $servicio->delete();
         });
     }
 

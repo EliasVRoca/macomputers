@@ -3,6 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EstadoServicio;
+use App\Http\Requests\Servicios\ActualizarServicioRequest;
+use App\Http\Requests\Servicios\AgregarRepuestoRequest;
+use App\Http\Requests\Servicios\CambiarEstadoServicioRequest;
+use App\Http\Requests\Servicios\FiltrarServiciosRequest;
+use App\Http\Requests\Servicios\GuardarServicioRequest;
 use App\Models\Cliente;
 use App\Models\Inventario;
 use App\Models\Producto;
@@ -10,51 +15,38 @@ use App\Models\Servicio;
 use App\Models\ServicioRepuesto;
 use App\Models\Sucursal;
 use App\Models\User;
+use App\Models\Venta;
 use App\Services\ServicioService;
+use App\Support\Csv;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ServicioController extends Controller
 {
     public function __construct(private ServicioService $servicios) {}
 
-    public function index(Request $request): View
+    public function index(FiltrarServiciosRequest $request): View
     {
         $usuario = $request->user();
-        $buscar = trim((string) $request->query('buscar', ''));
-
-        $items = Servicio::with(['cliente', 'sucursal', 'tecnico', 'venta'])
-            ->when(! $usuario->esGerente(), fn ($q) => $q->where('sucursal_id', $usuario->sucursal_id))
-            ->when($request->filled('estado'), fn ($q) => $q->where('estado', $request->query('estado')))
-            ->when($request->filled('prioridad'), fn ($q) => $q->where('prioridad', $request->query('prioridad')))
-            ->when($usuario->esGerente() && $request->filled('sucursal_id'), fn ($q) => $q->where('sucursal_id', $request->integer('sucursal_id')))
-            ->when($request->boolean('mias'), fn ($q) => $q->where('tecnico_id', $usuario->id))
-            ->when($buscar !== '', fn ($q) => $q->where(fn ($w) => $w
-                ->where('numero', 'like', "%{$buscar}%")
-                ->orWhere('equipo', 'like', "%{$buscar}%")
-                ->orWhereHas('cliente', fn ($c) => $c->where('nombre', 'like', "%{$buscar}%"))))
-            ->when($request->filled('desde'), fn ($q) => $q->whereDate('fecha_recepcion', '>=', $request->date('desde')))
-            ->when($request->filled('hasta'), fn ($q) => $q->whereDate('fecha_recepcion', '<=', $request->date('hasta')))
-            ->latest('id')
-            ->paginate(15)
-            ->withQueryString();
+        $filtros = $request->validated();
 
         $conteos = Servicio::query()
-            ->when(! $usuario->esGerente(), fn ($q) => $q->where('sucursal_id', $usuario->sucursal_id))
+            ->when(! $usuario->esGerente(), fn (Builder $q) => $q->where('sucursal_id', $usuario->sucursal_id))
             ->selectRaw('estado, count(*) as total')
             ->groupBy('estado')
             ->pluck('total', 'estado');
 
         return view('servicios.index', [
-            'items' => $items,
+            'items' => $this->consulta($usuario, $filtros)->paginate(15)->withQueryString(),
             'conteos' => $conteos,
             'estados' => EstadoServicio::opciones(),
             'prioridades' => Servicio::PRIORIDADES,
             'sucursales' => $this->sucursales($request),
             'puedeElegirSucursal' => $usuario->esGerente(),
-            'filtros' => $request->only(['buscar', 'estado', 'prioridad', 'sucursal_id', 'desde', 'hasta', 'mias']),
+            'filtros' => $filtros,
         ]);
     }
 
@@ -66,19 +58,19 @@ class ServicioController extends Controller
             'servicio' => new Servicio(['estado' => EstadoServicio::Recibido->value, 'prioridad' => 'normal']),
             'accion' => route('servicios.store'),
             'metodo' => 'POST',
-            'clientes' => Cliente::orderBy('nombre')->get(),
+            'clientes' => Cliente::where('activo', true)->orderBy('nombre')->get(),
             'sucursales' => $this->sucursales($request),
             'tecnicos' => $usuario->esGerente() ? $this->tecnicos() : collect(),
             'puedeElegirSucursal' => $usuario->esGerente(),
             'puedeElegirTecnico' => $usuario->esGerente(),
+            'puedeElegirCliente' => true,
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(GuardarServicioRequest $request): RedirectResponse
     {
         $usuario = $request->user();
-
-        $datos = $this->validar($request, $usuario, esAlta: true);
+        $datos = $request->validated();
 
         $servicio = $this->servicios->crear([
             ...$datos,
@@ -100,6 +92,7 @@ class ServicioController extends Controller
             'productos' => Producto::where('activo', true)->orderBy('nombre')->get(),
             'disponibles' => Inventario::where('sucursal_id', $servicio->sucursal_id)->pluck('cantidad', 'producto_id'),
             'siguientes' => $servicio->estadoEnum()->siguientes(),
+            'medios' => Venta::MEDIOS_PAGO,
         ]);
     }
 
@@ -107,57 +100,75 @@ class ServicioController extends Controller
     {
         $this->autorizarGestion($request, $servicio);
 
+        $usuario = $request->user();
+        $abierta = ! $servicio->cerrado();
+        $esGerente = $usuario->esGerente();
+
+        $clientes = collect();
+
+        if ($abierta) {
+            $clientes = Cliente::query()
+                ->where('activo', true)
+                ->orWhereKey($servicio->cliente_id)
+                ->orderBy('nombre')
+                ->get();
+        }
+
         return view('servicios.form', [
             'servicio' => $servicio->load(['cliente', 'sucursal', 'venta']),
             'accion' => route('servicios.update', $servicio),
             'metodo' => 'PUT',
-            'clientes' => collect(),
+            'clientes' => $clientes,
             'sucursales' => $this->sucursales($request),
-            'tecnicos' => collect(),
-            'puedeElegirSucursal' => false,
-            'puedeElegirTecnico' => false,
+            'tecnicos' => $esGerente && $abierta ? $this->tecnicos() : collect(),
+            'puedeElegirSucursal' => $esGerente && $abierta,
+            'puedeElegirTecnico' => $esGerente && $abierta,
+            'puedeElegirCliente' => $abierta,
         ]);
     }
 
-    public function update(Request $request, Servicio $servicio): RedirectResponse
+    public function update(ActualizarServicioRequest $request, Servicio $servicio): RedirectResponse
     {
         $this->autorizarGestion($request, $servicio);
 
-        $datos = $this->validar($request, $request->user(), esAlta: false);
+        $datos = $request->validated();
+
+        if (! $request->user()->esGerente()) {
+            unset($datos['sucursal_id'], $datos['tecnico_id']);
+        }
+
+        if ($servicio->cerrado()) {
+            unset($datos['cliente_id'], $datos['sucursal_id'], $datos['tecnico_id']);
+        }
 
         $this->servicios->actualizar($servicio, $datos);
 
         return redirect()->route('servicios.show', $servicio)->with('status', 'Datos de la orden actualizados.');
     }
 
-    public function cambiarEstado(Request $request, Servicio $servicio): RedirectResponse
+    public function cambiarEstado(CambiarEstadoServicioRequest $request, Servicio $servicio): RedirectResponse
     {
         $this->autorizarSucursal($request, $servicio);
 
-        $datos = $request->validate([
-            'estado' => ['required', Rule::enum(EstadoServicio::class)],
-            'comentario' => ['nullable', 'string', 'max:500'],
-        ]);
+        $datos = $request->validated();
 
         $this->servicios->cambiarEstado(
             $servicio,
             EstadoServicio::from($datos['estado']),
             $request->user(),
             $datos['comentario'] ?? null,
+            $datos['medio_pago'] ?? null,
         );
 
         return redirect()->route('servicios.show', $servicio)
             ->with('status', 'Estado de la orden actualizado.');
     }
 
-    public function agregarRepuesto(Request $request, Servicio $servicio): RedirectResponse
+    public function agregarRepuesto(AgregarRepuestoRequest $request, Servicio $servicio): RedirectResponse
     {
         $this->autorizarSucursal($request, $servicio);
 
-        $datos = $request->validate([
-            'producto_id' => ['required', Rule::exists('productos', 'id')],
-            'cantidad' => ['required', 'integer', 'min:1'],
-        ], [], ['producto_id' => 'repuesto', 'cantidad' => 'cantidad']);
+        $datos = $request->validated();
 
         $this->servicios->agregarRepuesto($servicio, (int) $datos['producto_id'], (int) $datos['cantidad'], $request->user());
 
@@ -188,60 +199,57 @@ class ServicioController extends Controller
     {
         $this->autorizarGestion($request, $servicio);
 
-        // Al eliminar la venta de servicio se elimina también el registro del servicio.
-        $servicio->venta()->delete();
+        $this->servicios->eliminar($servicio, $request->user());
 
-        return redirect()->route('servicios.index')->with('status', 'Orden eliminada.');
+        return redirect()->route('servicios.index')
+            ->with('status', 'Orden dada de baja. El historial se conserva.');
+    }
+
+    public function export(FiltrarServiciosRequest $request): StreamedResponse
+    {
+        $filas = $this->consulta($request->user(), $request->validated())->lazy()
+            ->map(fn (Servicio $servicio): array => [
+                $servicio->numero,
+                $servicio->fecha_recepcion?->format('d/m/Y'),
+                $servicio->fecha_entrega?->format('d/m/Y') ?? '—',
+                $servicio->cliente?->nombre ?? 'Sin cliente',
+                $servicio->equipo,
+                $servicio->sucursal?->nombre,
+                $servicio->tecnico?->nombre() ?? '—',
+                Servicio::PRIORIDADES[$servicio->prioridad] ?? $servicio->prioridad,
+                $servicio->estadoEnum()->etiqueta(),
+                number_format((float) ($servicio->venta?->total ?? 0), 2, '.', ''),
+                $servicio->venta?->medio_pago ?? '—',
+            ]);
+
+        return Csv::descargar(
+            'servicios-'.now()->format('Ymd-His').'.csv',
+            ['OT', 'Recepción', 'Entrega', 'Cliente', 'Equipo', 'Sucursal', 'Técnico', 'Prioridad', 'Estado', 'Total', 'Medio de pago'],
+            $filas,
+        );
     }
 
     /**
-     * @return array<string, mixed>
+     * @param  array<string, mixed>  $filtros
      */
-    private function validar(Request $request, User $usuario, bool $esAlta): array
+    private function consulta(User $usuario, array $filtros): Builder
     {
-        $reglas = [
-            'equipo' => ['required', 'string', 'max:150'],
-            'diagnostico' => ['nullable', 'string', 'max:1000'],
-            'fecha_recepcion' => ['required', 'date'],
-            'fecha_prometida' => ['nullable', 'date', 'after_or_equal:fecha_recepcion'],
-            'prioridad' => ['required', Rule::in(array_keys(Servicio::PRIORIDADES))],
-            'accesorios_recibidos' => ['nullable', 'string', 'max:500'],
-            'mano_de_obra' => ['required', 'numeric', 'min:0'],
-            'descuento' => ['nullable', 'numeric', 'min:0'],
-            'garantia_dias' => ['nullable', 'integer', 'min:0', 'max:3650'],
-            'observaciones' => ['nullable', 'string', 'max:1000'],
-        ];
+        $buscar = (string) ($filtros['buscar'] ?? '');
 
-        $atributos = [
-            'mano_de_obra' => 'mano de obra',
-            'fecha_recepcion' => 'fecha de recepción',
-            'fecha_prometida' => 'fecha prometida',
-            'accesorios_recibidos' => 'accesorios recibidos',
-            'garantia_dias' => 'días de garantía',
-        ];
-
-        if (! $esAlta) {
-            return $request->validate($reglas, [], $atributos);
-        }
-
-        return $request->validate([
-            ...$reglas,
-            'modo_cliente' => ['required', Rule::in(['existente', 'nuevo'])],
-            'cliente_id' => ['nullable', 'required_if:modo_cliente,existente', Rule::exists('clientes', 'id')],
-            'cliente_nombre' => ['nullable', 'required_if:modo_cliente,nuevo', 'string', 'max:150'],
-            'cliente_telefono' => ['nullable', 'string', 'max:30'],
-            'cliente_carnet' => ['nullable', 'string', 'max:30', Rule::unique('clientes', 'carnet')],
-            'sucursal_id' => [$usuario->esGerente() ? 'required' : 'nullable', Rule::exists('sucursales', 'id')],
-            'tecnico_id' => ['nullable', Rule::exists('users', 'id')],
-        ], [], [
-            ...$atributos,
-            'cliente_id' => 'cliente',
-            'cliente_nombre' => 'nombre del cliente',
-            'cliente_telefono' => 'teléfono',
-            'cliente_carnet' => 'carnet',
-            'sucursal_id' => 'sucursal',
-            'tecnico_id' => 'técnico',
-        ]);
+        return Servicio::query()
+            ->with(['cliente', 'sucursal', 'tecnico', 'venta'])
+            ->when(! $usuario->esGerente(), fn (Builder $q) => $q->where('sucursal_id', $usuario->sucursal_id))
+            ->when($filtros['estado'] ?? null, fn (Builder $q) => $q->where('estado', $filtros['estado']))
+            ->when($filtros['prioridad'] ?? null, fn (Builder $q) => $q->where('prioridad', $filtros['prioridad']))
+            ->when($usuario->esGerente() && ($filtros['sucursal_id'] ?? null), fn (Builder $q) => $q->where('sucursal_id', (int) $filtros['sucursal_id']))
+            ->when($filtros['mias'] ?? false, fn (Builder $q) => $q->where('tecnico_id', $usuario->id))
+            ->when($buscar !== '', fn (Builder $q) => $q->where(fn (Builder $w) => $w
+                ->where('numero', 'like', "%{$buscar}%")
+                ->orWhere('equipo', 'like', "%{$buscar}%")
+                ->orWhereHas('cliente', fn (Builder $c) => $c->where('nombre', 'like', "%{$buscar}%"))))
+            ->when($filtros['desde'] ?? null, fn (Builder $q) => $q->whereDate('fecha_recepcion', '>=', $filtros['desde']))
+            ->when($filtros['hasta'] ?? null, fn (Builder $q) => $q->whereDate('fecha_recepcion', '<=', $filtros['hasta']))
+            ->latest('id');
     }
 
     private function sucursales(Request $request)
@@ -284,7 +292,7 @@ class ServicioController extends Controller
         abort_if(
             $servicio->cerrado() && ! $request->user()->esGerente(),
             403,
-            'Solo un gerente puede editar o eliminar una orden entregada o cancelada.',
+            'Solo un gerente puede editar o dar de baja una orden entregada o cancelada.',
         );
     }
 }

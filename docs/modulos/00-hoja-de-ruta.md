@@ -20,9 +20,9 @@ documento debe reflejar fielmente lo que la aplicación hace.
 | RF | Requisito | CU | Módulo | Estado |
 |----|-----------|----|--------|--------|
 | RF1 | Autenticar usuario | CU16 *(nuevo)* | Autenticación y sesión | ✅ (sin CU aún) |
-| RF2 | Gestionar usuarios | CU1 | Administración · Usuarios | ◐ |
+| RF2 | Gestionar usuarios | CU1 | Administración · Usuarios | ✅ |
 | RF3 | Gestionar roles | CU2 | Administración · Roles | ✅ |
-| RF4 | Gestionar sucursales | CU3 | Administración · Sucursales | ◐ |
+| RF4 | Gestionar sucursales | CU3 | Administración · Sucursales | ✅ |
 | RF5 | Gestionar categorías | CU4 | Catálogo · Categorías | ✅ |
 | RF6 | Gestionar productos | CU5 | Catálogo · Productos | ✅ |
 | RF7 | Consultar disponibilidad de productos | CU17 *(nuevo)* | Inventario · Disponibilidad | ✅ (sin CU aún) |
@@ -34,11 +34,11 @@ documento debe reflejar fielmente lo que la aplicación hace.
 | RF13 | Gestionar apartados | CU11 | Ventas · Apartados | ✅ |
 | RF14 | Gestionar encargos | CU12 | Ventas · Encargos | ✅ |
 | RF15 | Gestionar cambios y devoluciones | CU13 | Ventas · Cambios | ✅ |
-| RF16 | Gestionar servicio técnico | CU14 | Servicio técnico · Órdenes de trabajo | ◐ |
+| RF16 | Gestionar servicio técnico | CU14 | Servicio técnico · Órdenes de trabajo | ✅ |
 | RF17 | Gestionar clientes | CU15 | Ventas · Clientes | ✅ |
 | RF18 | Consultar y exportar reportes | — *(transversal)* | Exportación dentro de los módulos | ✅ |
 | RF19 | Gestionar perfil de cuenta propia *(nuevo)* | CU18 *(nuevo)* | Sesión · Perfil | ✅ (sin RF/CU aún) |
-| RF20 | Buscar producto (buscador inteligente) *(extensión)* | CU19 *(extensión)* | 🔧 Módulo estrella | ⬜ |
+| RF20 | Buscar producto (buscador inteligente) *(extensión)* | CU19 *(extensión)* | 🔧 Módulo estrella | ✅ |
 | RF21 | Consultar panel de inicio *(extensión, opcional)* | CU20 *(extensión)* | 🔧 Dashboard | ⬜ |
 
 > **RF18 (reportes):** por criterio del docente, los reportes **no son un caso de uso ni un módulo
@@ -55,19 +55,17 @@ documento debe reflejar fielmente lo que la aplicación hace.
 **Permisos, menú y stock**
 - *Propósito:* declarar los módulos y filtrarlos por rol; ser el único punto de escritura del stock.
 - *Archivos:* `config/permisos.php`, `app/Support/Menu.php`, `app/Http/Middleware/EnsurePermiso.php`, `app/Services/StockService.php`.
-- ✅ 16 módulos con permiso; riel y paleta filtrados por rol; sesión única por usuario.
+- ✅ 17 módulos con permiso; riel y paleta filtrados por rol; sesión única por usuario.
 - ✅ `StockService`: bloquea la fila, impide saldos negativos y escribe el kardex en cada movimiento.
-- ◐ **FormRequests** por módulo (política en `docs/modulos/00-contexto.md` §13): ya los tienen **Catálogo** (Categorías/Productos/Proveedores), **Inventario** (existencias/kardex), **Disponibilidad/Traspasos/Compras** y **Ventas** (Ventas/Apartados/Encargos/Cambios/Clientes); faltan **Servicio técnico** y **Administración** · *(opcional)* `Policy`.
+- ◐ **FormRequests** por módulo (política en `docs/modulos/00-contexto.md` §13): ya los tienen **Catálogo** (Categorías/Productos/Proveedores), **Inventario** (existencias/kardex), **Disponibilidad/Traspasos/Compras**, **Ventas** (Ventas/Apartados/Encargos/Cambios/Clientes), **Usuarios**, **Sucursales** y **Servicio técnico**; faltan **Roles** y **Sesión** · *(opcional)* `Policy`.
 - ✅ **Exportación (RF18):** exportan **Inventario** (kardex y existencias/bajo mínimo), **Traspasos**, **Compras**, **Disponibilidad**, **Catálogo** (categorías/productos/proveedores) y **Ventas** (ventas/apartados/encargos/cambios/clientes). *(Opcional, no exigido por RF18: **Servicio técnico**.)*
 
 ### Administración
 
 **Usuarios** — RF2 · CU1
-- ✅ Listar (paginado 15), crear (persona + cuenta en transacción), editar (contraseña opcional), eliminar (bloquea auto-borrado y registros asociados).
-- ◐ Activar/desactivar: solo mediante el checkbox del formulario (no hay acción dedicada).
-- ⬜ Baja **lógica** (CU1 dice "dar de baja"; hoy es borrado físico).
-- ⬜ Búsqueda y filtros en el listado.
-- ⬜ `show` de detalle.
+- ✅ Listar (paginado 15) con **filtros** (texto, rol, sucursal, estado), crear (persona + cuenta en transacción), editar (contraseña opcional).
+- ✅ **Baja lógica** (dar de baja/reactivar) con acción dedicada; al desactivar se eliminan sus sesiones. Nunca se borra el usuario ni la persona.
+- ⬜ *(opcional)* `show` de detalle.
 
 **Roles** — RF3 · CU2
 - ✅ Listar con conteo de usuarios, crear/editar/eliminar, permisos por módulo, protege el rol de sistema, bloquea eliminar un rol con usuarios.
@@ -75,8 +73,8 @@ documento debe reflejar fielmente lo que la aplicación hace.
 
 **Sucursales** — RF4 · CU3
 - ✅ Listar, crear, editar.
-- ⬜ **Eliminar sucursal** + validación "no si tiene inventario o movimientos asociados" (lo exige CU3).
-- ⬜ `show`.
+- ✅ **Baja lógica** (dar de baja/reactivar) con validación: no si tiene stock, usuarios activos asignados o es la última activa. Nunca se borra la fila.
+- ⬜ *(opcional)* `show`.
 
 **Autenticación y sesión** — RF1 · CU16 *(nuevo)*
 - ✅ Login (solo usuarios activos), sesión única por usuario, logout.
@@ -175,10 +173,11 @@ documento debe reflejar fielmente lo que la aplicación hace.
 ### Servicio técnico
 
 **Servicios (órdenes de trabajo)** — RF16 · CU14
-- ✅ Filtros (estado, prioridad, sucursal, técnico, texto, fechas); crear OT como venta de servicio + historial; **máquina de estados** (Recibido → EnProceso → Listo → Entregado / Cancelado); repuestos consumen stock; cancelar devuelve repuestos; imprimir.
-- ⬜ **Cobrar la OT como venta de servicio** (hoy nace sin medio de pago).
-- ⬜ Reponer los repuestos al **borrar** la orden (hoy queda stock descontado).
-- ⬜ Reasignar cliente/sucursal/**técnico**.
+- ✅ Filtros (estado, prioridad, sucursal, técnico, texto, fechas); crear OT como venta de servicio + historial; **máquina de estados** (Recibido → EnProceso → Listo → Entregado / Cancelado); repuestos consumen stock; cancelar devuelve repuestos y **anula la venta**; imprimir; **Export CSV** (RF18).
+- ✅ **Cobro de la OT:** `medio_pago` obligatorio al entregar, guardado en la venta de servicio.
+- ✅ **Baja lógica:** `deleted_at`; la venta queda anulada. Repuestos devueltos solo si la OT está abierta (en entregadas son consumibles; en canceladas ya se devolvieron).
+- ✅ Reasignar cliente (abiertas) y sucursal/**técnico** (gerente, sin repuestos).
+- ✅ FormRequests en todos los formularios y filtros tipados.
 - ⬜ *(opcional)* Garantías; adjuntos; editar cantidad de un repuesto.
 
 ---
@@ -199,29 +198,29 @@ documento debe reflejar fielmente lo que la aplicación hace.
 
 | Extensión | Descripción | RF/CU | Estado |
 |---|---|---|---|
-| **Buscador inteligente de productos** | Búsqueda instantánea (nombre/código/marca/modelo/atributos), con **imagen**, **existencia por sucursal**, **productos similares** y **registro de búsquedas sin resultado** (reporte *"lo más buscado que no tenemos"*). | RF20 / CU19 | ⬜ |
-| **Imágenes de producto** | `producto_imagenes` (principal + galería). | Soporte RF20 | ⬜ |
-| **Atributos / ficha técnica** | `producto_atributos` para búsqueda por atributos y cálculo de similitud. | Soporte RF20 | ⬜ |
-| **Log de búsquedas** | `busquedas_producto` (término, sucursal, usuario, fecha, resultado). | Soporte RF20 | ⬜ |
+| **Buscador inteligente de productos** | Búsqueda instantánea (nombre/código/marca/modelo/atributos), con **imagen**, **existencia por sucursal**, **productos similares** y **registro de búsquedas sin resultado** (reporte *"lo más buscado que no tenemos"*). | RF20 / CU19 | ✅ |
+| **Imágenes de producto** | `producto_imagenes` (principal + galería). | Soporte RF20 | ✅ |
+| **Atributos / ficha técnica** | `producto_atributos` para búsqueda por atributos y cálculo de similitud. | Soporte RF20 | ✅ |
+| **Log de búsquedas** | `busquedas_producto` (término, sucursal, usuario, fecha, resultado). | Soporte RF20 | ✅ |
 | **Panel de inicio (dashboard)** | Indicadores básicos (disponibilidad, bajo mínimo, ventas recientes). | RF21 / CU20 | ⬜ |
 | **Anulación de traspasos** | Reverso de un traspaso ya registrado (las **compras** ya se anulan). | — | ⬜ |
 
 **Checklist del módulo estrella (RF20 / CU19)**
-- [ ] Búsqueda en vivo (AJAX) con índices → RNF4 (<2 s).
-- [ ] Resultados con imagen y existencia por sucursal (y total).
-- [ ] Sugerencia de productos similares cuando no hay coincidencia exacta.
-- [ ] Registro de cada búsqueda sin resultado.
-- [ ] Reporte para el gerente: *"lo más buscado que no tenemos"*.
-- [ ] Enlace a compras (RF11) / encargos (RF14) desde ese reporte.
+- [x] Búsqueda en vivo (AJAX) con índices → RNF4 (<2 s).
+- [x] Resultados con imagen y existencia por sucursal (y total).
+- [x] Sugerencia de productos similares cuando no hay coincidencia exacta.
+- [x] Registro de cada búsqueda sin resultado.
+- [x] Reporte para el gerente: *"lo más buscado que no tenemos"*.
+- [x] Enlace a compras (RF11) / encargos (RF14) desde ese reporte.
 
 ---
 
 ## 5. Brechas transversales
 
-- ✅ **Exportaciones (RF18):** exportan **Inventario** (kardex y existencias/bajo mínimo), **Traspasos**, **Compras**, **Disponibilidad**, **Catálogo** y **Ventas** (ventas/apartados/encargos/cambios/clientes). *(Opcional: **Servicio técnico**.)* Helper: `App\Support\Csv`.
-- ⬜ **Baja lógica** de usuario (hoy borrado físico; existe el campo `activo` en usuarios). Clientes ya usan baja lógica.
+- ✅ **Exportaciones (RF18):** exportan **Inventario** (kardex y existencias/bajo mínimo), **Traspasos**, **Compras**, **Disponibilidad**, **Catálogo** y **Ventas** (ventas/apartados/encargos/cambios/clientes) y **Servicio técnico**. Helper: `App\Support\Csv`.
+- ✅ **Baja lógica:** usuarios, clientes y sucursales se **desactivan** (`activo`/`activa`), nunca se borran.
 - ⬜ **Duplicación `Persona` vs `Cliente`:** el cliente no reutiliza los datos de persona.
-- ⬜ **Entrada tipada/saneada en todos los módulos:** ya la tienen **Inventario**, **Disponibilidad**, **Traspasos**, **Compras**, **Catálogo** y **Ventas** (Ventas/Apartados/Encargos/Cambios/Clientes) con FormRequests; el resto (Servicio técnico, Administración) valida **inline**. Migrar por módulo + sanear el texto libre (política en `docs/modulos/00-contexto.md` §13).
+- ⬜ **Entrada tipada/saneada en todos los módulos:** ya la tienen **Inventario**, **Disponibilidad**, **Traspasos**, **Compras**, **Catálogo**, **Ventas** (Ventas/Apartados/Encargos/Cambios/Clientes), **Usuarios** y **Sucursales** con FormRequests; faltan **Servicio técnico**, **Roles** y **Sesión**. Migrar + sanear el texto libre (política en `docs/modulos/00-contexto.md` §13).
 - ⬜ **Estructura de vistas uniforme:** renombrar `create`→`form` en Compras y Traspasos (Ventas y Cambios ya están; convención en `00-contexto.md` §12).
 - ⬜ *(opcional)* `Policy` para centralizar la autorización (hoy middleware `permiso:` + lógica en el controlador).
 - ⬜ Documentación PUDS: incorporar CU16–CU20 con sus diagramas de actividad y secuencia.
@@ -230,16 +229,16 @@ documento debe reflejar fielmente lo que la aplicación hace.
 
 ## 6. Orden de ejecución recomendado
 
-1. **CU17 — Disponibilidad como CU** y cierre del núcleo del objetivo (RF7).
-2. **Eliminar sucursal** (CU3) + validación de dependencias.
-3. **Dirección del cliente** (CU15) y **baja lógica** (CU1/CU15).
-4. **Nota de venta imprimible** (CU10).
-5. **Cobro de la OT** (CU14) y reposición de repuestos al borrar la orden.
-6. **Cambios: reembolso** y cantidades variables (CU13).
-7. **Encargos: producto asociado** (CU12) · **Cambios: reembolso informativo** (CU13).
-8. **Exportaciones (RF18):** completas en los módulos exigidos (kardex, bajo mínimo, traspasos, compras, disponibilidad, catálogo y ventas). *(Resta el export opcional de Servicio técnico.)*
-9. **CU16 (autenticación)** y **CU18 (perfil)** al modelo PUDS.
-10. 🔧 **Módulo estrella** (CU19) e imágenes y atributos de producto.
+1. ✅ **CU17 — Disponibilidad como CU** (RF7).
+2. ✅ **Baja lógica de sucursal** (CU3) con validación de dependencias.
+3. ✅ **Dirección del cliente** (CU15) y **baja lógica** de usuarios/clientes (CU1/CU15).
+4. ✅ **Nota de venta imprimible** (CU10).
+5. ✅ **Cobro de la OT** (CU14), baja lógica y reposición de repuestos al dar de baja.
+6. ✅ **Cambios: reembolso** y cantidades variables (CU13).
+7. ✅ **Encargos: producto asociado** (CU12) · **Cambios: reembolso informativo** (CU13).
+8. ✅ **Exportaciones (RF18)** completas en los módulos exigidos. *(Resta el export opcional de Servicio técnico.)*
+9. ⬜ **CU16 (autenticación)** y **CU18 (perfil)** al modelo PUDS.
+10. ✅ 🔧 **Módulo estrella** (CU19), imágenes, atributos y log de búsquedas.
 11. 🔧 *(opcional)* Dashboard y anulación de traspasos.
 
 ---
@@ -258,9 +257,10 @@ documento debe reflejar fielmente lo que la aplicación hace.
 | Cliente en línea | **Ventas/Apartados/Encargos** (patrón `modo_cliente`, igual que Servicio técnico). |
 | Cobro de la OT | **`medio_pago` en la venta** de servicio al entregar. |
 | Exportaciones (RF18) | **CSV** en cada listado (transversal, no es módulo ni CU). |
-| Baja lógica | Usuarios y clientes: **desactivar** (`activo`), no borrar. |
+| Baja lógica | Usuarios, clientes y sucursales: **desactivar** (`activo`/`activa`); OT: **`deleted_at`**. Nunca borrar. |
+| Repuestos de OT | **Consumibles:** no vuelven al stock si la OT se entregó (sí al cancelar o dar de baja una orden abierta). |
 | Condición de producto | nuevo / remanufacturado / seminuevo. |
-| Buscador insignia | Imágenes **subida + URL**; atributos **clave/valor libre**. |
+| Buscador insignia | Permiso propio `buscador`; imágenes **subida + URL**; atributos **clave/valor libre**; log global con dedupe de 5 s. |
 | Dashboard | 5 métricas: ventas del día, bajo mínimo, OT pendientes/listas, traspasos de hoy, búsquedas sin resultado. |
 | UI | `resources/css/app.css` es la fuente de verdad; `DESIGN.md` = referencia parcial. |
 | Git | Lo maneja el usuario. |

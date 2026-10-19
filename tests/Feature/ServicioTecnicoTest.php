@@ -90,6 +90,7 @@ class ServicioTecnicoTest extends TestCase
         $orden->refresh();
         $this->assertSame('entregado', $orden->estado);
         $this->assertNotNull($orden->fecha_entrega);
+        $this->assertSame('Efectivo', $orden->venta->medio_pago);
         $this->assertSame(4, $orden->historial()->count());
     }
 
@@ -98,7 +99,10 @@ class ServicioTecnicoTest extends TestCase
         $orden = $this->crearOrden();
 
         $this->actingAs($this->gerente)
-            ->patch(route('servicios.estado', $orden), ['estado' => EstadoServicio::Entregado->value])
+            ->patch(route('servicios.estado', $orden), [
+                'estado' => EstadoServicio::Entregado->value,
+                'medio_pago' => 'Efectivo',
+            ])
             ->assertSessionHasErrors('estado');
 
         $this->assertSame('recibido', $orden->fresh()->estado);
@@ -241,7 +245,8 @@ class ServicioTecnicoTest extends TestCase
 
         $this->actingAs($this->gerente)->delete(route('servicios.destroy', $orden))
             ->assertRedirect(route('servicios.index'));
-        $this->assertDatabaseMissing('servicios', ['id' => $orden->id]);
+        $this->assertSoftDeleted('servicios', ['id' => $orden->id]);
+        $this->assertDatabaseHas('ventas', ['id' => $orden->venta_id, 'estado' => 'anulada']);
     }
 
     public function test_un_rol_personalizado_con_permiso_de_servicios_no_gestiona_ordenes_cerradas(): void
@@ -287,6 +292,220 @@ class ServicioTecnicoTest extends TestCase
         $this->assertSame('alta', $orden->fresh()->prioridad);
     }
 
+    public function test_entregar_exige_medio_de_pago(): void
+    {
+        $orden = $this->crearOrden();
+        $this->cambiarEstado($orden, EstadoServicio::EnProceso);
+        $this->cambiarEstado($orden, EstadoServicio::Listo);
+
+        $this->actingAs($this->gerente)
+            ->patch(route('servicios.estado', $orden), ['estado' => EstadoServicio::Entregado->value])
+            ->assertSessionHasErrors('medio_pago');
+
+        $orden->refresh();
+
+        $this->assertSame('listo', $orden->estado);
+        $this->assertNull($orden->venta->medio_pago);
+    }
+
+    public function test_baja_logica_de_orden_abierta_devuelve_repuestos_y_anula_la_venta(): void
+    {
+        $orden = $this->crearOrden();
+
+        $this->actingAs($this->gerente)->post(route('servicios.repuestos.store', $orden), [
+            'producto_id' => $this->producto->id,
+            'cantidad' => 3,
+        ])->assertRedirect();
+
+        $this->assertSame(7, $this->stockEn($this->principal));
+
+        $this->actingAs($this->gerente)
+            ->delete(route('servicios.destroy', $orden))
+            ->assertRedirect(route('servicios.index'));
+
+        $this->assertSoftDeleted('servicios', ['id' => $orden->id]);
+        $this->assertDatabaseHas('ventas', ['id' => $orden->venta_id, 'estado' => 'anulada']);
+        $this->assertSame(10, $this->stockEn($this->principal));
+    }
+
+    public function test_baja_logica_de_orden_cancelada_no_devuelve_repuestos_dos_veces(): void
+    {
+        $orden = $this->crearOrden();
+
+        $this->actingAs($this->gerente)->post(route('servicios.repuestos.store', $orden), [
+            'producto_id' => $this->producto->id,
+            'cantidad' => 3,
+        ])->assertRedirect();
+
+        $this->cambiarEstado($orden, EstadoServicio::Cancelado);
+        $this->assertSame(10, $this->stockEn($this->principal));
+
+        $this->actingAs($this->gerente)
+            ->delete(route('servicios.destroy', $orden))
+            ->assertRedirect(route('servicios.index'));
+
+        $this->assertSoftDeleted('servicios', ['id' => $orden->id]);
+        $this->assertSame(10, $this->stockEn($this->principal));
+    }
+
+    public function test_baja_logica_de_orden_entregada_conserva_el_consumo_de_repuestos(): void
+    {
+        $orden = $this->crearOrden();
+
+        $this->actingAs($this->gerente)->post(route('servicios.repuestos.store', $orden), [
+            'producto_id' => $this->producto->id,
+            'cantidad' => 2,
+        ])->assertRedirect();
+
+        $this->cambiarEstado($orden, EstadoServicio::EnProceso);
+        $this->cambiarEstado($orden, EstadoServicio::Listo);
+        $this->cambiarEstado($orden, EstadoServicio::Entregado);
+
+        $this->assertSame(8, $this->stockEn($this->principal));
+
+        $this->actingAs($this->gerente)
+            ->delete(route('servicios.destroy', $orden))
+            ->assertRedirect(route('servicios.index'));
+
+        $this->assertSoftDeleted('servicios', ['id' => $orden->id]);
+        $this->assertDatabaseHas('ventas', ['id' => $orden->venta_id, 'estado' => 'anulada']);
+        $this->assertSame(8, $this->stockEn($this->principal));
+    }
+
+    public function test_la_orden_dada_de_baja_no_se_muestra(): void
+    {
+        $orden = $this->crearOrden();
+
+        $this->actingAs($this->gerente)->delete(route('servicios.destroy', $orden));
+
+        $this->actingAs($this->gerente)->get(route('servicios.index'))
+            ->assertOk()
+            ->assertDontSee($orden->numero);
+
+        $this->actingAs($this->gerente)->get(route('servicios.show', $orden))->assertNotFound();
+    }
+
+    public function test_el_gerente_reasigna_cliente_sucursal_y_tecnico(): void
+    {
+        $otroCliente = Cliente::create(['nombre' => 'Otro Cliente', 'telefono' => '70099999']);
+        $orden = $this->crearOrden();
+        $ventaId = $orden->venta_id;
+
+        $this->actingAs($this->gerente)->put(route('servicios.update', $orden), [
+            'equipo' => 'Laptop de prueba',
+            'diagnostico' => 'Revisión general',
+            'mano_de_obra' => 200,
+            'prioridad' => 'normal',
+            'fecha_recepcion' => now()->toDateString(),
+            'cliente_id' => $otroCliente->id,
+            'sucursal_id' => $this->segunda->id,
+            'tecnico_id' => $this->tecnico->id,
+        ])->assertRedirect(route('servicios.show', $orden));
+
+        $orden->refresh();
+
+        $this->assertSame($otroCliente->id, $orden->cliente_id);
+        $this->assertSame($this->segunda->id, $orden->sucursal_id);
+        $this->assertSame($this->tecnico->id, $orden->tecnico_id);
+        $this->assertDatabaseHas('ventas', [
+            'id' => $ventaId,
+            'cliente_id' => $otroCliente->id,
+            'sucursal_id' => $this->segunda->id,
+        ]);
+    }
+
+    public function test_no_cambia_la_sucursal_de_una_orden_con_repuestos(): void
+    {
+        $orden = $this->crearOrden();
+
+        $this->actingAs($this->gerente)->post(route('servicios.repuestos.store', $orden), [
+            'producto_id' => $this->producto->id,
+            'cantidad' => 1,
+        ])->assertRedirect();
+
+        $this->actingAs($this->gerente)->put(route('servicios.update', $orden), [
+            'equipo' => 'Laptop de prueba',
+            'diagnostico' => 'Revisión general',
+            'mano_de_obra' => 200,
+            'prioridad' => 'normal',
+            'fecha_recepcion' => now()->toDateString(),
+            'sucursal_id' => $this->segunda->id,
+        ])->assertSessionHasErrors('sucursal_id');
+
+        $this->assertSame($this->principal->id, $orden->fresh()->sucursal_id);
+    }
+
+    public function test_el_tecnico_cambia_cliente_pero_no_sucursal_ni_tecnico(): void
+    {
+        $otroCliente = Cliente::create(['nombre' => 'Otro Cliente', 'telefono' => '70099999']);
+
+        $orden = $this->crearOrden([
+            'sucursal_id' => $this->segunda->id,
+            'tecnico_id' => $this->tecnico->id,
+        ]);
+
+        $this->actingAs($this->tecnico)->put(route('servicios.update', $orden), [
+            'equipo' => 'Laptop de prueba',
+            'diagnostico' => 'Revisión general',
+            'mano_de_obra' => 200,
+            'prioridad' => 'normal',
+            'fecha_recepcion' => now()->toDateString(),
+            'cliente_id' => $otroCliente->id,
+            'sucursal_id' => $this->principal->id,
+            'tecnico_id' => $this->gerente->id,
+        ])->assertRedirect(route('servicios.show', $orden));
+
+        $orden->refresh();
+
+        $this->assertSame($otroCliente->id, $orden->cliente_id);
+        $this->assertSame($this->segunda->id, $orden->sucursal_id);
+        $this->assertSame($this->tecnico->id, $orden->tecnico_id);
+    }
+
+    public function test_no_reasigna_una_orden_cerrada(): void
+    {
+        $otroCliente = Cliente::create(['nombre' => 'Otro Cliente', 'telefono' => '70099999']);
+        $orden = $this->crearOrden();
+
+        $this->cambiarEstado($orden, EstadoServicio::EnProceso);
+        $this->cambiarEstado($orden, EstadoServicio::Listo);
+        $this->cambiarEstado($orden, EstadoServicio::Entregado);
+
+        $this->actingAs($this->gerente)->put(route('servicios.update', $orden), [
+            'equipo' => 'Laptop de prueba',
+            'diagnostico' => 'Revisión general',
+            'mano_de_obra' => 200,
+            'prioridad' => 'normal',
+            'fecha_recepcion' => now()->toDateString(),
+            'cliente_id' => $otroCliente->id,
+        ])->assertSessionHasErrors('cliente_id');
+
+        $this->assertSame($this->cliente->id, $orden->fresh()->cliente_id);
+    }
+
+    public function test_el_export_respeta_filtros_permisos_y_bajas(): void
+    {
+        $orden = $this->crearOrden();
+        $this->cambiarEstado($orden, EstadoServicio::EnProceso);
+        $this->cambiarEstado($orden, EstadoServicio::Listo);
+
+        $respuesta = $this->actingAs($this->gerente)
+            ->get(route('servicios.export', ['estado' => EstadoServicio::Listo->value]));
+
+        $respuesta->assertOk()
+            ->assertHeader('content-type', 'text/csv; charset=UTF-8');
+
+        $this->assertStringContainsString($orden->numero, $respuesta->streamedContent());
+
+        $this->actingAs($this->gerente)->delete(route('servicios.destroy', $orden));
+
+        $sinBaja = $this->actingAs($this->gerente)->get(route('servicios.export'));
+        $sinBaja->assertOk();
+        $this->assertStringNotContainsString($orden->numero, $sinBaja->streamedContent());
+
+        $this->actingAs($this->vendedor)->get(route('servicios.export'))->assertForbidden();
+    }
+
     private function crearOrden(array $extra = []): Servicio
     {
         $this->actingAs($this->gerente)->post(route('servicios.store'), array_merge([
@@ -305,8 +524,14 @@ class ServicioTecnicoTest extends TestCase
 
     private function cambiarEstado(Servicio $orden, EstadoServicio $estado): void
     {
+        $datos = ['estado' => $estado->value];
+
+        if ($estado === EstadoServicio::Entregado) {
+            $datos['medio_pago'] = 'Efectivo';
+        }
+
         $this->actingAs($this->gerente)
-            ->patch(route('servicios.estado', $orden), ['estado' => $estado->value])
+            ->patch(route('servicios.estado', $orden), $datos)
             ->assertRedirect(route('servicios.show', $orden));
     }
 

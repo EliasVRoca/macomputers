@@ -88,12 +88,13 @@ class AutenticacionYPermisosTest extends TestCase
         $this->actingAs($vendedor)->get(route('disponibilidad.index'))->assertOk();
     }
 
-    public function test_tecnico_solo_accede_a_servicios_y_disponibilidad(): void
+    public function test_tecnico_accede_a_servicios_disponibilidad_y_buscador(): void
     {
         $tecnico = User::where('username', 'tecnico')->first();
 
         $this->actingAs($tecnico)->get(route('servicios.index'))->assertOk();
         $this->actingAs($tecnico)->get(route('disponibilidad.index'))->assertOk();
+        $this->actingAs($tecnico)->get(route('buscador.index'))->assertOk();
         $this->actingAs($tecnico)->get(route('ventas.index'))->assertForbidden();
         $this->actingAs($tecnico)->get(route('inventario.index'))->assertForbidden();
     }

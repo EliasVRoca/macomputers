@@ -58,7 +58,7 @@ bajo mínimo; filtros con `.input` + `<select class="input">` + `.btn-secondary`
 - ✅ **Filtro por sucursal** (solo filas con existencia).
 - ✅ **Exportar CSV** (RF18).
 - ⬜ **Modelar como CU17** en la documentación PUDS/UML (documento de tesis, fuera del repo).
-- 🔧 Evoluciona al **buscador** (`20-buscador.md`): imágenes, similitudes, log de búsquedas.
+- ✅ 🔧 Evoluciona al **buscador** (`20-buscador.md`): imágenes, similitudes, log de búsquedas.
 
 ## 9. Pruebas
 

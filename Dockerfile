@@ -11,9 +11,10 @@ RUN pnpm build
 
 # ---------- Etapa 2: PHP 8.5 + php-fpm ----------
 FROM php:8.5-fpm-alpine AS php
-RUN apk add --no-cache icu-libs libzip \
- && apk add --no-cache --virtual .build-deps icu-dev libzip-dev \
- && docker-php-ext-install pdo_mysql bcmath intl zip \
+RUN apk add --no-cache icu-libs libzip libjpeg-turbo libpng libwebp freetype \
+ && apk add --no-cache --virtual .build-deps icu-dev libzip-dev libjpeg-turbo-dev libpng-dev libwebp-dev freetype-dev \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+ && docker-php-ext-install pdo_mysql bcmath intl zip gd exif \
  && apk del .build-deps
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

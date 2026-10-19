@@ -9,6 +9,7 @@
 @section('encabezado', 'Servicio técnico')
 @section('subtitulo', 'Órdenes de trabajo: recepción, diagnóstico, repuestos, entrega y garantía.')
 @section('acciones')
+    <a href="{{ route('servicios.export', request()->query()) }}" class="btn btn-secondary"><x-icon name="download" class="size-4" /> Exportar CSV</a>
     <a href="{{ route('servicios.create') }}" class="btn btn-primary"><x-icon name="plus" class="size-4" /> Nuevo servicio</a>
 @endsection
 
@@ -120,9 +121,9 @@
                         <a href="{{ route('servicios.show', $servicio) }}" class="btn btn-ghost btn-icon" title="Ver orden" aria-label="Ver orden"><x-icon name="eye" class="size-4" /></a>
                         @if ($esGerente || ! $servicio->cerrado())
                             <a href="{{ route('servicios.edit', $servicio) }}" class="btn btn-ghost btn-icon" title="Editar datos" aria-label="Editar datos"><x-icon name="pencil" class="size-4" /></a>
-                            <form method="POST" action="{{ route('servicios.destroy', $servicio) }}" onsubmit="return confirm('¿Eliminar la orden {{ $servicio->numero }}?')">
+                            <form method="POST" action="{{ route('servicios.destroy', $servicio) }}" onsubmit="return confirm('¿Dar de baja la orden {{ $servicio->numero }}? Se conservará el historial.')">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-ghost btn-icon text-danger" title="Eliminar" aria-label="Eliminar"><x-icon name="trash" class="size-4" /></button>
+                                <button type="submit" class="btn btn-ghost btn-icon text-danger" title="Dar de baja" aria-label="Dar de baja"><x-icon name="trash" class="size-4" /></button>
                             </form>
                         @endif
                     </div>

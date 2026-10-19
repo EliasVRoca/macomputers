@@ -102,8 +102,8 @@ docs/                    # esta documentación
    lógica del controlador (una `Policy` queda como mejora futura).
 6. **Convenciones de dominio en español**: tablas, columnas y métodos de dominio en español
    (`sucursal_origen_id`, `precio_venta`, `esGerente()`); nombres de framework en inglés.
-7. **Sin borrado lógico en la base** (no hay `SoftDeletes`); la baja de usuarios/clientes se hace
-   por el campo **`activo`** (ver decisiones, §10).
+7. **Baja lógica:** usuarios, clientes y sucursales usan `activo`/`activa`; la OT usa `deleted_at`
+   (`SoftDeletes`). Nunca se borran físicamente (ver decisiones, §10).
 8. **Dinero** en `decimal(12,2)`; **cantidades** en enteros ≥ 0.
 
 ---
@@ -179,9 +179,12 @@ Estas decisiones están cerradas. Cualquier sesión debe respetarlas:
 | **Reembolso en cambios** | **Monto informativo** (sin movimiento de caja). |
 | **Cobro de la OT** | Se registra con **`medio_pago` en la venta** de servicio al entregar. |
 | **Exportaciones (RF18)** | **CSV** en cada listado. |
-| **Baja lógica** | Usuarios y clientes: **desactivar** (`activo`), no borrar. |
+| **Baja lógica** | Usuarios, clientes y sucursales: **desactivar** (`activo`/`activa`); OT: **`deleted_at`**. Nunca borrar. |
+| **Repuestos de OT** | **Consumibles:** no vuelven al stock si la OT se entregó (sí al cancelar o dar de baja una orden abierta). |
 | **Condición de producto** | Campo **nuevo / remanufacturado / seminuevo**. |
-| **Buscador insignia** | Imágenes por **subida + URL**; atributos **clave/valor libre**. |
+| **Buscador insignia** | Permiso propio `buscador`; imágenes por **subida + URL + búsqueda en internet**; atributos **clave/valor libre**; log global con dedupe de 5 s. |
+| **Imágenes externas** | **Brave** recomendado (key); **Wikimedia Commons** sin clave; Openverse opcional. Copia local WebP ≤1600 px y fuente/autor/licencia. |
+| **Diseño del buscador** | Hero de búsqueda, tarjetas con imagen y stock por sucursal, similares y filtros colapsables; tokens de `app.css`. |
 | **Dashboard** | 5 métricas: ventas del día, bajo mínimo, OT pendientes/listas, traspasos de hoy, búsquedas sin resultado. |
 | **UI** | `app.css` es la fuente de verdad; `DESIGN.md` = referencia parcial. |
 | **Git** | Lo maneja el usuario. |

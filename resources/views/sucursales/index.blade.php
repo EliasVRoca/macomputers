@@ -8,6 +8,9 @@
 @endsection
 
 @section('contenido')
+@error('eliminar') <p class="error-texto mb-4">{{ $message }}</p> @enderror
+@error('estado') <p class="error-texto mb-4">{{ $message }}</p> @enderror
+
 <div class="card card-flush overflow-x-auto">
     <table class="tabla">
         <thead>
@@ -27,8 +30,13 @@
                     @endif
                 </td>
                 <td>
-                    <div class="flex justify-end">
+                    <div class="flex justify-end gap-1">
                         <a href="{{ route('sucursales.edit', $sucursal) }}" class="btn btn-ghost btn-icon" title="Editar" aria-label="Editar"><x-icon name="pencil" class="size-4" /></a>
+                        <form method="POST" action="{{ route('sucursales.estado', $sucursal) }}">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="activa" value="{{ $sucursal->activa ? 0 : 1 }}">
+                            <button type="submit" class="btn btn-ghost btn-icon" title="{{ $sucursal->activa ? 'Dar de baja' : 'Reactivar' }}" aria-label="{{ $sucursal->activa ? 'Dar de baja' : 'Reactivar' }}"><x-icon name="{{ $sucursal->activa ? 'lock' : 'unlock' }}" class="size-4" /></button>
+                        </form>
                     </div>
                 </td>
             </tr>

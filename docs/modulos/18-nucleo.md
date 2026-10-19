@@ -39,7 +39,7 @@ Riel/panel/topbar/paleta en `layouts/app.blade.php`. Iconos `<x-icon name="..." 
 
 ## 6. Estado
 
-- ✅ 16 módulos con permiso; riel y paleta filtrados; sesión única; kardex automático.
+- ✅ 17 módulos con permiso; riel y paleta filtrados; sesión única; kardex automático.
 - ⬜ **FormRequests** por formulario (política en `00-contexto.md` §13) · *(opcional)* `Policy`.
 
 ## 7. Pruebas

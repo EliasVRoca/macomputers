@@ -105,7 +105,7 @@
             </div>
             <div>
                 <label for="descripcion" class="label">Descripción <span class="font-normal text-ink-subtle">(si no está en el catálogo)</span></label>
-                <input id="descripcion" name="descripcion" class="input" value="{{ old('descripcion') }}" maxlength="255" placeholder="Ej. Monitor Samsung 27 pulgadas">
+                <input id="descripcion" name="descripcion" class="input" value="{{ old('descripcion', $encargo->descripcion) }}" maxlength="255" placeholder="Ej. Monitor Samsung 27 pulgadas">
                 @error('descripcion') <p class="error-texto">{{ $message }}</p> @enderror
             </div>
             <div class="grid gap-5 sm:grid-cols-3">
