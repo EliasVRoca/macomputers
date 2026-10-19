@@ -36,14 +36,15 @@ documento debe reflejar fielmente lo que la aplicación hace.
 | RF15 | Gestionar cambios y devoluciones | CU13 | Ventas · Cambios | ✅ |
 | RF16 | Gestionar servicio técnico | CU14 | Servicio técnico · Órdenes de trabajo | ◐ |
 | RF17 | Gestionar clientes | CU15 | Ventas · Clientes | ✅ |
-| RF18 | Consultar y exportar reportes | — *(transversal)* | Exportación dentro de los módulos | ◐ |
+| RF18 | Consultar y exportar reportes | — *(transversal)* | Exportación dentro de los módulos | ✅ |
 | RF19 | Gestionar perfil de cuenta propia *(nuevo)* | CU18 *(nuevo)* | Sesión · Perfil | ✅ (sin RF/CU aún) |
 | RF20 | Buscar producto (buscador inteligente) *(extensión)* | CU19 *(extensión)* | 🔧 Módulo estrella | ⬜ |
 | RF21 | Consultar panel de inicio *(extensión, opcional)* | CU20 *(extensión)* | 🔧 Dashboard | ⬜ |
 
 > **RF18 (reportes):** por criterio del docente, los reportes **no son un caso de uso ni un módulo
 > propio**, porque solo presentan/exportan datos. Se resuelven como **acciones de exportación**
-> dentro de los módulos que ya muestran esa información.
+> dentro de los módulos que ya muestran esa información. **Ya implementadas** en todos los módulos
+> que las exigen (ver §5). El brief `docs/modulos/19-reportes.md` solo documenta la decisión.
 
 ---
 
@@ -57,7 +58,7 @@ documento debe reflejar fielmente lo que la aplicación hace.
 - ✅ 16 módulos con permiso; riel y paleta filtrados por rol; sesión única por usuario.
 - ✅ `StockService`: bloquea la fila, impide saldos negativos y escribe el kardex en cada movimiento.
 - ◐ **FormRequests** por módulo (política en `docs/modulos/00-contexto.md` §13): ya los tienen **Catálogo** (Categorías/Productos/Proveedores), **Inventario** (existencias/kardex), **Disponibilidad/Traspasos/Compras** y **Ventas** (Ventas/Apartados/Encargos/Cambios/Clientes); faltan **Servicio técnico** y **Administración** · *(opcional)* `Policy`.
-- ◐ **Exportación (RF18):** ya exportan **Inventario** (kardex y bajo mínimo), **Traspasos**, **Compras**, **Disponibilidad**, **Catálogo** (categorías/productos/proveedores) y **Ventas** (ventas/apartados/encargos/cambios/clientes); falta **Servicio técnico**.
+- ✅ **Exportación (RF18):** exportan **Inventario** (kardex y existencias/bajo mínimo), **Traspasos**, **Compras**, **Disponibilidad**, **Catálogo** (categorías/productos/proveedores) y **Ventas** (ventas/apartados/encargos/cambios/clientes). *(Opcional, no exigido por RF18: **Servicio técnico**.)*
 
 ### Administración
 
@@ -128,12 +129,13 @@ documento debe reflejar fielmente lo que la aplicación hace.
 - ✅ Valida origen ≠ destino y stock suficiente (transaccional).
 - ✅ Atajo **"Traer de la otra sucursal"** desde Inventario (`inventario.traer`); creación en `TraspasoService`.
 - ✅ **Filtros** del listado (fechas, sucursal, producto) + **scoping** por sucursal (no gerente) + **Export CSV** (RF18).
-- ⬜ **Crear desde la venta** cuando el stock está en la otra sucursal (módulo Ventas).
+- ✅ **Atajo "Traer de la otra sucursal"** desde la venta (`ventas.traer`): crea el traspaso cuando el stock está en la otra sucursal. ⚠️ *Mejora pendiente: evitar el traspaso si la venta no se confirma y unificar con un servicio de anulación.*
 - ✖ **Decisión:** NO se agregan estados ni tránsito (traspaso simple e inmediato). Ver `docs/modulos/10-traspasos.md`.
 
 **Compras** — RF11 · CU9
 - ✅ Listar, crear, ver; suma stock y calcula total.
-- ⬜ *(opcional)* Actualizar `precio_compra` del producto; estados; anulación; exportar.
+- ✅ Actualiza el `precio_compra` del producto, **anulación con reverso de stock** (verifica que el saldo alcance) y **Export CSV** (RF18).
+- ⬜ *(opcional)* Estados de compra; editar.
 
 ### Ventas
 
@@ -202,7 +204,7 @@ documento debe reflejar fielmente lo que la aplicación hace.
 | **Atributos / ficha técnica** | `producto_atributos` para búsqueda por atributos y cálculo de similitud. | Soporte RF20 | ⬜ |
 | **Log de búsquedas** | `busquedas_producto` (término, sucursal, usuario, fecha, resultado). | Soporte RF20 | ⬜ |
 | **Panel de inicio (dashboard)** | Indicadores básicos (disponibilidad, bajo mínimo, ventas recientes). | RF21 / CU20 | ⬜ |
-| **Anulación de traspasos y compras** | Reverso de operaciones registradas. | — | ⬜ |
+| **Anulación de traspasos** | Reverso de un traspaso ya registrado (las **compras** ya se anulan). | — | ⬜ |
 
 **Checklist del módulo estrella (RF20 / CU19)**
 - [ ] Búsqueda en vivo (AJAX) con índices → RNF4 (<2 s).
@@ -216,7 +218,7 @@ documento debe reflejar fielmente lo que la aplicación hace.
 
 ## 5. Brechas transversales
 
-- ◐ **Exportaciones (RF18):** ya exportan **Inventario** (kardex y bajo mínimo), **Traspasos**, **Compras**, **Disponibilidad**, **Catálogo** y **Ventas** (ventas/apartados/encargos/cambios/clientes); falta **Servicio técnico**. Helper: `App\Support\Csv`.
+- ✅ **Exportaciones (RF18):** exportan **Inventario** (kardex y existencias/bajo mínimo), **Traspasos**, **Compras**, **Disponibilidad**, **Catálogo** y **Ventas** (ventas/apartados/encargos/cambios/clientes). *(Opcional: **Servicio técnico**.)* Helper: `App\Support\Csv`.
 - ⬜ **Baja lógica** de usuario (hoy borrado físico; existe el campo `activo` en usuarios). Clientes ya usan baja lógica.
 - ⬜ **Duplicación `Persona` vs `Cliente`:** el cliente no reutiliza los datos de persona.
 - ⬜ **Entrada tipada/saneada en todos los módulos:** ya la tienen **Inventario**, **Disponibilidad**, **Traspasos**, **Compras**, **Catálogo** y **Ventas** (Ventas/Apartados/Encargos/Cambios/Clientes) con FormRequests; el resto (Servicio técnico, Administración) valida **inline**. Migrar por módulo + sanear el texto libre (política en `docs/modulos/00-contexto.md` §13).
@@ -235,10 +237,10 @@ documento debe reflejar fielmente lo que la aplicación hace.
 5. **Cobro de la OT** (CU14) y reposición de repuestos al borrar la orden.
 6. **Cambios: reembolso** y cantidades variables (CU13).
 7. **Encargos: producto asociado** (CU12) · **Cambios: reembolso informativo** (CU13).
-8. **Exportaciones (RF18)** en **Ventas** (kardex, bajo mínimo, traspasos, compras, disponibilidad y catálogo ya están).
+8. **Exportaciones (RF18):** completas en los módulos exigidos (kardex, bajo mínimo, traspasos, compras, disponibilidad, catálogo y ventas). *(Resta el export opcional de Servicio técnico.)*
 9. **CU16 (autenticación)** y **CU18 (perfil)** al modelo PUDS.
 10. 🔧 **Módulo estrella** (CU19) e imágenes y atributos de producto.
-11. 🔧 *(opcional)* Dashboard y anulación de traspasos/compras.
+11. 🔧 *(opcional)* Dashboard y anulación de traspasos.
 
 ---
 

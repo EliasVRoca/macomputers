@@ -37,12 +37,15 @@ cumple el *Definition of Done* de más abajo.
 | 16 | [Clientes](16-clientes.md) | RF17 · CU15 | ◐ | ✅ | Ventas |
 | 17 | [Servicio técnico (OT)](17-servicios.md) | RF16 · CU14 | ◐ | ⬜ | Servicio técnico |
 | 18 | [Núcleo (permisos, menú, stock)](18-nucleo.md) | Transversal | ✅ | ⬜ | Transversal |
-| 19 | [Reportes y exportación](19-reportes.md) | RF18 | ⬜ | ⬜ | Transversal |
 | 20 | [Buscador inteligente 🔧](20-buscador.md) | RF20 · CU19 | ⬜ | ⬜ | Extensión |
 | 21 | [Dashboard 🔧](21-dashboard.md) | RF21 · CU20 | ⬜ | ⬜ | Extensión |
 
 > Los briefs **20** y **21** son **extensiones** fuera del alcance de la tesis (aunque ya aprobadas
 > para desarrollar).
+>
+> **RF18 · Reportes y exportación** **no es un módulo** (criterio del docente): no tiene permiso ni
+> rutas propias y se resuelve como acciones de exportación dentro de cada módulo que ya muestra esos
+> datos. El brief [`19-reportes.md`](19-reportes.md) documenta la decisión y el estado.
 
 ## Definition of Done (para marcar la revisión ✅)
 

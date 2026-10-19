@@ -1,7 +1,8 @@
 # 19 · Reportes y exportación
 
 **Grupo:** Transversal · **RF:** RF18 · **CU:** — · **Permiso:** dentro de cada módulo
-**Estado:** ◐ parcial — **Inventario ya exporta** (kardex y existencias); falta el resto.
+**Estado:** ✅ en el alcance de RF18 — exportan todos los módulos que muestran esos datos. **No es un
+módulo** (ver §2).
 
 ## 1. Resumen
 
@@ -22,14 +23,14 @@ Por tanto **no** se agrega una clave en `config/permisos.php`.
 | Disponibilidad por sucursal | `08-disponibilidad.md` | `disponibilidad.index` |
 | Historial de ventas | `12-ventas.md` | `ventas.index` |
 | Movimientos de inventario (kardex) | `09-inventario-kardex.md` | `inventario.index` |
-| Productos bajo stock mínimo | `06-productos.md` / `09-inventario-kardex.md` | (nuevo filtro/reporte) |
+| Productos bajo stock mínimo | `06-productos.md` / `09-inventario-kardex.md` | `inventario.index` (filtro «solo bajo mínimo») |
 
-## 4. Flujos (a implementar)
+## 4. Flujos (implementados)
 
-- Botón **"Exportar CSV"** en cada listado que respete **los filtros activos** de la pantalla.
+- Botón **"Exportar CSV"** en cada listado respetando **los filtros activos** de la pantalla.
 - Descarga un `.csv` (UTF-8 con BOM para Excel) con encabezados en español.
-- (Reporte nuevo) **Productos bajo mínimo**: lista de productos cuyo `stockTotal ≤ stock_minimo`
-  (o por sucursal), con columnas: código, nombre, sucursal, cantidad, stock mínimo.
+- **Productos bajo mínimo**: lista de productos cuyo stock por sucursal `≤ stock_minimo`, con
+  columnas: producto, código, sucursal, cantidad, stock mínimo y «bajo mínimo».
 
 ## 5. Reglas de negocio
 
@@ -45,9 +46,13 @@ patrón `@section('acciones')` de `layouts/app.blade.php`.
 
 - ✅ Exportación CSV en **Inventario/Kardex** (`inventario.kardex.export`).
 - ✅ Reporte/lista de **productos bajo stock mínimo** (filtro en Inventario + `inventario.existencias.export`).
-- ✅ Exportación CSV de **Traspasos** (`traspasos.export`).
-- ⬜ Exportación CSV en **Disponibilidad**.
-- ⬜ Exportación CSV en **Ventas**.
+- ✅ Exportación CSV de **Disponibilidad** (`disponibilidad.export`).
+- ✅ Exportación CSV de **Ventas** (`ventas.export`).
+- ✅ Complementos (misma mecánica): **Traspasos** (`traspasos.export`), **Compras**
+  (`compras.export`), **Catálogo** (`categorias/productos/proveedores.export`) y **Auxiliares de
+  Ventas** (`apartados/encargos/cambios/clientes.export`).
+- ⬜ *(opcional)* Exportación CSV en **Servicio técnico**. **RF18 no la exige** (solo pide
+  disponibilidad, historial de ventas, kardex y bajo mínimo), así que queda como mejora.
 
 > **Helper reutilizable:** `App\Support\Csv` (BOM UTF-8 + anti-inyección de fórmulas). Usarlo en
 > cada exportación nueva.
@@ -74,7 +79,7 @@ respeta permisos y filtros, y no rompe con listados vacíos.
 
 - **Actual:** la exportación vive **dentro de cada módulo** (p. ej. `InventarioController::exportKardex/exportExistencias`), sin módulo propio. ✅ (coherente con la decisión de §2).
 - **Objetivo:** un método `export*` por módulo + `App\Support\Csv`.
-- **Pendiente:** sin cambios de estructura; solo agregar los exports que faltan (Disponibilidad, Ventas, Traspasos).
+- **Pendiente:** sin cambios de estructura; solo la exportación *(opcional)* de Servicio técnico.
 
 ## 12. Cómo probar a mano
 

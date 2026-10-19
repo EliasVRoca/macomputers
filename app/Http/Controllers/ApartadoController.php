@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TipoMovimiento;
 use App\Http\Requests\Apartados\CancelarApartadoRequest;
 use App\Http\Requests\Apartados\FiltrarApartadosRequest;
 use App\Http\Requests\Apartados\GuardarApartadoRequest;
@@ -150,7 +151,7 @@ class ApartadoController extends Controller
         $datos = $request->validated();
 
         DB::transaction(function () use ($apartado, $datos, $request) {
-            $this->stock->mover($apartado->producto_id, $apartado->sucursal_id, (int) $apartado->cantidad, 'cancelacion_apartado', "Apartado #{$apartado->id} cancelado", $request->user()->id);
+            $this->stock->mover($apartado->producto_id, $apartado->sucursal_id, (int) $apartado->cantidad, TipoMovimiento::LiberacionApartado->value, "Apartado #{$apartado->id} cancelado", $request->user()->id);
 
             $apartado->update([
                 'estado' => Apartado::ESTADO_CANCELADO,
