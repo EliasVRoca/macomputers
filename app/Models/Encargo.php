@@ -13,11 +13,16 @@ class Encargo extends Model
 
     protected $table = 'encargos';
 
-    protected $fillable = ['cliente_id', 'sucursal_id', 'user_id', 'descripcion', 'anticipo', 'saldo', 'estado', 'fecha'];
+    protected $fillable = ['cliente_id', 'sucursal_id', 'user_id', 'producto_id', 'descripcion', 'total', 'anticipo', 'saldo', 'estado', 'fecha'];
 
     protected function casts(): array
     {
-        return ['fecha' => 'date', 'anticipo' => 'decimal:2', 'saldo' => 'decimal:2'];
+        return ['fecha' => 'date', 'total' => 'decimal:2', 'anticipo' => 'decimal:2', 'saldo' => 'decimal:2'];
+    }
+
+    public function producto(): BelongsTo
+    {
+        return $this->belongsTo(Producto::class);
     }
 
     public function cliente(): BelongsTo

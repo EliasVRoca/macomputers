@@ -8,6 +8,8 @@
 @endsection
 
 @section('contenido')
+@error('stock') <p class="error-texto mb-4">{{ $message }}</p> @enderror
+
 <form method="POST" action="{{ route('cambios.store') }}" class="card card-pad max-w-3xl space-y-8">
     @csrf
 
@@ -64,15 +66,26 @@
                 <select id="producto_reemplazo_id" name="producto_reemplazo_id" class="input">
                     <option value="">Seleccione…</option>
                     @foreach ($productos as $producto)
-                        <option value="{{ $producto->id }}" @selected(old('producto_reemplazo_id') == $producto->id)>{{ $producto->nombre }}</option>
+                        <option value="{{ $producto->id }}" @selected(old('producto_reemplazo_id') == $producto->id)>{{ $producto->nombre }} — stock {{ (int) $producto->stock_total }}</option>
                     @endforeach
                 </select>
                 @error('producto_reemplazo_id') <p class="error-texto">{{ $message }}</p> @enderror
             </div>
             <div>
+                <label for="cantidad" class="label">Cantidad</label>
+                <input id="cantidad" name="cantidad" type="number" min="1" value="{{ old('cantidad', 1) }}" class="input" required>
+                @error('cantidad') <p class="error-texto">{{ $message }}</p> @enderror
+            </div>
+            <div>
                 <label for="fecha" class="label">Fecha</label>
                 <input id="fecha" name="fecha" type="date" class="input" value="{{ old('fecha', now()->toDateString()) }}" required>
                 @error('fecha') <p class="error-texto">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="monto_diferencia" class="label">Diferencia / reembolso (Bs)</label>
+                <input id="monto_diferencia" name="monto_diferencia" type="number" step="0.01" min="0" value="{{ old('monto_diferencia', 0) }}" class="input">
+                @error('monto_diferencia') <p class="error-texto">{{ $message }}</p> @enderror
+                <p class="mt-1 text-xs text-ink-subtle">Monto informativo (sin movimiento de caja).</p>
             </div>
             <div class="sm:col-span-2">
                 <label for="motivo" class="label">Motivo (falla confirmada)</label>

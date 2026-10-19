@@ -69,13 +69,13 @@ class PantallasTest extends TestCase
 
         $this->actingAs($gerente)->post(route('encargos.store'), [
             'cliente_id' => $cliente->id, 'sucursal_id' => $principal->id, 'descripcion' => 'Monitor 27 pulgadas',
-            'anticipo' => 100, 'saldo' => 400, 'fecha' => now()->toDateString(),
+            'total' => 500, 'anticipo' => 100, 'saldo' => 400, 'fecha' => now()->toDateString(),
         ])->assertRedirect();
         $encargo = Encargo::firstOrFail();
 
         $this->actingAs($gerente)->post(route('cambios.store'), [
             'venta_id' => $venta->id, 'producto_id' => $producto->id, 'tipo' => 'devolucion',
-            'motivo' => 'Pantalla con falla', 'fecha' => now()->toDateString(),
+            'cantidad' => 1, 'motivo' => 'Pantalla con falla', 'fecha' => now()->toDateString(),
         ])->assertRedirect();
 
         $this->actingAs($gerente)->post(route('servicios.store'), [
@@ -97,7 +97,7 @@ class PantallasTest extends TestCase
             'proveedores.index', 'proveedores.create', 'proveedores.edit', 'proveedores.show',
             'disponibilidad.index', 'inventario.index', 'traspasos.index', 'traspasos.create', 'traspasos.show',
             'compras.index', 'compras.create', 'compras.show',
-            'ventas.index', 'ventas.create', 'ventas.show',
+            'ventas.index', 'ventas.create', 'ventas.show', 'ventas.imprimir',
             'apartados.index', 'apartados.create', 'apartados.edit',
             'encargos.index', 'encargos.create', 'encargos.edit',
             'cambios.index', 'cambios.create', 'cambios.show',
@@ -117,10 +117,14 @@ class PantallasTest extends TestCase
             'traspasos.show' => [$traspaso],
             'compras.show' => [$compra],
             'ventas.show' => [$venta],
+            'ventas.imprimir' => [$venta],
             'apartados.edit' => [$apartado],
+            'apartados.show' => [$apartado],
             'encargos.edit' => [$encargo],
+            'encargos.show' => [$encargo],
             'cambios.show' => [Cambio::firstOrFail()],
             'clientes.edit' => [$cliente],
+            'clientes.show' => [$cliente],
             'servicios.edit' => [$servicio],
             'servicios.show' => [$servicio],
             'servicios.imprimir' => [$servicio],

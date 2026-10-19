@@ -5,7 +5,8 @@
 @section('subtitulo', $venta->fecha->format('d/m/Y H:i').' · '.$venta->sucursal?->nombre.' · '.($venta->cliente?->nombre ?? 'Sin cliente'))
 @section('acciones')
     <a href="{{ route('ventas.index') }}" class="btn btn-secondary"><x-icon name="chevron-left" class="size-4" /> Volver</a>
-    @if ($venta->estado === \App\Models\Venta::ESTADO_ACTIVA)
+    <a href="{{ route('ventas.imprimir', $venta) }}" target="_blank" class="btn btn-secondary"><x-icon name="printer" class="size-4" /> Imprimir</a>
+    @if ($venta->estado === \App\Models\Venta::ESTADO_ACTIVA && ! $venta->apartado && $venta->cambios->isEmpty())
         <form method="POST" action="{{ route('ventas.anular', $venta) }}" onsubmit="return confirm('¿Anular la venta {{ $venta->numero() }}? El stock volverá a la sucursal.')">
             @csrf @method('PATCH')
             <button type="submit" class="btn btn-danger"><x-icon name="x" class="size-4" /> Anular venta</button>
@@ -40,6 +41,9 @@
 
 <p class="mt-3 flex items-center gap-3 text-sm text-ink-muted">
     <span class="badge {{ $venta->estado === \App\Models\Venta::ESTADO_ANULADA ? 'badge-danger' : 'badge-ok' }}"><span class="dot"></span>{{ ucfirst($venta->estado) }}</span>
+    @if ($venta->apartado)
+        <span class="badge badge-brand"><span class="dot"></span>Generada desde apartado #{{ $venta->apartado->id }}</span>
+    @endif
     Registró {{ $venta->usuario?->username }}.
 </p>
 @endsection

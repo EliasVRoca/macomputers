@@ -30,12 +30,12 @@ documento debe reflejar fielmente lo que la aplicación hace.
 | RF9 | Gestionar traspasos entre sucursales | CU7 | Inventario · Traspasos | ✅ |
 | RF10 | Gestionar proveedores | CU8 | Catálogo · Proveedores | ✅ |
 | RF11 | Registrar compras | CU9 | Inventario · Compras | ✅ |
-| RF12 | Gestionar ventas | CU10 | Ventas · Ventas | ◐ |
-| RF13 | Gestionar apartados | CU11 | Ventas · Apartados | ◐ |
-| RF14 | Gestionar encargos | CU12 | Ventas · Encargos | ◐ |
-| RF15 | Gestionar cambios y devoluciones | CU13 | Ventas · Cambios | ◐ |
+| RF12 | Gestionar ventas | CU10 | Ventas · Ventas | ✅ |
+| RF13 | Gestionar apartados | CU11 | Ventas · Apartados | ✅ |
+| RF14 | Gestionar encargos | CU12 | Ventas · Encargos | ✅ |
+| RF15 | Gestionar cambios y devoluciones | CU13 | Ventas · Cambios | ✅ |
 | RF16 | Gestionar servicio técnico | CU14 | Servicio técnico · Órdenes de trabajo | ◐ |
-| RF17 | Gestionar clientes | CU15 | Ventas · Clientes | ◐ |
+| RF17 | Gestionar clientes | CU15 | Ventas · Clientes | ✅ |
 | RF18 | Consultar y exportar reportes | — *(transversal)* | Exportación dentro de los módulos | ◐ |
 | RF19 | Gestionar perfil de cuenta propia *(nuevo)* | CU18 *(nuevo)* | Sesión · Perfil | ✅ (sin RF/CU aún) |
 | RF20 | Buscar producto (buscador inteligente) *(extensión)* | CU19 *(extensión)* | 🔧 Módulo estrella | ⬜ |
@@ -56,8 +56,8 @@ documento debe reflejar fielmente lo que la aplicación hace.
 - *Archivos:* `config/permisos.php`, `app/Support/Menu.php`, `app/Http/Middleware/EnsurePermiso.php`, `app/Services/StockService.php`.
 - ✅ 16 módulos con permiso; riel y paleta filtrados por rol; sesión única por usuario.
 - ✅ `StockService`: bloquea la fila, impide saldos negativos y escribe el kardex en cada movimiento.
-- ◐ **FormRequests** por módulo (política en `docs/modulos/00-contexto.md` §13): ya los tienen **Catálogo** (Categorías/Productos/Proveedores), **Inventario** (existencias/kardex) y **Disponibilidad/Traspasos/Compras**; faltan Ventas, Servicio técnico y Administración · *(opcional)* `Policy`.
-- ◐ **Exportación (RF18):** ya exportan **Inventario** (kardex y bajo mínimo), **Traspasos**, **Compras**, **Disponibilidad** y **Catálogo** (categorías/productos/proveedores); falta **Ventas** (y el resto de módulos de Ventas/Servicio).
+- ◐ **FormRequests** por módulo (política en `docs/modulos/00-contexto.md` §13): ya los tienen **Catálogo** (Categorías/Productos/Proveedores), **Inventario** (existencias/kardex), **Disponibilidad/Traspasos/Compras** y **Ventas** (Ventas/Apartados/Encargos/Cambios/Clientes); faltan **Servicio técnico** y **Administración** · *(opcional)* `Policy`.
+- ◐ **Exportación (RF18):** ya exportan **Inventario** (kardex y bajo mínimo), **Traspasos**, **Compras**, **Disponibilidad**, **Catálogo** (categorías/productos/proveedores) y **Ventas** (ventas/apartados/encargos/cambios/clientes); falta **Servicio técnico**.
 
 ### Administración
 
@@ -139,34 +139,35 @@ documento debe reflejar fielmente lo que la aplicación hace.
 
 **Ventas** — RF12 · CU10
 - ✅ Listar, crear, ver; descuenta stock; **anular** (devuelve stock); nota `NV-######`.
-- ⬜ **Nota de venta imprimible** (CU10 dice "emite la nota de venta").
-- ⬜ **Exportar** historial de ventas (RF18).
-- ⬜ *(opcional)* Editar; descuentos/impuestos; devolución parcial; filtros por fecha/cliente/estado.
+- ✅ **Nota de venta imprimible** (`ventas.imprimir`).
+- ✅ **Exportar** historial de ventas (RF18) + filtros (buscar/cliente/sucursal/estado/fechas).
+- ✅ Form con **stock por sucursal**, **total en vivo**, **alta de cliente en línea** y atajo **"Traer de la otra sucursal"**.
+- ✅ **Anular bloqueado** si la venta viene de un apartado o tiene cambios/devoluciones.
+- ⬜ *(opcional)* Editar; descuentos/impuestos; devolución parcial.
 
 **Apartados** — RF13 · CU11
-- ✅ Crear (reserva stock), registrar pagos, eliminar (libera stock).
-- ✖ **Decisión:** seña **libre** (solo que no supere el total); NO se exige la mitad ni "alto valor".
-- ⬜ `show`.
-- ⬜ *(opcional)* Editar datos; cancelación con retención de seña; vencimiento.
+- ✅ Crear (reserva stock), registrar pagos, **cancelar** (libera stock + retención de seña).
+- ✅ **Al completar se genera la venta** (RF12).
+- ✅ `show`, export CSV y filtros + FormRequests + cliente en línea.
+- ✖ **Decisión:** seña **libre** (solo que no supere el total).
+- ⬜ *(opcional)* Editar datos; vencimiento.
 
 **Encargos** — RF14 · CU12
 - ✅ Crear, registrar pagos, eliminar.
-- ⬜ **Asociar a un producto** del catálogo (hoy es solo descripción libre).
-- ⬜ Estado de entrega ("completar saldo al entregar").
-- ⬜ Saldo automático (hoy se digita manual).
+- ✅ **Producto del catálogo opcional** + **`total` con saldo automático**.
+- ✅ `show`, export CSV, filtros + FormRequests + cliente en línea.
+- ⬜ *(opcional)* Estado/entrega explícito.
 
 **Cambios y devoluciones** — RF15 · CU13
 - ✅ Crear cambio/devolución (mueve stock), listar, ver.
-- ⬜ Reembolso como **monto informativo** en el cambio (decisión; sin movimiento de caja).
-- ⬜ Cantidad variable (hoy fija en 1 unidad).
-- ⬜ Confirmación de falla.
-- ⬜ Diferencia de precio por equivalente.
+- ✅ **Reembolso informativo** (`monto_diferencia`) y **cantidad variable** con tope.
+- ✅ **Validación de stock del reemplazo** con mensaje en el formulario.
+- ✅ `export` CSV + filtros + FormRequests.
 - ⬜ *(opcional)* Anular.
 
 **Clientes** — RF17 · CU15
-- ✅ CRUD + búsqueda (nombre/carnet); bloquea eliminar con registros asociados.
-- ⬜ **Dirección** (CU15 exige nombre, C.I., teléfono **y dirección**).
-- ⬜ `show` con historial.
+- ✅ CRUD + búsqueda + **baja lógica** (desactivar/activar).
+- ✅ **Dirección** (CU15) + `show` con historial + export CSV + filtros + FormRequests.
 - ⬜ *(opcional)* Email, NIT.
 
 ### Servicio técnico
@@ -215,11 +216,11 @@ documento debe reflejar fielmente lo que la aplicación hace.
 
 ## 5. Brechas transversales
 
-- ◐ **Exportaciones (RF18):** ya exportan **Inventario** (kardex y bajo mínimo), **Traspasos**, **Compras**, **Disponibilidad** y **Catálogo** (categorías/productos/proveedores); faltan **Ventas** y los módulos de Ventas/Servicio. Helper: `App\Support\Csv`.
-- ⬜ **Baja lógica** de usuario/cliente (hoy borrado físico; existe el campo `activo` en usuarios).
-- ⬜ **Duplicación `Persona` vs `Cliente`:** el cliente no reutiliza los datos de persona (de ahí que le falte la dirección).
-- ⬜ **Entrada tipada/saneada en todos los módulos:** ya la tienen **Inventario**, **Disponibilidad**, **Traspasos**, **Compras** y **Catálogo** (Categorías/Productos/Proveedores) con FormRequests; el resto (Ventas, Servicio técnico, Administración) valida **inline**. Migrar por módulo + sanear el texto libre (política en `docs/modulos/00-contexto.md` §13).
-- ⬜ **Estructura de vistas uniforme:** renombrar `create`→`form` en Ventas, Compras, Traspasos y Cambios (convención en `00-contexto.md` §12).
+- ◐ **Exportaciones (RF18):** ya exportan **Inventario** (kardex y bajo mínimo), **Traspasos**, **Compras**, **Disponibilidad**, **Catálogo** y **Ventas** (ventas/apartados/encargos/cambios/clientes); falta **Servicio técnico**. Helper: `App\Support\Csv`.
+- ⬜ **Baja lógica** de usuario (hoy borrado físico; existe el campo `activo` en usuarios). Clientes ya usan baja lógica.
+- ⬜ **Duplicación `Persona` vs `Cliente`:** el cliente no reutiliza los datos de persona.
+- ⬜ **Entrada tipada/saneada en todos los módulos:** ya la tienen **Inventario**, **Disponibilidad**, **Traspasos**, **Compras**, **Catálogo** y **Ventas** (Ventas/Apartados/Encargos/Cambios/Clientes) con FormRequests; el resto (Servicio técnico, Administración) valida **inline**. Migrar por módulo + sanear el texto libre (política en `docs/modulos/00-contexto.md` §13).
+- ⬜ **Estructura de vistas uniforme:** renombrar `create`→`form` en Compras y Traspasos (Ventas y Cambios ya están; convención en `00-contexto.md` §12).
 - ⬜ *(opcional)* `Policy` para centralizar la autorización (hoy middleware `permiso:` + lógica en el controlador).
 - ⬜ Documentación PUDS: incorporar CU16–CU20 con sus diagramas de actividad y secuencia.
 
@@ -247,7 +248,12 @@ documento debe reflejar fielmente lo que la aplicación hace.
 |---|---|
 | Traspaso/traslado | Simple e **inmediato**; **sin** estados, tránsito ni aprobaciones. Integrado al buscador y a la venta + reporte. |
 | Seña de apartados | **Libre** (solo ≤ total). |
-| Reembolso en cambios | **Monto informativo** (sin caja). |
+| Apartado completado | **Genera la venta** (RF12); no vuelve a mover stock (ya reservado). Su anulación desde Ventas queda bloqueada. |
+| Cancelación de apartado | Libera stock; seña retenida como **monto informativo** (sin caja). Sin borrado duro. |
+| Reembolso en cambios | **Monto informativo** (sin caja); **cantidad variable** con tope según lo vendido. |
+| Encargos | **Producto opcional** del catálogo + **`total` con saldo automático**. |
+| Anulación de venta | Bloqueada si proviene de un **apartado** o tiene **cambios/devoluciones**. |
+| Cliente en línea | **Ventas/Apartados/Encargos** (patrón `modo_cliente`, igual que Servicio técnico). |
 | Cobro de la OT | **`medio_pago` en la venta** de servicio al entregar. |
 | Exportaciones (RF18) | **CSV** en cada listado (transversal, no es módulo ni CU). |
 | Baja lógica | Usuarios y clientes: **desactivar** (`activo`), no borrar. |

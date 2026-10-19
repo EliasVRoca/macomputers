@@ -137,8 +137,8 @@ class FormulariosTest extends TestCase
         $this->assertSame(1, Apartado::count());
 
         $this->actingAs($this->vendedor)->post(route('encargos.store'), [
-            'cliente_id' => $cliente->id, 'descripcion' => 'Monitor 27"', 'anticipo' => 200,
-            'saldo' => 800, 'fecha' => now()->toDateString(),
+            'cliente_id' => $cliente->id, 'descripcion' => 'Monitor 27"', 'total' => 1000,
+            'anticipo' => 200, 'saldo' => 800, 'fecha' => now()->toDateString(),
         ])->assertRedirect(route('encargos.index'));
         $this->assertSame(1, Encargo::count());
     }
@@ -153,7 +153,7 @@ class FormulariosTest extends TestCase
 
         $this->actingAs($this->vendedor)->post(route('cambios.store'), [
             'venta_id' => $venta->id, 'producto_id' => $this->producto->id, 'tipo' => 'devolucion',
-            'motivo' => 'Falla de fábrica', 'fecha' => now()->toDateString(),
+            'cantidad' => 1, 'motivo' => 'Falla de fábrica', 'fecha' => now()->toDateString(),
         ])->assertRedirect(route('cambios.index'));
 
         $this->assertSame(18, $this->stock($this->principal));

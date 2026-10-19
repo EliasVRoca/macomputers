@@ -14,12 +14,13 @@ class Cambio extends Model
     protected $table = 'cambios';
 
     protected $fillable = [
-        'venta_id', 'producto_id', 'producto_reemplazo_id', 'sucursal_id', 'user_id', 'tipo', 'motivo', 'fecha',
+        'venta_id', 'producto_id', 'producto_reemplazo_id', 'cantidad', 'monto_diferencia',
+        'sucursal_id', 'user_id', 'tipo', 'motivo', 'fecha',
     ];
 
     protected function casts(): array
     {
-        return ['fecha' => 'date'];
+        return ['fecha' => 'date', 'cantidad' => 'integer', 'monto_diferencia' => 'decimal:2'];
     }
 
     public function venta(): BelongsTo

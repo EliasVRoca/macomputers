@@ -1,83 +1,96 @@
 # 13 · Apartados
 
 **Grupo:** Ventas · **RF:** RF13 · **CU:** CU11 · **Permiso:** `apartados`
-**Estado:** ◐ parcial
+**Estado:** ✅
 
 ## 1. Resumen
 
 Reserva un producto con **seña** y controla el **saldo** hasta su cancelación. Al crear, **reserva
-stock** (lo descuenta); al eliminar un apartado activo, lo libera.
+stock** (lo descuenta); al **cancelar** un apartado activo, lo libera; al completarse, **genera la
+venta**.
 
 ## 2. Modelo de datos
 
-- **`apartados`** (`2026_10_12_000004`): `cliente_id`, `sucursal_id`, `user_id`, `producto_id`,
-  `cantidad`, `precio_unitario`, `sena`, `saldo`, `estado` (`activo` | `completado`), `fecha`.
-- Modelo `Apartado` (constantes `ESTADO_*`).
+- **`apartados`** (`2026_10_12_000004` + `2026_10_18_000003`): `cliente_id`, `sucursal_id`, `user_id`,
+  `venta_id` (null, la venta generada al completar), `producto_id`, `cantidad`, `precio_unitario`,
+  `sena`, `sena_retenida`, `saldo`, `estado` (`activo` | `completado` | `cancelado`),
+  `motivo_cancelacion`, `fecha`.
+- Modelo `Apartado` (constantes `ESTADO_*`, relación `venta()`).
 
 ## 3. Rutas y endpoints
 
-Resource `apartados` `except('show')` con `permiso:apartados`: `index`, `create`, `store`, `edit`,
-`update`, `destroy`.
+Resource `apartados` `except('destroy')` con `permiso:apartados`: `index`, `create`, `store`, `show`,
+`edit`, `update`. Además `GET /apartados/export` (`apartados.export`) y
+`PATCH /apartados/{apartado}/cancelar` (`apartados.cancelar`).
 
 ## 4. Capas y archivos
 
-`app/Http/Controllers/ApartadoController.php` · `StockService` ·
-vistas `resources/views/apartados/{index,form}.blade.php` (form compartido alta/pago).
+`app/Http/Controllers/ApartadoController.php` · `StockService` · `ClienteService` ·
+vistas `resources/views/apartados/{index,form,show}.blade.php`.
 
 ## 5. Flujos
 
-- **Index:** apartados por sucursal (no gerente) / todos (gerente).
+- **Index:** apartados por sucursal (no gerente) / todos (gerente); filtros por texto y estado.
 - **Store:** valida, calcula total (`precio_venta` × cantidad), rechaza seña > total; en transacción
-  crea el apartado y **reserva stock** (movimiento negativo `apartado`).
+  crea el apartado y **reserva stock** (movimiento negativo `apartado`). Si `saldo ≤ 0` nace
+  **`completado`** y **genera la venta**.
 - **Edit/Update:** registra un **abono** al saldo (`0 < abono ≤ saldo`); si el saldo llega a 0 →
-  `completado`.
-- **Destroy:** si estaba activo, devuelve el stock reservado y elimina.
+  `completado` y **genera la venta** (con el `medio_pago` del abono).
+- **Cancelar:** libera el stock reservado, marca `cancelado`, guarda `motivo_cancelacion` y
+  `sena_retenida` (informativo, sin movimiento de caja).
+- **Show:** detalle + acción de cancelar (solo activos).
 
 ## 6. Reglas de negocio
 
-- Estados: `activo` / `completado`. `saldo = total − sena`.
-- La reserva descuenta stock al crear; la liberación ocurre al eliminar (si activo).
+- Estados: `activo` / `completado` / `cancelado`. `saldo = total − sena`.
+- La reserva descuenta stock al crear; la liberación ocurre al **cancelar** (si activo).
+- Completar (seña = total al crear, o abono que cierra el saldo) **genera la venta** sin volver a
+  mover stock (ya estaba reservado).
 
 ## 7. UI y patrones
 
-`.tabla` con acciones pagar/eliminar; `.badge` de estado; form con detalle, reserva y pago.
+`.tabla` con acciones pagar/ver; `.badge` de estado (activo/completado/cancelado); `show` con detalle
+y formulario de cancelación; `form` compartido alta/pago con alta de cliente en línea.
 
 ## 8. Estado
 
-- ✅ Crear (reserva stock), registrar pagos, eliminar (libera).
-- ⬜ Regla "**seña = mitad, solo alto valor**": **NO** se implementa (ver decisiones).
-- ⬜ `show`.
-- ⬜ *(opcional)* Editar datos; cancelación con retención de seña; vencimiento.
+- ✅ Crear (reserva stock), registrar pagos, **cancelar** (libera stock + retención de seña).
+- ✅ **Al completar se genera la venta** (enlazada en `apartados.venta_id`).
+- ✅ `show` con detalle + `export` CSV + filtros.
+- ✅ Entrada tipada/saneada (`GuardarApartadoRequest`, `RegistrarAbonoRequest`, `CancelarApartadoRequest`, `FiltrarApartadosRequest`).
+- ✅ **Alta de cliente en línea** y `medio_pago` en el abono final.
+- ✖ **Decisión:** seña **libre** (solo que no supere el total); NO se exige la mitad ni "alto valor".
+- ⬜ *(opcional)* Editar datos del apartado; vencimiento automático.
 
 ## 9. Pruebas
 
-`StockTest.php` (`test_apartado_reserva_stock_y_al_eliminarlo_se_libera`,
-`test_apartado_se_completa_al_pagar_el_saldo`), `FormulariosTest.php`, `PantallasTest.php`.
+`StockTest.php` (`test_apartado_reserva_stock_y_al_eliminarlo_se_libera`, `test_apartado_se_completa_al_pagar_el_saldo`),
+`ModulosVentasTest.php` (`test_apartado_con_sena_total_se_completa_y_genera_venta`,
+`test_apartado_cancelar_libera_stock_y_retiene_sena`), `FormulariosTest.php`, `PantallasTest.php`.
 
 ## 10. Decisiones y restricciones acordadas ⚠️
 
-- **Seña LIBRE:** el vendedor decide el monto. El sistema solo valida que **no supere el total**. No
-  se exige "la mitad" ni la condición de "alto valor" (aunque CU11 lo mencione) — se descartó por ser
-  burocracia en un negocio pequeño.
-- Al **completar** un apartado no se genera automáticamente una venta (el stock ya se reservó); si se
-  quiere, se registra la venta aparte. Confirmar con el usuario antes de cambiarlo.
+- **Seña LIBRE:** el vendedor decide el monto. El sistema solo valida que **no supere el total**.
+- **Apartado completado ⇒ genera la venta** (RF12): la mercadería ya salió del stock al reservar; la
+  venta deja el registro comercial sin descontar stock otra vez. Su anulación desde Ventas está
+  bloqueada.
+- **Cancelación con retención de seña** (`CancelarApartadoRequest`): libera stock, marca `cancelado`
+  y guarda la seña retenida como **monto informativo** (sin caja). El borrado duro se retiró.
 
 ## 11. Seguridad de entrada (tipado y saneado)
 
-- **FormRequests a crear:** `app/Http/Requests/Apartados/{GuardarApartadoRequest,RegistrarAbonoRequest}.php`.
-- **Texto libre a sanear:** ninguno.
-- **Reglas tipadas:** `cliente_id`/`producto_id` `integer`+`exists`; `cantidad` `integer|min:1`; `sena` numérico ≥ 0 y ≤ total; `abono` numérico > 0 y ≤ saldo; `fecha` `date`.
+- **FormRequests:** `app/Http/Requests/Apartados/{GuardarApartadoRequest,RegistrarAbonoRequest,CancelarApartadoRequest,FiltrarApartadosRequest}.php`.
+- **Texto libre a sanear:** datos del cliente en línea, `motivo_cancelacion` y `buscar`.
+- **Reglas tipadas:** `cliente_id`/`producto_id` `integer`+`exists`; `cantidad` `integer|min:1`; `sena` ≥ 0 y ≤ total (cierre en `withValidator`); `abono` > 0 y ≤ saldo; `sena_retenida` ≤ seña; `fecha` `date_format:Y-m-d`.
 - **Salida/SQL:** escapado con Blade; total desde `precio_venta` en servidor.
-- Política completa: `docs/modulos/00-contexto.md` §13.
 
 ## 12. Estructura de archivos
 
-- **Actual:** `apartados/index.blade.php` + `apartados/form.blade.php`. ✅
-- **Objetivo:** `index` + `form` + `show` + `_*.blade.php`.
-- **Pendiente:** mover la validación a FormRequests; `show`.
+- **Actual:** `apartados/{index,form,show}.blade.php`. ✅
+- **Requests:** `app/Http/Requests/Apartados/`. ✅
 
 ## 13. Cómo probar a mano
 
 `vendedor`/`password` → **Ventas ▸ Apartados** → **Nuevo apartado** (con seña menor al total) → ver
-que el stock bajó; registrar el saldo → estado `completado`; en otro apartado, **Eliminar** y ver que
-el stock se libera.
+que el stock bajó; registrar el saldo → estado `completado` y **nota de venta generada**; en otro
+apartado, **Cancelar** y ver que el stock se libera.

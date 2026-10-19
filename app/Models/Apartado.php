@@ -11,11 +11,13 @@ class Apartado extends Model
 
     public const ESTADO_COMPLETADO = 'completado';
 
+    public const ESTADO_CANCELADO = 'cancelado';
+
     protected $table = 'apartados';
 
     protected $fillable = [
-        'cliente_id', 'sucursal_id', 'user_id', 'producto_id', 'cantidad',
-        'precio_unitario', 'sena', 'saldo', 'estado', 'fecha',
+        'cliente_id', 'sucursal_id', 'user_id', 'venta_id', 'producto_id', 'cantidad',
+        'precio_unitario', 'sena', 'sena_retenida', 'saldo', 'estado', 'motivo_cancelacion', 'fecha',
     ];
 
     protected function casts(): array
@@ -24,8 +26,14 @@ class Apartado extends Model
             'fecha' => 'date',
             'precio_unitario' => 'decimal:2',
             'sena' => 'decimal:2',
+            'sena_retenida' => 'decimal:2',
             'saldo' => 'decimal:2',
         ];
+    }
+
+    public function venta(): BelongsTo
+    {
+        return $this->belongsTo(Venta::class);
     }
 
     public function cliente(): BelongsTo

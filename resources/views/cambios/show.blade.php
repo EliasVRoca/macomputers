@@ -18,12 +18,20 @@
             <dt class="text-ink-muted">Producto con falla</dt>
             <dd class="font-medium">{{ $cambio->producto?->nombre }}</dd>
         </div>
+        <div>
+            <dt class="text-ink-muted">Cantidad</dt>
+            <dd class="font-medium tabular-nums">{{ $cambio->cantidad }}</dd>
+        </div>
         @if ($cambio->reemplazo)
             <div>
                 <dt class="text-ink-muted">Producto de reemplazo</dt>
                 <dd class="font-medium">{{ $cambio->reemplazo->nombre }}</dd>
             </div>
         @endif
+        <div>
+            <dt class="text-ink-muted">Diferencia / reembolso</dt>
+            <dd class="font-medium tabular-nums">Bs {{ number_format($cambio->monto_diferencia, 2, ',', '.') }}</dd>
+        </div>
         <div>
             <dt class="text-ink-muted">Sucursal</dt>
             <dd class="font-medium">{{ $cambio->sucursal?->nombre }}</dd>

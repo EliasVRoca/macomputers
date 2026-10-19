@@ -71,12 +71,26 @@ Route::middleware('auth')->group(function () {
     Route::patch('/compras/{compra}/anular', [CompraController::class, 'anular'])->name('compras.anular')->middleware('permiso:compras');
 
     // Ventas
+    Route::get('/ventas/export', [VentaController::class, 'export'])->name('ventas.export')->middleware('permiso:ventas');
+    Route::post('/ventas/traer', [VentaController::class, 'traer'])->name('ventas.traer')->middleware('permiso:traspasos');
+    Route::get('/ventas/{venta}/imprimir', [VentaController::class, 'imprimir'])->name('ventas.imprimir')->middleware('permiso:ventas');
     Route::resource('ventas', VentaController::class)->only(['index', 'create', 'store', 'show'])->middleware('permiso:ventas');
     Route::patch('/ventas/{venta}/anular', [VentaController::class, 'anular'])->name('ventas.anular')->middleware('permiso:ventas');
-    Route::resource('apartados', ApartadoController::class)->except('show')->middleware('permiso:apartados');
-    Route::resource('encargos', EncargoController::class)->except('show')->middleware('permiso:encargos');
+
+    Route::get('/apartados/export', [ApartadoController::class, 'export'])->name('apartados.export')->middleware('permiso:apartados');
+    Route::resource('apartados', ApartadoController::class)->except('destroy')->middleware('permiso:apartados');
+    Route::patch('/apartados/{apartado}/cancelar', [ApartadoController::class, 'cancelar'])->name('apartados.cancelar')->middleware('permiso:apartados');
+
+    Route::get('/encargos/export', [EncargoController::class, 'export'])->name('encargos.export')->middleware('permiso:encargos');
+    Route::resource('encargos', EncargoController::class)->middleware('permiso:encargos');
+
+    Route::get('/cambios/export', [CambioController::class, 'export'])->name('cambios.export')->middleware('permiso:cambios');
     Route::resource('cambios', CambioController::class)->only(['index', 'create', 'store', 'show'])->middleware('permiso:cambios');
-    Route::resource('clientes', ClienteController::class)->except('show')->middleware('permiso:clientes');
+
+    Route::get('/clientes/export', [ClienteController::class, 'export'])->name('clientes.export')->middleware('permiso:clientes');
+    Route::resource('clientes', ClienteController::class)->except('destroy')->middleware('permiso:clientes');
+    Route::delete('/clientes/{cliente}', [ClienteController::class, 'destroy'])->name('clientes.destroy')->middleware('permiso:clientes');
+    Route::patch('/clientes/{cliente}/estado', [ClienteController::class, 'estado'])->name('clientes.estado')->middleware('permiso:clientes');
 
     // Servicio técnico (orden de trabajo, registrada como venta de servicio)
     Route::resource('servicios', ServicioController::class)->middleware('permiso:servicios');

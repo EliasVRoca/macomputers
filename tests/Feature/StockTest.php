@@ -141,9 +141,10 @@ class StockTest extends TestCase
         $this->assertSame(6000.0, (float) $apartado->saldo);
         $this->assertSame(8, $this->stockEn($this->principal));
 
-        $this->actingAs($vendedor)->delete(route('apartados.destroy', $apartado))->assertRedirect();
+        $this->actingAs($vendedor)->patch(route('apartados.cancelar', $apartado))->assertRedirect();
 
         $this->assertSame(10, $this->stockEn($this->principal));
+        $this->assertSame('cancelado', $apartado->fresh()->estado);
     }
 
     public function test_apartado_se_completa_al_pagar_el_saldo(): void

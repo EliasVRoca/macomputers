@@ -17,6 +17,9 @@ class Venta extends Model
 
     public const ESTADO_ANULADA = 'anulada';
 
+    /** Medios de pago admitidos en una venta. */
+    public const MEDIOS_PAGO = ['Efectivo', 'Transferencia', 'Tarjeta', 'QR'];
+
     protected $table = 'ventas';
 
     protected $fillable = [
@@ -48,9 +51,19 @@ class Venta extends Model
         return $this->hasMany(VentaItem::class);
     }
 
+    public function cambios(): HasMany
+    {
+        return $this->hasMany(Cambio::class);
+    }
+
     public function servicio(): HasOne
     {
         return $this->hasOne(Servicio::class);
+    }
+
+    public function apartado(): HasOne
+    {
+        return $this->hasOne(Apartado::class);
     }
 
     public function numero(): string

@@ -1,7 +1,7 @@
 # 12 · Ventas
 
 **Grupo:** Ventas · **RF:** RF12 · **CU:** CU10 · **Permiso:** `ventas`
-**Estado:** ◐ parcial
+**Estado:** ✅
 
 ## 1. Resumen
 
@@ -26,9 +26,12 @@ permite **anular** (devuelve stock). **No** incluye facturación (fuera de alcan
 | GET | `/ventas/create` | `ventas.create` |
 | POST | `/ventas` | `ventas.store` |
 | GET | `/ventas/{venta}` | `ventas.show` |
+| GET | `/ventas/{venta}/imprimir` | `ventas.imprimir` |
+| GET | `/ventas/export` | `ventas.export` |
+| POST | `/ventas/traer` | `ventas.traer` *(permiso `traspasos`)* |
 | PATCH | `/ventas/{venta}/anular` | `ventas.anular` |
 
-Resource `only(['index','create','store','show'])` + `anular`; middleware `permiso:ventas`.
+Resource `only(['index','create','store','show'])` + `imprimir`/`export`/`traer`/`anular`; middleware `permiso:ventas` (salvo `traer`).
 
 ## 4. Capas y archivos
 
@@ -56,9 +59,12 @@ vistas `resources/views/ventas/{index,create,show}.blade.php`.
 ## 8. Estado
 
 - ✅ Listar/crear/ver + anular (devuelve stock) + correlativo `NV-######`.
-- ⬜ **Nota de venta imprimible** (CU10 dice "emite la nota de venta").
-- ⬜ **Export CSV** del historial (RF18).
-- ⬜ *(opcional)* Editar, descuentos/impuestos, devolución parcial, filtros por fecha/cliente/estado.
+- ✅ **Nota de venta imprimible** (`ventas.imprimir`, documento simple no fiscal).
+- ✅ **Export CSV** del historial (RF18).
+- ✅ **Filtros** del listado (buscar, cliente, sucursal, estado, fechas) + entrada **tipada/saneada** (`GuardarVentaRequest`/`FiltrarVentasRequest`).
+- ✅ **Form:** stock por sucursal junto al selector, **subtotal/total en vivo**, **alta de cliente en línea** y atajo **"Traer de la otra sucursal"** (`ventas.traer`, requiere permiso `traspasos`).
+- ✅ **Anular** bloqueado si la venta proviene de un **apartado** o tiene **cambios/devoluciones** registrados.
+- ⬜ *(opcional)* Editar; descuentos/impuestos; devolución parcial desde la venta.
 
 ## 9. Pruebas
 
@@ -68,23 +74,25 @@ vistas `resources/views/ventas/{index,create,show}.blade.php`.
 ## 10. Decisiones y restricciones acordadas
 
 - **Sin facturación** (no hay NIT, impuestos ni notas fiscales): fuera de alcance.
-- La **nota de venta** es un documento interno (`NV-######`); la impresión se hará con una vista
-  simple (no PDF complejo) cuando se implemente.
+- La **nota de venta** es un documento interno (`NV-######`); se imprime con una vista simple
+  (`ventas/imprimir`), no PDF complejo.
 - No manejar "vuelto"/pago dividido por ahora.
+- El **cliente es opcional**; se puede dar de alta en línea (`modo_cliente = nuevo`).
+- Una venta **no se anula** si proviene de un apartado o si ya tiene cambios/devoluciones (evita inflar stock).
+- **Clases y archivos:** `app/Http/Requests/Ventas/{GuardarVentaRequest,FiltrarVentasRequest,TraerProductoRequest}.php`, `app/Services/ClienteService.php`.
 
 ## 11. Seguridad de entrada (tipado y saneado)
 
-- **FormRequest a crear:** `app/Http/Requests/Ventas/GuardarVentaRequest.php`.
-- **Texto libre a sanear:** ninguno (`medio_pago` es lista cerrada; el resto son ids/cantidades).
-- **Reglas tipadas:** `medio_pago` `Rule::in([...])`; `items` array con `items.*.producto_id` `integer`+`exists` y `items.*.cantidad` `integer|min:1`; `cliente_id`/`sucursal_id` `integer`+`exists`.
+- **FormRequests:** `app/Http/Requests/Ventas/{GuardarVentaRequest,FiltrarVentasRequest,TraerProductoRequest}.php`.
+- **Texto libre a sanear:** datos del cliente en línea (`cliente_nombre/telefono/carnet`) y `buscar`.
+- **Reglas tipadas:** `medio_pago` `Rule::in(Venta::MEDIOS_PAGO)`; `items` array con `items.*.producto_id` `integer`+`exists` y `items.*.cantidad` `integer|min:1`; `cliente_id`/`sucursal_id` `integer`+`exists`.
 - **Salida/SQL:** escapado con Blade; precios y total tomados del producto en servidor.
 - Política completa: `docs/modulos/00-contexto.md` §13.
 
 ## 12. Estructura de archivos
 
-- **Actual:** `ventas/index.blade.php` + `ventas/create.blade.php` + `ventas/show.blade.php`.
-- **Objetivo:** `index` + `form` + `show` + `imprimir` (nota) + `_*.blade.php`.
-- **Pendiente:** **renombrar `create.blade.php` → `form.blade.php`** al tocar el módulo; mover la validación a FormRequest; vista `imprimir`.
+- **Vistas:** `ventas/{index,form,show,imprimir}.blade.php`. ✅ (renombrado a `form`).
+- **Requests:** en `app/Http/Requests/Ventas/`. ✅
 
 ## 13. Cómo probar a mano
 

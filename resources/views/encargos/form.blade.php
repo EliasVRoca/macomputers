@@ -22,7 +22,11 @@
                 </div>
                 <div>
                     <dt class="text-ink-muted">Producto</dt>
-                    <dd class="font-medium">{{ $encargo->descripcion }}</dd>
+                    <dd class="font-medium">{{ $encargo->producto?->nombre ?? $encargo->descripcion }}</dd>
+                </div>
+                <div>
+                    <dt class="text-ink-muted">Total</dt>
+                    <dd class="font-medium tabular-nums">Bs {{ number_format($encargo->total, 2, ',', '.') }}</dd>
                 </div>
                 <div>
                     <dt class="text-ink-muted">Anticipo</dt>
@@ -43,10 +47,24 @@
     @else
         <section class="space-y-5">
             <h2 class="text-sm font-medium text-ink-muted">Cliente y sucursal</h2>
-            <div class="grid gap-5 sm:grid-cols-2">
-                <div>
+            <div>
+                <label for="sucursal_id" class="label">Sucursal</label>
+                <select id="sucursal_id" name="sucursal_id" class="input" {{ $puedeElegirSucursal ? 'required' : 'disabled' }}>
+                    @foreach ($sucursales as $sucursal)
+                        <option value="{{ $sucursal->id }}" @selected(old('sucursal_id', $sucursales->first()->id) == $sucursal->id)>{{ $sucursal->nombre }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="space-y-4 rounded-lg border border-hairline-soft p-4">
+                <input type="hidden" name="modo_cliente" id="modo_cliente" value="{{ old('modo_cliente', 'existente') }}">
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="cliente-nuevo" class="h-4 w-4 accent-brand" @checked(old('modo_cliente') === 'nuevo')>
+                    <label for="cliente-nuevo" class="text-sm text-ink-muted">Registrar un cliente nuevo</label>
+                </div>
+                <div id="bloque-cliente-existente">
                     <label for="cliente_id" class="label">Cliente</label>
-                    <select id="cliente_id" name="cliente_id" class="input" required>
+                    <select id="cliente_id" name="cliente_id" class="input">
                         <option value="">Seleccione…</option>
                         @foreach ($clientes as $cliente)
                             <option value="{{ $cliente->id }}" @selected(old('cliente_id') == $cliente->id)>{{ $cliente->nombre }}</option>
@@ -54,42 +72,63 @@
                     </select>
                     @error('cliente_id') <p class="error-texto">{{ $message }}</p> @enderror
                 </div>
-                <div>
-                    <label for="sucursal_id" class="label">Sucursal</label>
-                    <select id="sucursal_id" name="sucursal_id" class="input" {{ $puedeElegirSucursal ? 'required' : 'disabled' }}>
-                        @foreach ($sucursales as $sucursal)
-                            <option value="{{ $sucursal->id }}" @selected(old('sucursal_id', $sucursales->first()->id) == $sucursal->id)>{{ $sucursal->nombre }}</option>
-                        @endforeach
-                    </select>
+                <div id="bloque-cliente-nuevo" class="hidden grid gap-4 sm:grid-cols-3">
+                    <div class="sm:col-span-3">
+                        <label for="cliente_nombre" class="label">Nombre completo</label>
+                        <input id="cliente_nombre" name="cliente_nombre" class="input" value="{{ old('cliente_nombre') }}" maxlength="150">
+                        @error('cliente_nombre') <p class="error-texto">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="cliente_telefono" class="label">Teléfono</label>
+                        <input id="cliente_telefono" name="cliente_telefono" class="input" value="{{ old('cliente_telefono') }}" maxlength="30">
+                    </div>
+                    <div>
+                        <label for="cliente_carnet" class="label">Carnet</label>
+                        <input id="cliente_carnet" name="cliente_carnet" class="input" value="{{ old('cliente_carnet') }}" maxlength="30">
+                        @error('cliente_carnet') <p class="error-texto">{{ $message }}</p> @enderror
+                    </div>
                 </div>
             </div>
         </section>
 
         <section class="space-y-5 border-t border-hairline pt-8">
             <h2 class="text-sm font-medium text-ink-muted">Producto y anticipo</h2>
-            <div class="space-y-5">
+            <div>
+                <label for="producto_id" class="label">Producto del catálogo <span class="font-normal text-ink-subtle">(opcional)</span></label>
+                <select id="producto_id" name="producto_id" class="input" data-producto>
+                    <option value="">No está en el catálogo</option>
+                    @foreach ($productos as $producto)
+                        <option value="{{ $producto->id }}" data-precio="{{ $producto->precio_venta }}" @selected(old('producto_id') == $producto->id)>{{ $producto->nombre }} · Bs {{ number_format($producto->precio_venta, 2, ',', '.') }}</option>
+                    @endforeach
+                </select>
+                @error('producto_id') <p class="error-texto">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label for="descripcion" class="label">Descripción <span class="font-normal text-ink-subtle">(si no está en el catálogo)</span></label>
+                <input id="descripcion" name="descripcion" class="input" value="{{ old('descripcion') }}" maxlength="255" placeholder="Ej. Monitor Samsung 27 pulgadas">
+                @error('descripcion') <p class="error-texto">{{ $message }}</p> @enderror
+            </div>
+            <div class="grid gap-5 sm:grid-cols-3">
                 <div>
-                    <label for="descripcion" class="label">Descripción del producto a conseguir</label>
-                    <input id="descripcion" name="descripcion" class="input" value="{{ old('descripcion') }}" required maxlength="255" placeholder="Ej. Monitor Samsung 27 pulgadas">
-                    @error('descripcion') <p class="error-texto">{{ $message }}</p> @enderror
+                    <label for="total" class="label">Total (Bs)</label>
+                    <input id="total" name="total" type="number" step="0.01" min="0" class="input" value="{{ old('total', $encargo->total) }}" required>
+                    @error('total') <p class="error-texto">{{ $message }}</p> @enderror
                 </div>
-                <div class="grid gap-5 sm:grid-cols-3">
-                    <div>
-                        <label for="anticipo" class="label">Anticipo (Bs)</label>
-                        <input id="anticipo" name="anticipo" type="number" step="0.01" min="0" class="input" value="{{ old('anticipo', $encargo->anticipo) }}" required>
-                        @error('anticipo') <p class="error-texto">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label for="saldo" class="label">Saldo a cancelar (Bs)</label>
-                        <input id="saldo" name="saldo" type="number" step="0.01" min="0" class="input" value="{{ old('saldo', $encargo->saldo) }}" required>
-                        @error('saldo') <p class="error-texto">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label for="fecha" class="label">Fecha</label>
-                        <input id="fecha" name="fecha" type="date" class="input" value="{{ old('fecha', $encargo->fecha?->toDateString()) }}" required>
-                        @error('fecha') <p class="error-texto">{{ $message }}</p> @enderror
-                    </div>
+                <div>
+                    <label for="anticipo" class="label">Anticipo (Bs)</label>
+                    <input id="anticipo" name="anticipo" type="number" step="0.01" min="0" class="input" value="{{ old('anticipo', $encargo->anticipo) }}" required>
+                    @error('anticipo') <p class="error-texto">{{ $message }}</p> @enderror
                 </div>
+                <div>
+                    <label for="saldo" class="label">Saldo a cancelar (Bs)</label>
+                    <input id="saldo" type="number" class="input" value="0" readonly tabindex="-1" aria-readonly="true">
+                    <p class="mt-1 text-xs text-ink-subtle">Se calcula: total − anticipo.</p>
+                </div>
+            </div>
+            <div>
+                <label for="fecha" class="label">Fecha</label>
+                <input id="fecha" name="fecha" type="date" class="input" value="{{ old('fecha', $encargo->fecha?->toDateString()) }}" required>
+                @error('fecha') <p class="error-texto">{{ $message }}</p> @enderror
             </div>
         </section>
     @endif
@@ -99,4 +138,42 @@
         <a href="{{ route('encargos.index') }}" class="btn btn-secondary">Cancelar</a>
     </div>
 </form>
+
+@if (! $encargo->exists)
+<script>
+    (function () {
+        var nuevo = document.getElementById('cliente-nuevo');
+        var modo = document.getElementById('modo_cliente');
+        function alternar() {
+            var esNuevo = nuevo.checked;
+            modo.value = esNuevo ? 'nuevo' : 'existente';
+            document.getElementById('bloque-cliente-existente').classList.toggle('hidden', esNuevo);
+            var bloque = document.getElementById('bloque-cliente-nuevo');
+            bloque.classList.toggle('hidden', !esNuevo);
+            bloque.classList.toggle('grid', esNuevo);
+        }
+        nuevo.addEventListener('change', alternar);
+        alternar();
+
+        var total = document.getElementById('total');
+        var anticipo = document.getElementById('anticipo');
+        var saldo = document.getElementById('saldo');
+        var producto = document.querySelector('[data-producto]');
+        function recalcular() {
+            var s = (parseFloat(total.value) || 0) - (parseFloat(anticipo.value) || 0);
+            saldo.value = (s > 0 ? s : 0).toFixed(2);
+        }
+        total.addEventListener('input', recalcular);
+        anticipo.addEventListener('input', recalcular);
+        producto.addEventListener('change', function () {
+            var opt = producto.options[producto.selectedIndex];
+            if (opt && opt.dataset.precio && (! total.value || parseFloat(total.value) === 0)) {
+                total.value = opt.dataset.precio;
+            }
+            recalcular();
+        });
+        recalcular();
+    })();
+</script>
+@endif
 @endsection
