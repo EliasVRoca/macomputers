@@ -1,0 +1,109 @@
+- generic [ref=f2e2]:
+  - navigation "Grupos de navegación" [ref=f2e3]:
+    - link "Inicio" [ref=f2e4] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/inicio
+      - img "M&A Computers" [ref=f2e5]
+    - link "Inicio" [ref=f2e6] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/inicio
+    - link "Administración" [ref=f2e10] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/usuarios
+    - link "Catálogo" [ref=f2e13] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/categorias
+    - link "Inventario" [ref=f2e19] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/disponibilidad
+    - link "Ventas" [ref=f2e22] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/ventas
+    - link "Servicio técnico" [ref=f2e27] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/servicios
+    - generic [ref=f2e30]:
+      - button "Cambiar tema" [ref=f2e31]
+      - group [ref=f2e38]:
+        - generic "Mi cuenta" [ref=f2e39] [cursor=pointer]: G
+  - complementary "Módulos" [ref=f2e41]:
+    - generic [ref=f2e42]:
+      - paragraph [ref=f2e43]: Administración
+      - list [ref=f2e44]:
+        - listitem [ref=f2e45]:
+          - link "Usuarios" [ref=f2e46] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/usuarios
+        - listitem [ref=f2e52]:
+          - link "Roles" [ref=f2e53] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/roles
+        - listitem [ref=f2e58]:
+          - link "Sucursales" [ref=f2e59] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/sucursales
+  - generic [ref=f2e63]:
+    - banner [ref=f2e64]:
+      - navigation "Migas de pan" [ref=f2e65]:
+        - generic [ref=f2e66]: Administración
+        - generic [ref=f2e69]: Usuarios
+      - generic [ref=f2e70]:
+        - button "Buscar o ir a… Ctrl K" [ref=f2e71]:
+          - generic [ref=f2e75]: Buscar o ir a…
+          - generic [ref=f2e76]: Ctrl K
+        - group [ref=f2e77]:
+          - generic "Mi cuenta" [ref=f2e78] [cursor=pointer]: G
+    - main [ref=f2e79]:
+      - generic [ref=f2e80]:
+        - generic [ref=f2e81]:
+          - heading "Usuarios" [level=1] [ref=f2e82]
+          - paragraph [ref=f2e83]: Personal con acceso al sistema, su rol y sucursal.
+        - link "Nuevo usuario" [ref=f2e85] [cursor=pointer]:
+          - /url: https://macomputers.app.localhost/usuarios/create
+      - table [ref=f2e88]:
+        - rowgroup [ref=f2e89]:
+          - row [ref=f2e90]:
+            - columnheader "Usuario" [ref=f2e91]
+            - columnheader "Persona" [ref=f2e92]
+            - columnheader "Correo" [ref=f2e93]
+            - columnheader "Rol" [ref=f2e94]
+            - columnheader "Sucursal" [ref=f2e95]
+            - columnheader "Estado" [ref=f2e96]
+            - columnheader "Acciones" [ref=f2e97]
+        - rowgroup [ref=f2e98]:
+          - row [ref=f2e99]:
+            - cell "eliasvroca" [ref=f2e100]
+            - cell "Elias Vasquez Roca" [ref=f2e101]
+            - cell "eliasvroca@gmail.com" [ref=f2e102]
+            - cell "Gerente" [ref=f2e103]
+            - cell "Sucursal principal" [ref=f2e105]
+            - cell "Activo" [ref=f2e106]
+            - cell [ref=f2e109]:
+              - generic [ref=f2e110]:
+                - link "Editar" [ref=f2e111] [cursor=pointer]:
+                  - /url: https://macomputers.app.localhost/usuarios/4/edit
+                - button "Eliminar" [ref=f2e116] [cursor=pointer]
+          - row [ref=f2e119]:
+            - cell "gerente" [ref=f2e120]
+            - cell "Gerente de la empresa" [ref=f2e121]
+            - cell "gerente@macomputers.test" [ref=f2e122]
+            - cell "Gerente" [ref=f2e123]
+            - cell "Sucursal principal" [ref=f2e125]
+            - cell "Activo" [ref=f2e126]
+            - cell [ref=f2e129]:
+              - link "Editar" [ref=f2e131] [cursor=pointer]:
+                - /url: https://macomputers.app.localhost/usuarios/1/edit
+          - row [ref=f2e135]:
+            - cell "tecnico" [ref=f2e136]
+            - cell "Marcus Aurelio" [ref=f2e137]
+            - cell "tecnico@macomputers.test" [ref=f2e138]
+            - cell "Técnico" [ref=f2e139]
+            - cell "Segunda sucursal" [ref=f2e141]
+            - cell "Activo" [ref=f2e142]
+            - cell [ref=f2e145]:
+              - generic [ref=f2e146]:
+                - link "Editar" [ref=f2e147] [cursor=pointer]:
+                  - /url: https://macomputers.app.localhost/usuarios/3/edit
+                - button "Eliminar" [ref=f2e152] [cursor=pointer]
+          - row [ref=f2e155]:
+            - cell "vendedor" [ref=f2e156]
+            - cell "Vendedor de tienda" [ref=f2e157]
+            - cell "vendedor@macomputers.test" [ref=f2e158]
+            - cell "Vendedor" [ref=f2e159]
+            - cell "Sucursal principal" [ref=f2e161]
+            - cell "Activo" [ref=f2e162]
+            - cell [ref=f2e165]:
+              - generic [ref=f2e166]:
+                - link "Editar" [ref=f2e167] [cursor=pointer]:
+                  - /url: https://macomputers.app.localhost/usuarios/2/edit
+                - button "Eliminar" [ref=f2e172] [cursor=pointer]

@@ -8,6 +8,16 @@
 @endsection
 
 @section('contenido')
+@if ($compra->estaAnulada())
+    <div role="status" class="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-danger px-4 py-3 text-sm">
+        <span class="badge badge-danger">Anulada</span>
+        <span>
+            el {{ $compra->anulada_at->format('d/m/Y H:i') }} por {{ $compra->anuladaPor?->username ?? '—' }}.@if ($compra->motivo_anulacion)
+                <span class="text-ink-muted">Motivo: {{ $compra->motivo_anulacion }}</span>@endif
+        </span>
+    </div>
+@endif
+
 <div class="card card-flush overflow-x-auto">
     <table class="tabla">
         <thead><tr><th>Producto</th><th class="text-right">Cantidad</th><th class="text-right">Precio</th><th class="text-right">Subtotal</th></tr></thead>
@@ -33,4 +43,24 @@
     </table>
 </div>
 <p class="mt-3 text-sm text-ink-muted">Registrado por {{ $compra->usuario?->username }}.</p>
+
+@unless ($compra->estaAnulada())
+    <div class="card card-pad mt-6 max-w-xl space-y-4">
+        <div>
+            <h2 class="text-sm font-medium">Anular compra</h2>
+            <p class="text-sm text-ink-muted">Revierte el stock que ingresó esta compra. No se puede anular si la mercadería ya se vendió o traspasó.</p>
+        </div>
+        <form method="POST" action="{{ route('compras.anular', $compra) }}" class="space-y-4" onsubmit="return confirm('¿Anular la compra #{{ $compra->id }}? Se revertirá el stock que ingresó.')">
+            @csrf
+            @method('PATCH')
+            <div>
+                <label for="motivo" class="label">Motivo (opcional)</label>
+                <input id="motivo" name="motivo" type="text" maxlength="150" value="{{ old('motivo') }}" class="input" placeholder="Ej. mercadería defectuosa">
+                @error('motivo') <p class="error-texto">{{ $message }}</p> @enderror
+                @error('compra') <p class="error-texto">{{ $message }}</p> @enderror
+            </div>
+            <button type="submit" class="btn btn-danger"><x-icon name="x" class="size-4" /> Anular compra</button>
+        </form>
+    </div>
+@endunless
 @endsection

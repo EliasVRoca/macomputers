@@ -1,0 +1,104 @@
+- generic [ref=f9e2]:
+  - navigation "Grupos de navegación" [ref=f9e3]:
+    - link "Inicio" [ref=f9e4] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/inicio
+      - img "M&A Computers" [ref=f9e5]
+    - link "Inicio" [ref=f9e6] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/inicio
+    - link "Administración" [ref=f9e10] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/usuarios
+    - link "Catálogo" [ref=f9e13] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/categorias
+    - link "Inventario" [ref=f9e19] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/disponibilidad
+    - link "Ventas" [ref=f9e22] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/ventas
+    - link "Servicio técnico" [ref=f9e27] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/servicios
+    - generic [ref=f9e30]:
+      - button "Cambiar tema" [ref=f9e31]
+      - group [ref=f9e34]:
+        - generic "Mi cuenta" [ref=f9e35] [cursor=pointer]: G
+  - complementary "Módulos" [ref=f9e37]:
+    - generic [ref=f9e38]:
+      - paragraph [ref=f9e39]: Inventario
+      - list [ref=f9e40]:
+        - listitem [ref=f9e41]:
+          - link "Disponibilidad" [ref=f9e42] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/disponibilidad
+        - listitem [ref=f9e46]:
+          - link "Inventario" [ref=f9e47] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/inventario
+        - listitem [ref=f9e50]:
+          - link "Traspasos" [ref=f9e51] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/traspasos
+        - listitem [ref=f9e55]:
+          - link "Compras" [ref=f9e56] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/compras
+  - generic [ref=f9e60]:
+    - banner [ref=f9e61]:
+      - navigation "Migas de pan" [ref=f9e62]:
+        - generic [ref=f9e63]: Inventario
+        - generic [ref=f9e66]: Compras
+      - generic [ref=f9e67]:
+        - button "Buscar o ir a… Ctrl K" [ref=f9e68]:
+          - generic [ref=f9e72]: Buscar o ir a…
+          - generic [ref=f9e73]: Ctrl K
+        - group [ref=f9e74]:
+          - generic "Mi cuenta" [ref=f9e75] [cursor=pointer]: G
+    - main [ref=f9e76]:
+      - generic [ref=f9e77]:
+        - generic [ref=f9e78]:
+          - heading "Compras" [level=1] [ref=f9e79]
+          - paragraph [ref=f9e80]: Ingreso de mercadería desde proveedores. Suma al stock de la sucursal.
+        - generic [ref=f9e81]:
+          - link "Exportar CSV" [ref=f9e82] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/compras/export?incluir_anuladas=1
+          - link "Nueva compra" [ref=f9e86] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/compras/create
+      - generic [ref=f9e88]:
+        - generic [ref=f9e89]:
+          - generic [ref=f9e90]: Proveedor
+          - combobox "Proveedor" [ref=f9e91]:
+            - option "Todos" [selected]
+            - option "Importadora XYZ"
+        - generic [ref=f9e92]:
+          - generic [ref=f9e93]: Sucursal
+          - combobox "Sucursal" [ref=f9e94]:
+            - option "Todas" [selected]
+            - option "Segunda sucursal"
+            - option "Sucursal principal"
+        - generic [ref=f9e95]:
+          - generic [ref=f9e96]: Desde
+          - textbox "Desde" [ref=f9e97]
+        - generic [ref=f9e98]:
+          - generic [ref=f9e99]: Hasta
+          - textbox "Hasta" [ref=f9e100]
+        - generic [ref=f9e101]:
+          - checkbox "Incluir anuladas" [checked] [ref=f9e102]
+          - text: Incluir anuladas
+        - generic [ref=f9e103]:
+          - link "Limpiar" [ref=f9e104] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/compras
+          - button "Buscar" [ref=f9e105] [cursor=pointer]
+      - table [ref=f9e110]:
+        - rowgroup [ref=f9e111]:
+          - row [ref=f9e112]:
+            - columnheader "Fecha" [ref=f9e113]
+            - columnheader "Proveedor" [ref=f9e114]
+            - columnheader "Sucursal" [ref=f9e115]
+            - columnheader "Total" [ref=f9e116]
+            - columnheader "Registró" [ref=f9e117]
+            - columnheader "Estado" [ref=f9e118]
+            - columnheader "Acciones" [ref=f9e119]
+        - rowgroup [ref=f9e120]:
+          - row [ref=f9e121]:
+            - cell "19/10/2026" [ref=f9e122]
+            - cell "Importadora XYZ" [ref=f9e123]
+            - cell "Segunda sucursal" [ref=f9e124]
+            - cell "Bs 1.700,00" [ref=f9e125]
+            - cell "gerente" [ref=f9e126]
+            - cell "Anulada" [ref=f9e127]
+            - cell [ref=f9e129]:
+              - link "Ver detalle" [ref=f9e131] [cursor=pointer]:
+                - /url: https://macomputers.app.localhost/compras/1

@@ -36,6 +36,12 @@ EXPOSE 9000
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["php-fpm"]
 
+# ---------- Etapa 2b: PHP + Node/pnpm para desarrollo ----------
+# Solo la usa docker-compose.override.yml (target: php-dev).
+FROM php AS php-dev
+RUN apk add --no-cache nodejs npm \
+ && npm install -g pnpm@9.15.9
+
 # ---------- Etapa 3: nginx con el mismo código ----------
 FROM nginx:alpine AS web
 COPY --from=php /var/www/html /var/www/html

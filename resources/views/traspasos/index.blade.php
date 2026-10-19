@@ -4,7 +4,7 @@
 @section('encabezado', 'Traspasos entre sucursales')
 @section('subtitulo', 'Traslados de productos: descuenta del origen y suma al destino.')
 @section('acciones')
-    <a href="{{ route('traspasos.export', request()->query()) }}" class="btn btn-secondary"><x-icon name="download" class="size-4" /> Exportar CSV</a>
+    <a href="{{ route('traspasos.export', request()->query()) }}" class="btn btn-secondary btn-sm"><x-icon name="download" class="size-4" /> Exportar CSV</a>
     <a href="{{ route('traspasos.create') }}" class="btn btn-primary"><x-icon name="plus" class="size-4" /> Nuevo traspaso</a>
 @endsection
 

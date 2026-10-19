@@ -86,6 +86,9 @@
                             <p class="font-medium">Sin productos para mostrar</p>
                             <p class="text-sm text-ink-muted">Ajusta la búsqueda o registra una entrada de mercadería.</p>
                         </div>
+                        <button type="button" class="btn btn-primary btn-sm" data-modal-abrir="modal-movimiento">
+                            <x-icon name="plus" class="size-4" /> Registrar movimiento
+                        </button>
                     </div>
                 </td></tr>
             @endforelse

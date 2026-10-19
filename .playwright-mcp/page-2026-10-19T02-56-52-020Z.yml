@@ -1,0 +1,129 @@
+- generic [ref=f21e2]:
+  - navigation "Grupos de navegación" [ref=f21e3]:
+    - link "Inicio" [ref=f21e4] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/inicio
+      - img "M&A Computers" [ref=f21e5]
+    - link "Inicio" [ref=f21e6] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/inicio
+    - link "Administración" [ref=f21e10] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/usuarios
+    - link "Catálogo" [ref=f21e13] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/categorias
+    - link "Inventario" [ref=f21e19] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/disponibilidad
+    - link "Ventas" [ref=f21e22] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/ventas
+    - link "Servicio técnico" [ref=f21e27] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/servicios
+    - generic [ref=f21e30]:
+      - button "Cambiar tema" [ref=f21e31]
+      - group [ref=f21e34]:
+        - generic "Mi cuenta" [ref=f21e35] [cursor=pointer]: G
+  - complementary "Módulos" [ref=f21e37]:
+    - generic [ref=f21e38]:
+      - paragraph [ref=f21e39]: Inventario
+      - list [ref=f21e40]:
+        - listitem [ref=f21e41]:
+          - link "Disponibilidad" [ref=f21e42] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/disponibilidad
+        - listitem [ref=f21e46]:
+          - link "Inventario" [ref=f21e47] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/inventario
+        - listitem [ref=f21e50]:
+          - link "Traspasos" [ref=f21e51] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/traspasos
+        - listitem [ref=f21e55]:
+          - link "Compras" [ref=f21e56] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/compras
+  - generic [ref=f21e60]:
+    - banner [ref=f21e61]:
+      - navigation "Migas de pan" [ref=f21e62]:
+        - generic [ref=f21e63]: Inventario
+        - generic [ref=f21e66]: Traspasos
+      - generic [ref=f21e67]:
+        - button "Buscar o ir a… Ctrl K" [ref=f21e68]:
+          - generic [ref=f21e72]: Buscar o ir a…
+          - generic [ref=f21e73]: Ctrl K
+        - group [ref=f21e74]:
+          - generic "Mi cuenta" [ref=f21e75] [cursor=pointer]: G
+    - main [ref=f21e76]:
+      - generic [ref=f21e77]:
+        - generic [ref=f21e78]:
+          - heading "Traspasos entre sucursales" [level=1] [ref=f21e79]
+          - paragraph [ref=f21e80]: "Traslados de productos: descuenta del origen y suma al destino."
+        - generic [ref=f21e81]:
+          - link "Exportar CSV" [ref=f21e82] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/traspasos/export
+          - link "Nuevo traspaso" [ref=f21e86] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/traspasos/create
+      - generic [ref=f21e88]:
+        - generic [ref=f21e89]:
+          - generic [ref=f21e90]: Producto
+          - combobox "Producto" [ref=f21e91]:
+            - option "Todos" [selected]
+            - option "Batería para laptop universal"
+            - option "Cargador universal para laptop"
+            - option "Cooler de CPU"
+            - option "Disco duro 1TB 7200RPM"
+            - option "Disco SSD 1TB NVMe"
+            - option "Disco SSD 480GB SATA"
+            - option "Fuente de poder 500W"
+            - option "Fuente de poder 600W 80 Plus"
+            - option "Laptop Lenovo IdeaPad 3"
+            - option "Lector de tarjetas SD/USB"
+            - option "Memoria RAM 16GB DDR4 3200MHz"
+            - option "Memoria RAM 8GB DDR3 1600MHz"
+            - option "Memoria RAM 8GB DDR4 2666MHz"
+            - option "Monitor Samsung 24\""
+            - option "Mouse óptico USB"
+            - option "Pantalla LCD 14\" HD"
+            - option "Pantalla LCD 15.6\" HD"
+            - option "Pasta térmica (jeringa)"
+            - option "Teclado para laptop HP"
+            - option "Teclado para laptop Lenovo"
+            - option "Teclado USB"
+        - generic [ref=f21e92]:
+          - generic [ref=f21e93]: Desde
+          - textbox "Desde" [ref=f21e94]
+        - generic [ref=f21e95]:
+          - generic [ref=f21e96]: Hasta
+          - textbox "Hasta" [ref=f21e97]
+        - generic [ref=f21e98]:
+          - generic [ref=f21e99]: Origen
+          - combobox "Origen" [ref=f21e100]:
+            - option "Todas" [selected]
+            - option "Segunda sucursal"
+            - option "Sucursal principal"
+        - generic [ref=f21e101]:
+          - generic [ref=f21e102]: Destino
+          - combobox "Destino" [ref=f21e103]:
+            - option "Todas" [selected]
+            - option "Segunda sucursal"
+            - option "Sucursal principal"
+        - generic [ref=f21e104]:
+          - link "Limpiar" [ref=f21e105] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/traspasos
+          - button "Filtrar" [ref=f21e106] [cursor=pointer]
+      - table [ref=f21e111]:
+        - rowgroup [ref=f21e112]:
+          - row [ref=f21e113]:
+            - columnheader "Fecha" [ref=f21e114]
+            - columnheader "Nº" [ref=f21e115]
+            - columnheader "Origen" [ref=f21e116]
+            - columnheader "Destino" [ref=f21e117]
+            - columnheader "Productos" [ref=f21e118]
+            - columnheader "Unidades" [ref=f21e119]
+            - columnheader "Registró" [ref=f21e120]
+            - columnheader "Detalle" [ref=f21e121]
+        - rowgroup [ref=f21e122]:
+          - row [ref=f21e123]:
+            - cell "19/10/2026" [ref=f21e124]
+            - cell "TR-000001" [ref=f21e125]
+            - cell "Segunda sucursal" [ref=f21e126]
+            - cell "Sucursal principal" [ref=f21e127]
+            - cell "1" [ref=f21e128]
+            - cell "1" [ref=f21e129]
+            - cell "eliasvroca" [ref=f21e130]
+            - cell [ref=f21e131]:
+              - link "Ver detalle" [ref=f21e133] [cursor=pointer]:
+                - /url: https://macomputers.app.localhost/traspasos/1

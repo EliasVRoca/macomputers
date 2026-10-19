@@ -2,106 +2,142 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Compras\AnularCompraRequest;
+use App\Http\Requests\Compras\FiltrarComprasRequest;
+use App\Http\Requests\Compras\GuardarCompraRequest;
 use App\Models\Compra;
-use App\Models\CompraItem;
 use App\Models\Producto;
 use App\Models\Proveedor;
 use App\Models\Sucursal;
-use App\Services\StockService;
+use App\Models\User;
+use App\Services\CompraService;
+use App\Support\Csv;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CompraController extends Controller
 {
-    public function __construct(private StockService $stock)
-    {
-    }
+    public function __construct(private CompraService $compras) {}
 
-    public function index(): View
+    public function index(FiltrarComprasRequest $request): View
     {
-        $items = Compra::with(['proveedor', 'sucursal', 'usuario'])
-            ->latest('fecha')
-            ->latest('id')
-            ->paginate(15);
+        $usuario = $request->user();
 
-        return view('compras.index', ['items' => $items]);
+        return view('compras.index', [
+            'items' => $this->consulta($usuario, $request->validated())->paginate(15)->withQueryString(),
+            'proveedores' => Proveedor::orderBy('nombre')->get(),
+            'sucursales' => $this->sucursalesVisibles($usuario),
+            'filtros' => $request->validated(),
+            'puedeElegirSucursal' => $usuario->esGerente(),
+        ]);
     }
 
     public function create(Request $request): View
     {
         $usuario = $request->user();
 
-        return view('compras.create', [
+        return view('compras.form', [
             'proveedores' => Proveedor::orderBy('nombre')->get(),
             'productos' => Producto::where('activo', true)->orderBy('nombre')->get(),
-            'sucursales' => $usuario->esGerente()
-                ? Sucursal::where('activa', true)->orderBy('nombre')->get()
-                : Sucursal::whereKey($usuario->sucursal_id)->get(),
+            'sucursales' => $this->sucursalesVisibles($usuario),
             'puedeElegirSucursal' => $usuario->esGerente(),
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(GuardarCompraRequest $request): RedirectResponse
     {
         $usuario = $request->user();
-
-        $datos = $request->validate([
-            'proveedor_id' => ['required', Rule::exists('proveedores', 'id')],
-            'sucursal_id' => [$usuario->esGerente() ? 'required' : 'nullable', Rule::exists('sucursales', 'id')],
-            'fecha' => ['required', 'date'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.producto_id' => ['required', Rule::exists('productos', 'id')],
-            'items.*.cantidad' => ['required', 'integer', 'min:1'],
-            'items.*.precio_compra' => ['required', 'numeric', 'min:0'],
-        ], [
-            'items.required' => 'Agregue al menos un producto a la compra.',
-            'items.min' => 'Agregue al menos un producto a la compra.',
-        ], [
-            'proveedor_id' => 'proveedor',
-            'sucursal_id' => 'sucursal',
-        ]);
+        $datos = $request->validated();
 
         $sucursalId = $usuario->esGerente() ? (int) $datos['sucursal_id'] : (int) $usuario->sucursal_id;
 
-        DB::transaction(function () use ($datos, $sucursalId, $usuario) {
-            $compra = Compra::create([
-                'proveedor_id' => $datos['proveedor_id'],
-                'sucursal_id' => $sucursalId,
-                'user_id' => $usuario->id,
-                'fecha' => $datos['fecha'],
-                'total' => 0,
-            ]);
-
-            $total = 0;
-
-            foreach ($datos['items'] as $item) {
-                $cantidad = (int) $item['cantidad'];
-                $precio = round((float) $item['precio_compra'], 2);
-                $subtotal = round($cantidad * $precio, 2);
-                $total += $subtotal;
-
-                CompraItem::create([
-                    'compra_id' => $compra->id,
-                    'producto_id' => $item['producto_id'],
-                    'cantidad' => $cantidad,
-                    'precio_compra' => $precio,
-                    'subtotal' => $subtotal,
-                ]);
-
-                $this->stock->mover((int) $item['producto_id'], $sucursalId, $cantidad, 'compra', "Compra #{$compra->id}", $usuario->id);
-            }
-
-            $compra->update(['total' => $total]);
-        });
+        $this->compras->registrar(
+            (int) $datos['proveedor_id'],
+            $sucursalId,
+            $datos['items'],
+            $usuario,
+            $datos['fecha'],
+        );
 
         return redirect()->route('compras.index')->with('status', 'Compra registrada y stock sumado a la sucursal.');
     }
 
-    public function show(Compra $compra): View
+    public function show(Request $request, Compra $compra): View
     {
-        return view('compras.show', ['compra' => $compra->load(['proveedor', 'sucursal', 'usuario', 'items.producto'])]);
+        $usuario = $request->user();
+
+        abort_unless($usuario->esGerente() || $compra->sucursal_id === $usuario->sucursal_id, 403, 'No puede consultar otra sucursal.');
+
+        return view('compras.show', [
+            'compra' => $compra->load(['proveedor', 'sucursal', 'usuario', 'anuladaPor', 'items.producto']),
+        ]);
+    }
+
+    public function anular(AnularCompraRequest $request, Compra $compra): RedirectResponse
+    {
+        $usuario = $request->user();
+
+        abort_unless($usuario->esGerente() || $compra->sucursal_id === $usuario->sucursal_id, 403, 'No puede anular una compra de otra sucursal.');
+
+        $this->compras->anular($compra, $usuario, $request->validated('motivo'));
+
+        return redirect()->route('compras.show', $compra)->with('status', 'Compra anulada y stock revertido.');
+    }
+
+    public function exportar(FiltrarComprasRequest $request): StreamedResponse
+    {
+        $filas = $this->consulta($request->user(), $request->validated())
+            ->withCount('items')
+            ->lazy()
+            ->map(fn (Compra $compra): array => [
+                $compra->fecha?->format('d/m/Y'),
+                $compra->proveedor?->nombre,
+                $compra->sucursal?->nombre,
+                $compra->items_count,
+                $compra->total,
+                $compra->usuario?->username ?? '—',
+                $compra->estaAnulada() ? 'Anulada' : 'Activa',
+            ]);
+
+        return Csv::descargar(
+            'compras-'.now()->format('Ymd-His').'.csv',
+            ['Fecha', 'Proveedor', 'Sucursal', 'Ítems', 'Total', 'Registró', 'Estado'],
+            $filas,
+        );
+    }
+
+    /**
+     * Consulta base del listado y la exportación, con filtros y aislamiento por
+     * sucursal: el gerente puede filtrar; el resto queda en la suya.
+     *
+     * @param  array<string, mixed>  $filtros
+     */
+    private function consulta(User $usuario, array $filtros): Builder
+    {
+        $sucursalId = $usuario->esGerente() ? ($filtros['sucursal_id'] ?? null) : $usuario->sucursal_id;
+
+        return Compra::query()
+            ->with(['proveedor', 'sucursal', 'usuario'])
+            ->when($sucursalId, fn (Builder $q) => $q->where('sucursal_id', (int) $sucursalId))
+            ->when($filtros['proveedor_id'] ?? null, fn (Builder $q) => $q->where('proveedor_id', (int) $filtros['proveedor_id']))
+            ->when($filtros['desde'] ?? null, fn (Builder $q) => $q->whereDate('fecha', '>=', $filtros['desde']))
+            ->when($filtros['hasta'] ?? null, fn (Builder $q) => $q->whereDate('fecha', '<=', $filtros['hasta']))
+            ->when(! ($filtros['incluir_anuladas'] ?? false), fn (Builder $q) => $q->whereNull('anulada_at'))
+            ->latest('fecha')
+            ->latest('id');
+    }
+
+    /**
+     * @return Collection<int, Sucursal>
+     */
+    private function sucursalesVisibles(User $usuario): Collection
+    {
+        return $usuario->esGerente()
+            ? Sucursal::where('activa', true)->orderBy('nombre')->get()
+            : Sucursal::whereKey($usuario->sucursal_id)->get();
     }
 }

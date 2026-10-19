@@ -193,7 +193,7 @@ mezclarlas con los requisitos formales.
 | **Panel de inicio (dashboard)** | Indicadores básicos al ingresar (hoy el inicio redirige al primer módulo). | RF21 / CU20 (opcional) |
 | **Imágenes y atributos de producto** | Soporte del buscador (RF6 no los contempla). | Soporte de RF20 |
 | **Perfil de cuenta propia** | Ya existe en el código pero no figura en RF/CU; se regulariza. | RF19 / CU18 |
-| **Anulación de traspasos y compras** | Reverso de operaciones ya registradas. | Mejora |
+| **Anulación de traspasos** | Reverso de operaciones ya registradas (la anulación de compras ya está implementada). | Mejora |
 
 ---
 

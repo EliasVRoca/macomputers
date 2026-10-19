@@ -2,10 +2,17 @@
 # Desarrollo: monta el código fuente en vivo dentro de los contenedores.
 services:
   app:
+    build:
+      context: .
+      target: php-dev
     volumes:
       - .:/var/www/html
       - app_storage:/var/www/html/storage
+      - node_modules:/var/www/html/node_modules
 
   web:
     volumes:
       - .:/var/www/html:ro
+
+volumes:
+  node_modules:

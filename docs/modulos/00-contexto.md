@@ -124,6 +124,11 @@ Clases de componentes ya definidas: `.card/.card-pad/.card-flush`, `.btn` (+ `.b
 `.empty`, `.kpi/.kpi-icon`, y el shell `.rail/.rail-link/.panel/.panel-title/.nav-link/.topbar`,
 `.search-btn`, `.kbd`, `.paleta*`. Iconos con `<x-icon name="..." />`.
 
+- **Botones — 3 niveles, siempre el mismo según el rol** (para no mezclar tamaños entre páginas):
+  - `.btn` (normal) → header de página (`@section('acciones')`), pie de formularios/modales, filtros y "Volver".
+  - `.btn-sm` (pequeño) → acciones secundarias embebidas: "Exportar CSV", "Agregar producto" y el CTA del estado vacío.
+  - `.btn-icon` (solo ícono, 36 px) → acciones de fila en `.tabla` y cerrar modal.
+  Variantes: `.btn-primary`, `.btn-secondary`, `.btn-danger`, `.btn-ghost`.
 - **Modo oscuro** por la clase `.dark` en `<html>` + `localStorage['tema']` (ver `layouts/app.blade.php`).
 - **Toda UI nueva** se hace con clases/tokens existentes; si falta un patrón, agrégalo a `app.css`
   como componente, no con valores mágicos. Verifica el cambio renderizado (claro y oscuro).

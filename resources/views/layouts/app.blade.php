@@ -167,7 +167,7 @@
                     @endif
                 </div>
                 @hasSection('acciones')
-                    <div class="flex flex-wrap gap-2">@yield('acciones')</div>
+                    <div class="flex flex-wrap items-center gap-2">@yield('acciones')</div>
                 @endif
             </header>
 

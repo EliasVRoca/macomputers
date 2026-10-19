@@ -76,6 +76,9 @@
                             <p class="font-medium">Sin movimientos</p>
                             <p class="text-sm text-ink-muted">Aquí verás cada cambio de stock. Registra uno para empezar.</p>
                         </div>
+                        <button type="button" class="btn btn-primary btn-sm" data-modal-abrir="modal-movimiento">
+                            <x-icon name="plus" class="size-4" /> Registrar movimiento
+                        </button>
                     </div>
                 </td></tr>
             @endforelse

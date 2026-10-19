@@ -15,6 +15,7 @@ enum TipoMovimiento: string
     case Salida = 'salida';
     case Ajuste = 'ajuste';
     case Compra = 'compra';
+    case AnulacionCompra = 'anulacion_compra';
     case Venta = 'venta';
     case AnulacionVenta = 'anulacion_venta';
     case Apartado = 'apartado';
@@ -33,6 +34,7 @@ enum TipoMovimiento: string
             self::Salida => 'Salida',
             self::Ajuste => 'Ajuste',
             self::Compra => 'Compra',
+            self::AnulacionCompra => 'Anulación de compra',
             self::Venta => 'Venta',
             self::AnulacionVenta => 'Anulación de venta',
             self::Apartado => 'Apartado',

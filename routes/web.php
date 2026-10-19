@@ -63,7 +63,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/traspasos/export', [TraspasoController::class, 'export'])->name('traspasos.export')->middleware('permiso:traspasos');
     Route::resource('traspasos', TraspasoController::class)->only(['index', 'create', 'store', 'show'])->middleware('permiso:traspasos');
+    Route::get('/compras/export', [CompraController::class, 'exportar'])->name('compras.export')->middleware('permiso:compras');
     Route::resource('compras', CompraController::class)->only(['index', 'create', 'store', 'show'])->middleware('permiso:compras');
+    Route::patch('/compras/{compra}/anular', [CompraController::class, 'anular'])->name('compras.anular')->middleware('permiso:compras');
 
     // Ventas
     Route::resource('ventas', VentaController::class)->only(['index', 'create', 'store', 'show'])->middleware('permiso:ventas');

@@ -10,11 +10,14 @@ class Compra extends Model
 {
     protected $table = 'compras';
 
-    protected $fillable = ['proveedor_id', 'sucursal_id', 'user_id', 'fecha', 'total'];
+    protected $fillable = [
+        'proveedor_id', 'sucursal_id', 'user_id', 'fecha', 'total',
+        'anulada_at', 'anulada_por_id', 'motivo_anulacion',
+    ];
 
     protected function casts(): array
     {
-        return ['fecha' => 'date', 'total' => 'decimal:2'];
+        return ['fecha' => 'date', 'total' => 'decimal:2', 'anulada_at' => 'datetime'];
     }
 
     public function proveedor(): BelongsTo
@@ -32,8 +35,18 @@ class Compra extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function anuladaPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'anulada_por_id');
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(CompraItem::class);
+    }
+
+    public function estaAnulada(): bool
+    {
+        return $this->anulada_at !== null;
     }
 }
