@@ -4,7 +4,7 @@ Un **brief por módulo** para que cualquier sesión tome un módulo y entienda c
 se le explique de nuevo. **Lee primero [`00-contexto.md`](00-contexto.md)** y luego el brief del
 módulo que vas a tocar.
 
-- Estado de desarrollo y pendientes (hoja de ruta): `docs/modulos-y-funcionalidades.md`.
+- Estado de desarrollo y pendientes (hoja de ruta): [`00-hoja-de-ruta.md`](00-hoja-de-ruta.md).
 - Visión general: `docs/descripcion-sistema.md`.
 - Mejoras sugeridas (benchmark): `docs/mejoras-y-modulos-propuestos.md`.
 
@@ -18,13 +18,14 @@ cumple el *Definition of Done* de más abajo.
 | # | Módulo | RF · CU | Estado | Revisión | Grupo |
 |---|--------|---------|--------|----------|-------|
 | 00 | [Contexto para agentes](00-contexto.md) | — | — | — | Transversal |
+| — | [Hoja de ruta](00-hoja-de-ruta.md) | RF↔CU | — | — | Transversal |
 | 01 | [Usuarios](01-usuarios.md) | RF2 · CU1 | ◐ | ⬜ | Administración |
 | 02 | [Roles](02-roles.md) | RF3 · CU2 | ✅ | ⬜ | Administración |
 | 03 | [Sucursales](03-sucursales.md) | RF4 · CU3 | ◐ | ⬜ | Administración |
 | 04 | [Sesión (autenticación y perfil)](04-sesion.md) | RF1 · CU16 / RF19 · CU18 | ✅ | ⬜ | Sesión |
-| 05 | [Categorías](05-categorias.md) | RF5 · CU4 | ✅ | ⬜ | Catálogo |
-| 06 | [Productos](06-productos.md) | RF6 · CU5 | ◐ | ⬜ | Catálogo |
-| 07 | [Proveedores](07-proveedores.md) | RF10 · CU8 | ✅ | ⬜ | Catálogo |
+| 05 | [Categorías](05-categorias.md) | RF5 · CU4 | ✅ | ✅ | Catálogo |
+| 06 | [Productos](06-productos.md) | RF6 · CU5 | ✅ | ✅ | Catálogo |
+| 07 | [Proveedores](07-proveedores.md) | RF10 · CU8 | ✅ | ✅ | Catálogo |
 | 08 | [Disponibilidad](08-disponibilidad.md) | RF7 · CU17 | ✅ | ✅ | Inventario |
 | 09 | [Inventario y kardex](09-inventario-kardex.md) | RF8 · CU6 | ✅ | ✅ | Inventario |
 | 10 | [Traspasos](10-traspasos.md) | RF9 · CU7 | ✅ | ✅ | Inventario |
@@ -53,7 +54,7 @@ Un módulo se marca **Revisión: ✅** cuando cumple todo esto:
 - [ ] UI verificada en **claro y oscuro** (renderizada, no solo compilada).
 - [ ] Brief del módulo actualizado (estado + decisiones).
 - [ ] Sin pendientes **obligatorios** (los opcionales quedan listados en el brief).
-- [ ] `docs/modulos-y-funcionalidades.md` coherente con el brief.
+- [ ] `docs/modulos/00-hoja-de-ruta.md` coherente con el brief.
 - [ ] **Entrada tipada/saneada** (FormRequest) documentada en el brief.
 - [ ] **Estructura de archivos** conforme a la convención (`00-contexto.md` §12).
 

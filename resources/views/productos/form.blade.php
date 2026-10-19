@@ -45,6 +45,15 @@
                 <input id="modelo" name="modelo" class="input" value="{{ old('modelo', $producto->modelo) }}" maxlength="100" placeholder="Ej. 15IAU7">
                 @error('modelo') <p class="error-texto">{{ $message }}</p> @enderror
             </div>
+            <div>
+                <label for="condicion" class="label">Condición</label>
+                <select id="condicion" name="condicion" class="input" aria-invalid="{{ $errors->has('condicion') ? 'true' : 'false' }}">
+                    @foreach ($condiciones as $valor => $etiqueta)
+                        <option value="{{ $valor }}" @selected(old('condicion', $producto->condicion?->value ?? 'nuevo') === $valor)>{{ $etiqueta }}</option>
+                    @endforeach
+                </select>
+                @error('condicion') <p class="error-texto">{{ $message }}</p> @enderror
+            </div>
         </div>
     </section>
 

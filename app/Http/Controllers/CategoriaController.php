@@ -2,28 +2,35 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Categorias\FiltrarCategoriasRequest;
+use App\Http\Requests\Categorias\GuardarCategoriaRequest;
 use App\Models\Categoria;
+use App\Support\Csv;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CategoriaController extends Controller
 {
-    public function index(): View
+    public function index(FiltrarCategoriasRequest $request): View
     {
-        return view('categorias.index', ['items' => Categoria::withCount('productos')->orderBy('nombre')->paginate(15)]);
+        $buscar = (string) ($request->validated()['buscar'] ?? '');
+
+        return view('categorias.index', [
+            'items' => $this->listado($buscar)->paginate(15)->withQueryString(),
+            'buscar' => $buscar,
+        ]);
     }
 
     public function create(): View
     {
-        return view('categorias.form', ['categoria' => new Categoria(), 'accion' => route('categorias.store'), 'metodo' => 'POST']);
+        return view('categorias.form', ['categoria' => new Categoria, 'accion' => route('categorias.store'), 'metodo' => 'POST']);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(GuardarCategoriaRequest $request): RedirectResponse
     {
-        Categoria::create($this->validar($request));
+        Categoria::create($request->validated());
 
         return redirect()->route('categorias.index')->with('status', 'Categoría registrada.');
     }
@@ -33,9 +40,9 @@ class CategoriaController extends Controller
         return view('categorias.form', ['categoria' => $categoria, 'accion' => route('categorias.update', $categoria), 'metodo' => 'PUT']);
     }
 
-    public function update(Request $request, Categoria $categoria): RedirectResponse
+    public function update(GuardarCategoriaRequest $request, Categoria $categoria): RedirectResponse
     {
-        $categoria->update($this->validar($request, $categoria));
+        $categoria->update($request->validated());
 
         return redirect()->route('categorias.index')->with('status', 'Categoría actualizada.');
     }
@@ -51,11 +58,28 @@ class CategoriaController extends Controller
         return redirect()->route('categorias.index')->with('status', 'Categoría eliminada.');
     }
 
-    private function validar(Request $request, ?Categoria $categoria = null): array
+    public function export(FiltrarCategoriasRequest $request): StreamedResponse
     {
-        return $request->validate([
-            'nombre' => ['required', 'string', 'max:100', Rule::unique('categorias', 'nombre')->ignore($categoria?->id)],
-            'descripcion' => ['nullable', 'string', 'max:255'],
+        $buscar = (string) ($request->validated()['buscar'] ?? '');
+
+        $filas = $this->listado($buscar)->lazy()->map(fn (Categoria $categoria): array => [
+            $categoria->nombre,
+            $categoria->descripcion,
+            $categoria->productos_count,
         ]);
+
+        return Csv::descargar(
+            'categorias-'.now()->format('Ymd-His').'.csv',
+            ['Nombre', 'Descripción', 'Productos'],
+            $filas,
+        );
+    }
+
+    private function listado(string $buscar)
+    {
+        return Categoria::query()
+            ->withCount('productos')
+            ->when($buscar !== '', fn ($query) => $query->where('nombre', 'like', "%{$buscar}%"))
+            ->orderBy('nombre');
     }
 }

@@ -2,44 +2,56 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CondicionProducto;
+use App\Http\Requests\Productos\FiltrarProductosRequest;
+use App\Http\Requests\Productos\GuardarProductoRequest;
 use App\Models\Categoria;
+use App\Models\MovimientoInventario;
 use App\Models\Producto;
+use App\Support\Csv;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProductoController extends Controller
 {
-    public function index(Request $request): View
+    public function index(FiltrarProductosRequest $request): View
     {
-        $buscar = trim((string) $request->query('buscar', ''));
+        $filtros = $request->validated();
 
-        $items = Producto::query()
-            ->with('categoria')
-            ->withSum('inventarios as stock_total', 'cantidad')
-            ->when($buscar !== '', fn ($q) => $q->where(fn ($w) => $w
-                ->where('nombre', 'like', "%{$buscar}%")
-                ->orWhere('codigo', 'like', "%{$buscar}%")
-                ->orWhere('marca', 'like', "%{$buscar}%")))
-            ->orderBy('nombre')
-            ->paginate(15)
-            ->withQueryString();
-
-        return view('productos.index', ['items' => $items, 'buscar' => $buscar]);
+        return view('productos.index', [
+            'items' => $this->listado($filtros)->paginate(15)->withQueryString(),
+            'categorias' => Categoria::orderBy('nombre')->get(),
+            'condiciones' => CondicionProducto::opciones(),
+            'filtros' => $filtros,
+        ]);
     }
 
     public function create(): View
     {
-        return $this->formulario(new Producto(['activo' => true, 'stock_minimo' => 0]), route('productos.store'), 'POST');
+        return $this->formulario(new Producto(['activo' => true, 'stock_minimo' => 0, 'condicion' => CondicionProducto::Nuevo]), route('productos.store'), 'POST');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(GuardarProductoRequest $request): RedirectResponse
     {
-        Producto::create($this->validar($request));
+        Producto::create($request->validated());
 
         return redirect()->route('productos.index')->with('status', 'Producto registrado.');
+    }
+
+    public function show(Producto $producto): View
+    {
+        return view('productos.show', [
+            'producto' => $producto,
+            'existencias' => $producto->inventarios()->with('sucursal')->get(),
+            'movimientos' => MovimientoInventario::with(['sucursal', 'usuario'])
+                ->where('producto_id', $producto->id)
+                ->latest('id')
+                ->limit(15)
+                ->get(),
+        ]);
     }
 
     public function edit(Producto $producto): View
@@ -47,9 +59,9 @@ class ProductoController extends Controller
         return $this->formulario($producto, route('productos.update', $producto), 'PUT');
     }
 
-    public function update(Request $request, Producto $producto): RedirectResponse
+    public function update(GuardarProductoRequest $request, Producto $producto): RedirectResponse
     {
-        $producto->update($this->validar($request, $producto));
+        $producto->update($request->validated());
 
         return redirect()->route('productos.index')->with('status', 'Producto actualizado.');
     }
@@ -65,6 +77,31 @@ class ProductoController extends Controller
         return redirect()->route('productos.index')->with('status', 'Producto eliminado.');
     }
 
+    public function export(FiltrarProductosRequest $request): StreamedResponse
+    {
+        $filtros = $request->validated();
+
+        $filas = $this->listado($filtros)->lazy()->map(fn (Producto $producto): array => [
+            $producto->codigo,
+            $producto->nombre,
+            $producto->marca,
+            $producto->modelo,
+            $producto->categoria?->nombre,
+            $producto->condicion->etiqueta(),
+            (float) $producto->precio_compra,
+            (float) $producto->precio_venta,
+            (int) ($producto->stock_total ?? 0),
+            $producto->stock_minimo,
+            $producto->activo ? 'Sí' : 'No',
+        ]);
+
+        return Csv::descargar(
+            'productos-'.now()->format('Ymd-His').'.csv',
+            ['Código', 'Nombre', 'Marca', 'Modelo', 'Categoría', 'Condición', 'Precio compra', 'Precio venta', 'Stock total', 'Stock mínimo', 'Activo'],
+            $filas,
+        );
+    }
+
     private function formulario(Producto $producto, string $accion, string $metodo): View
     {
         return view('productos.form', [
@@ -72,24 +109,28 @@ class ProductoController extends Controller
             'accion' => $accion,
             'metodo' => $metodo,
             'categorias' => Categoria::orderBy('nombre')->get(),
+            'condiciones' => CondicionProducto::opciones(),
         ]);
     }
 
-    private function validar(Request $request, ?Producto $producto = null): array
+    /**
+     * @param  array<string, mixed>  $filtros
+     */
+    private function listado(array $filtros): Builder
     {
-        $datos = $request->validate([
-            'categoria_id' => ['required', Rule::exists('categorias', 'id')],
-            'nombre' => ['required', 'string', 'max:150'],
-            'marca' => ['required', 'string', 'max:100'],
-            'modelo' => ['nullable', 'string', 'max:100'],
-            'codigo' => ['required', 'string', 'max:50', Rule::unique('productos', 'codigo')->ignore($producto?->id)],
-            'precio_compra' => ['required', 'numeric', 'min:0', 'max:9999999999'],
-            'precio_venta' => ['required', 'numeric', 'min:0', 'max:9999999999'],
-            'stock_minimo' => ['required', 'integer', 'min:0'],
-        ]);
+        $buscar = (string) ($filtros['buscar'] ?? '');
 
-        $datos['activo'] = $request->boolean('activo');
-
-        return $datos;
+        return Producto::query()
+            ->with('categoria')
+            ->withSum('inventarios as stock_total', 'cantidad')
+            ->when($buscar !== '', fn (Builder $query) => $query->where(fn (Builder $where) => $where
+                ->where('nombre', 'like', "%{$buscar}%")
+                ->orWhere('codigo', 'like', "%{$buscar}%")
+                ->orWhere('marca', 'like', "%{$buscar}%")))
+            ->when($filtros['categoria_id'] ?? null, fn (Builder $query, $id) => $query->where('categoria_id', $id))
+            ->when($filtros['marca'] ?? null, fn (Builder $query, $marca) => $query->where('marca', 'like', "%{$marca}%"))
+            ->when($filtros['condicion'] ?? null, fn (Builder $query, $condicion) => $query->where('condicion', $condicion))
+            ->when(($filtros['activo'] ?? null) !== null, fn (Builder $query) => $query->where('activo', (bool) $filtros['activo']))
+            ->orderBy('nombre');
     }
 }

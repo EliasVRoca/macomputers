@@ -5,7 +5,7 @@ para la empresa "M&A Computers." de la ciudad de Santa Cruz de la Sierra**.
 
 Describe qué es el sistema, qué problema resuelve, cómo se organiza en módulos y cuál es su
 módulo estrella (el buscador inteligente de productos). El detalle funcional módulo por módulo
-—con su estado de avance y su lista de pendientes— vive en `docs/modulos-y-funcionalidades.md`.
+—con su estado de avance y su lista de pendientes— vive en `docs/modulos/00-hoja-de-ruta.md`.
 
 ---
 
@@ -178,7 +178,7 @@ Quedan brechas puntuales entre lo que la tesis especifica y lo desarrollado (por
 sucursales, la dirección del cliente, la nota de venta imprimible, el cobro de la orden de
 servicio; y los reportes/exportación de RF18), y el **módulo estrella**, que es nuevo y aún no está
 construido. El detalle completo, con casillas para ir tildando, está en
-`docs/modulos-y-funcionalidades.md`.
+`docs/modulos/00-hoja-de-ruta.md`.
 
 ---
 
@@ -213,7 +213,7 @@ mezclarlas con los requisitos formales.
 
 ## Documentos relacionados
 
-- `docs/modulos-y-funcionalidades.md` — hoja de ruta viva por módulo (implementado / parcial / pendiente).
+- `docs/modulos/00-hoja-de-ruta.md` — hoja de ruta viva por módulo (implementado / parcial / pendiente).
 - `docs/modulos/` — un **brief autocontenido por módulo** para desarrollar en sesiones separadas (empezar por `docs/modulos/00-contexto.md`).
 - `docs/mejoras-y-modulos-propuestos.md` — mejoras y módulos sugeridos (benchmark de sistemas similares).
 - `docs/servicio-tecnico.md` — detalle del módulo de servicio técnico (orden de trabajo).

@@ -46,9 +46,12 @@ Route::middleware('auth')->group(function () {
     Route::resource('sucursales', SucursalController::class)->except(['show', 'destroy'])->parameters(['sucursales' => 'sucursal'])->middleware('permiso:sucursales');
 
     // Catálogo
+    Route::get('/categorias/export', [CategoriaController::class, 'export'])->name('categorias.export')->middleware('permiso:categorias');
     Route::resource('categorias', CategoriaController::class)->except('show')->middleware('permiso:categorias');
-    Route::resource('productos', ProductoController::class)->except('show')->middleware('permiso:productos');
-    Route::resource('proveedores', ProveedorController::class)->except('show')->parameters(['proveedores' => 'proveedor'])->middleware('permiso:proveedores');
+    Route::get('/productos/export', [ProductoController::class, 'export'])->name('productos.export')->middleware('permiso:productos');
+    Route::resource('productos', ProductoController::class)->middleware('permiso:productos');
+    Route::get('/proveedores/export', [ProveedorController::class, 'export'])->name('proveedores.export')->middleware('permiso:proveedores');
+    Route::resource('proveedores', ProveedorController::class)->parameters(['proveedores' => 'proveedor'])->middleware('permiso:proveedores');
 
     // Inventario
     Route::get('/disponibilidad', [DisponibilidadController::class, 'index'])->name('disponibilidad.index')->middleware('permiso:disponibilidad');

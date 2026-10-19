@@ -35,6 +35,7 @@ class CatalogoPiezasSeeder extends Seeder
                     'nombre' => $pieza['nombre'],
                     'marca' => $pieza['marca'],
                     'modelo' => null,
+                    'condicion' => 'nuevo',
                     'precio_compra' => $pieza['compra'],
                     'precio_venta' => $pieza['venta'],
                     'stock_minimo' => $pieza['min'],

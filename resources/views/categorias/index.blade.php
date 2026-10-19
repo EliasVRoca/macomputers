@@ -4,11 +4,23 @@
 @section('encabezado', 'Categorías')
 @section('subtitulo', 'Computadoras, accesorios, repuestos y otros.')
 @section('acciones')
+    <a href="{{ route('categorias.export', request()->query()) }}" class="btn btn-secondary btn-sm"><x-icon name="download" class="size-4" /> Exportar CSV</a>
     <a href="{{ route('categorias.create') }}" class="btn btn-primary"><x-icon name="plus" class="size-4" /> Nueva categoría</a>
 @endsection
 
 @section('contenido')
 @error('eliminar') <p class="error-texto mb-4">{{ $message }}</p> @enderror
+
+<form method="GET" action="{{ route('categorias.index') }}" class="mb-4 flex flex-wrap items-end gap-3">
+    <div class="min-w-56">
+        <label for="buscar" class="label">Buscar</label>
+        <input id="buscar" name="buscar" type="search" value="{{ $buscar }}" placeholder="Nombre de la categoría" class="input" aria-label="Buscar categoría">
+    </div>
+    <div class="mb-0.5 flex gap-2">
+        <a href="{{ route('categorias.index') }}" class="btn btn-ghost">Limpiar</a>
+        <button type="submit" class="btn btn-secondary"><x-icon name="search" class="size-4" /> Buscar</button>
+    </div>
+</form>
 
 <div class="card card-flush overflow-x-auto">
     <table class="tabla">
@@ -36,8 +48,8 @@
                 <div class="empty">
                     <span class="kpi-icon"><x-icon name="tag" class="size-5" /></span>
                     <div>
-                        <p class="font-medium">No hay categorías registradas</p>
-                        <p class="text-sm text-ink-muted">Agrupe los productos por tipo.</p>
+                        <p class="font-medium">{{ $buscar !== '' ? 'No se encontraron categorías' : 'No hay categorías registradas' }}</p>
+                        <p class="text-sm text-ink-muted">{{ $buscar !== '' ? 'Ajuste la búsqueda.' : 'Agrupe los productos por tipo.' }}</p>
                     </div>
                     <a href="{{ route('categorias.create') }}" class="btn btn-primary btn-sm"><x-icon name="plus" class="size-4" /> Nueva categoría</a>
                 </div>

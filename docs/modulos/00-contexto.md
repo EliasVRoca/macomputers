@@ -17,8 +17,8 @@ El problema central: conocer **en tiempo real la disponibilidad de cada producto
 para no depender de llamadas o traslados físicos. Ver `docs/descripcion-sistema.md`.
 
 - **Tesis:** requisitos (RF), casos de uso (CU) y procesos están en el documento de grado; su
-  trazabilidad se mantiene en `docs/modulos-y-funcionalidades.md`.
-- **Qué está hecho y qué falta:** siempre en `docs/modulos-y-funcionalidades.md` (hoja de ruta viva).
+  trazabilidad se mantiene en `docs/modulos/00-hoja-de-ruta.md`.
+- **Qué está hecho y qué falta:** siempre en `docs/modulos/00-hoja-de-ruta.md` (hoja de ruta viva).
 
 ---
 
@@ -139,12 +139,12 @@ Clases de componentes ya definidas: `.card/.card-pad/.card-flush`, `.btn` (+ `.b
 ## 7. Cómo trabajar en un módulo (protocolo de sesión)
 
 1. Leer este `00-contexto.md` y el brief del módulo (`docs/modulos/NN-*.md`).
-2. Revisar el estado del módulo en `docs/modulos-y-funcionalidades.md`.
+2. Revisar el estado del módulo en `docs/modulos/00-hoja-de-ruta.md`.
 3. Implementar **respetando las decisiones ya acordadas** (cada brief lleva su sección
    *Decisiones acordadas*). **No reabrir** decisiones sin que el usuario lo pida.
 4. Añadir/actualizar **pruebas de feature** del cambio (`tests/Feature/`).
 5. Correr la verificación (§9) y **`vendor/bin/pint --dirty --format agent`**.
-6. Actualizar el brief del módulo (estado/checklist) y, si aplica, `docs/modulos-y-funcionalidades.md`.
+6. Actualizar el brief del módulo (estado/checklist) y, si aplica, `docs/modulos/00-hoja-de-ruta.md`.
 7. **Git lo maneja el usuario**: no crear ramas, no commitear, no push.
 
 ---
