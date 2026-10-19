@@ -1,7 +1,7 @@
 # 10 · Traspasos
 
 **Grupo:** Inventario · **RF:** RF9 · **CU:** CU7 · **Permiso:** `traspasos`
-**Estado:** ◐ parcial (funcional; mejoras acordadas pendientes)
+**Estado:** ✅ implementado — con filtros, scoping por sucursal y export CSV
 
 ## 1. Resumen
 
@@ -14,7 +14,7 @@ Disponibilidad, el corazón del "**traslado y traspaso**" que pidió el docente.
 - **`traspasos`** (`2026_10_12_000004`): `sucursal_origen_id`, `sucursal_destino_id`, `user_id`,
   `fecha`. **Sin columna `estado`** (a propósito, ver decisiones).
 - **`traspaso_items`**: `traspaso_id`, `producto_id`, `cantidad`.
-- Modelos `Traspaso` (`origen()`, `destino()`, `usuario()`, `items()`), `TraspasoItem`.
+- Modelos `Traspaso` (`origen()`, `destino()`, `usuario()`, `items()`, `numero()` → `TR-######`), `TraspasoItem`.
 
 ## 3. Rutas y endpoints
 
@@ -24,21 +24,28 @@ Disponibilidad, el corazón del "**traslado y traspaso**" que pidió el docente.
 | GET | `/traspasos/create` | `traspasos.create` |
 | POST | `/traspasos` | `traspasos.store` |
 | GET | `/traspasos/{traspaso}` | `traspasos.show` |
+| GET | `/traspasos/export` | `traspasos.export` |
 
-Resource `only(['index','create','store','show'])`, middleware `permiso:traspasos`.
+Resource `only(['index','create','store','show'])` + export, middleware `permiso:traspasos`.
+La exportación se declara **antes** del resource para no chocar con `{traspaso}`.
 
 ## 4. Capas y archivos
 
-`app/Http/Controllers/TraspasoController.php` · `App\Services\TraspasoService` (crea el traspaso; lo comparten el formulario y el atajo) · `App\Services\StockService` ·
-vistas `resources/views/traspasos/{index,create,show}.blade.php`.
+- `app/Http/Controllers/TraspasoController.php` (index, create, store, show, export).
+- `app/Http/Requests/Traspasos/{GuardarTraspasoRequest,FiltrarTraspasosRequest}.php`.
+- `app/Services/TraspasoService.php` (crea el traspaso; lo comparten el formulario y el atajo) ·
+  `app/Services/StockService.php` · `app/Support/Csv.php`.
+- Vistas `resources/views/traspasos/{index,form,show}.blade.php`. Filas dinámicas en `resources/js/app.js`.
 
 ## 5. Flujos
 
-- **Index:** traspasos con origen, destino, usuario y nº de ítems (paginado 15).
-- **Create/Store:** en **transacción** crea cabecera + ítems y llama
-  `StockService::mover(origen, -cantidad, 'traspaso_salida')` y
-  `mover(destino, +cantidad, 'traspaso_entrada')`.
-- **Show:** detalle con ítems.
+- **Index:** lista con filtros (fechas, sucursal origen/destino —gerente—, producto) y **scoping**
+  por sucursal para el no gerente (ve solo traspasos con su sucursal como origen o destino).
+- **Create/Store:** en **transacción** crea cabecera + ítems y llama `StockService::mover(...)` en
+  salida (`traspaso_salida`) y entrada (`traspaso_entrada`).
+- **Show:** detalle con ítems y **total de unidades**; valida el scoping por sucursal.
+- **Export:** CSV **detallado por ítem** (Fecha, Traspaso, Origen, Destino, Producto, Código,
+  Cantidad, Registró), respetando filtros y scoping.
 
 ## 6. Reglas de negocio
 
@@ -46,27 +53,31 @@ vistas `resources/views/traspasos/{index,create,show}.blade.php`.
 - Origen ≠ destino; al menos un ítem; cantidades ≥ 1.
 - Si el **origen no tiene stock**, falla toda la transacción (nada cambia).
 - Referencia de kardex: `Traspaso #<id>`.
+- **Scoping de lectura:** el no gerente ve/exporta solo los traspasos que involucran su sucursal.
 - **Atajo (`inventario.traer`, permiso `traspasos`):** crea un traspaso con **origen = la sucursal
   que tiene stock** y **destino = la sucursal del usuario** (el gerente puede elegir). Excepción
   deliberada a la regla de origen de arriba.
 
 ## 7. UI y patrones
 
-Formulario con filas dinámicas de productos (JS en la vista); `.tabla`, `.card`, `.badge`.
+Encabezado con "Nuevo traspaso" + "Exportar CSV"; barra de filtros (`.card`); tabla `.tabla` con
+`TR-######`, productos, unidades; estado vacío con acción. Formulario con **filas dinámicas** (JS
+genérico `[data-filas]` en `app.js`). Tokens de `app.css`; claro y oscuro.
 
 ## 8. Estado
 
-- ✅ Listar, crear (varios productos), ver; descuenta origen y suma destino atómicamente.
+- ✅ Listar (con filtros y scoping por sucursal), crear (varios productos), ver; descuenta origen y suma destino atómicamente.
+- ✅ **Exportar CSV** de traspasos (RF18) respetando filtros y scoping.
 - ✅ **Atajo "Traer de la otra sucursal"** desde Inventario (`inventario.traer`): crea el traspaso en 1 clic.
-- ⬜ **Crear desde la venta** cuando el stock está en la otra sucursal.
-- ⬜ **Reporte de traspasos** (por fecha/sucursal/producto) + **export CSV** (RF18).
+- ⬜ **Crear desde la venta** cuando el stock está en la otra sucursal (módulo Ventas).
 - ⬜ *(opcional)* `edit`/`destroy`/anular (reverso con movimientos opuestos).
 
 ## 9. Pruebas
 
-`StockTest.php` (`test_traspaso_mueve_stock_entre_sucursales`,
-`test_traspaso_al_mismo_origen_es_rechazado`, `test_traspaso_sin_stock_suficiente_no_altera_ninguna_sucursal`),
-`FormulariosTest.php` (`test_vendedor_registra_traspaso`), `PantallasTest.php`.
+`tests/Feature/TraspasoTest.php` (validación tipada, origen forzado del no gerente, origen=destino,
+stock insuficiente, scoping, filtros, export CSV y permisos), más `StockTest`,
+`FormulariosTest` (`test_vendedor_registra_traspaso`), `PantallasTest` e `InventarioTest` (atajo).
+Correr: `php artisan test --compact --filter=Traspaso`.
 
 ## 10. Decisiones y restricciones acordadas ⚠️
 
@@ -77,9 +88,8 @@ Formulario con filas dinámicas de productos (JS en la vista); `.tabla`, `.card`
 
 Motivo: las dos tiendas están en el **mismo centro comercial** (minutos a pie), es un negocio
 familiar con el dueño presente, y hoy no se complican para traer algo. Un flujo con pasos sería
-ignorado y dejaría stock "atrapado en tránsito". **Sí** se agrega:
-integración con el buscador/venta y un reporte. Si algún día hay bodega o envíos a otra ciudad,
-revisar esta decisión.
+ignorado y dejaría stock "atrapado en tránsito". **Sí** se agrega: integración con el buscador/venta
+y un reporte. Si algún día hay bodega o envíos a otra ciudad, revisar esta decisión.
 
 **Atajo acordado (Inventario):** cualquier usuario con `traspasos` puede traer de la otra sucursal
 (`inventario.traer`): **origen = la sucursal que tiene stock**, **destino = la del usuario**. Es una
@@ -88,20 +98,24 @@ excepción deliberada a la regla del formulario (donde el origen es la sucursal 
 
 ## 11. Seguridad de entrada (tipado y saneado)
 
-- **FormRequest a crear:** `app/Http/Requests/Traspasos/GuardarTraspasoRequest.php` (y `RegistrarTraspasoRapidoRequest`, ya existente para el atajo).
+- **FormRequests:** `GuardarTraspasoRequest` (alta) y `FiltrarTraspasosRequest` (listado/export); más
+  `RegistrarTraspasoRapidoRequest` (atajo). La validación **inline** se eliminó del controlador.
 - **Texto libre a sanear:** ninguno (solo ids, fecha e ítems).
-- **Reglas tipadas:** `items` array con `items.*.producto_id` `integer`+`exists` y `items.*.cantidad` `integer|min:1`; `sucursal_*_id` `integer`+`exists`; `fecha` `date`.
-- **Salida/SQL:** escapado con Blade; SQL parametrizado.
+- **Reglas tipadas:** `items` `array|min:1` con `items.*.producto_id` `integer`+`exists` y
+  `items.*.cantidad` `integer|min:1`; `sucursal_*_id` `integer`+`exists`; `fecha` `date_format:Y-m-d`;
+  filtros `nullable|integer|exists` / `date_format`.
+- **Salida/SQL/CSV:** escapado con Blade; SQL parametrizado; CSV vía `App\Support\Csv`.
 - Política completa: `docs/modulos/00-contexto.md` §13.
 
 ## 12. Estructura de archivos
 
-- **Actual:** `traspasos/index.blade.php` + `traspasos/create.blade.php` + `traspasos/show.blade.php`.
-- **Objetivo:** `index` + `form` + `show` + `_*.blade.php`.
-- **Pendiente:** **renombrar `create.blade.php` → `form.blade.php`** al tocar el módulo; mover la validación a FormRequest.
+- **Actual (conforme ✅):** `traspasos/index.blade.php` + `traspasos/form.blade.php` + `traspasos/show.blade.php`;
+  `Requests/Traspasos/`; servicio compartido; JS en `app.js`.
+- **Objetivo:** la convención de `00-contexto.md` §12.
+- **Pendiente:** ninguno.
 
 ## 13. Cómo probar a mano
 
 `vendedor`/`password` → **Inventario ▸ Traspasos** → **Nuevo traspaso** (origen = su sucursal,
 destino = la otra, un producto con stock) → verificar en **Disponibilidad** que bajó en origen y subió
-en destino; intentar origen = destino (debe rechazar).
+en destino; **Exportar CSV**; intentar origen = destino (debe rechazar).

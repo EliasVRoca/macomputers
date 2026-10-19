@@ -297,3 +297,30 @@ document.addEventListener('click', (event) => {
 
     origen.addEventListener('change', ajustarDestino);
 })();
+
+// ------------------------------------- Filas dinámicas (formularios con ítems)
+(function () {
+    document.querySelectorAll('[data-filas]').forEach((contenedor) => {
+        const plantilla = document.getElementById(contenedor.dataset.filas);
+
+        if (!plantilla) {
+            return;
+        }
+
+        const boton = document.querySelector('[data-agregar-fila]');
+        let indice = 0;
+
+        const agregar = () => {
+            contenedor.insertAdjacentHTML('beforeend', plantilla.innerHTML.replaceAll('__IDX__', indice++));
+        };
+
+        boton?.addEventListener('click', agregar);
+        contenedor.addEventListener('click', (event) => {
+            if (event.target.closest('[data-quitar]')) {
+                event.target.closest('.fila')?.remove();
+            }
+        });
+
+        agregar();
+    });
+})();

@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/inventario/existencias/export', [InventarioController::class, 'exportExistencias'])->name('inventario.existencias.export')->middleware('permiso:inventario');
     Route::post('/inventario/traer', [InventarioController::class, 'traer'])->name('inventario.traer')->middleware('permiso:traspasos');
 
+    Route::get('/traspasos/export', [TraspasoController::class, 'export'])->name('traspasos.export')->middleware('permiso:traspasos');
     Route::resource('traspasos', TraspasoController::class)->only(['index', 'create', 'store', 'show'])->middleware('permiso:traspasos');
     Route::resource('compras', CompraController::class)->only(['index', 'create', 'store', 'show'])->middleware('permiso:compras');
 

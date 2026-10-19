@@ -45,9 +45,9 @@ patrón `@section('acciones')` de `layouts/app.blade.php`.
 
 - ✅ Exportación CSV en **Inventario/Kardex** (`inventario.kardex.export`).
 - ✅ Reporte/lista de **productos bajo stock mínimo** (filtro en Inventario + `inventario.existencias.export`).
+- ✅ Exportación CSV de **Traspasos** (`traspasos.export`).
 - ⬜ Exportación CSV en **Disponibilidad**.
 - ⬜ Exportación CSV en **Ventas**.
-- ⬜ Reporte de **traspasos** (ver `10-traspasos.md`).
 
 > **Helper reutilizable:** `App\Support\Csv` (BOM UTF-8 + anti-inyección de fórmulas). Usarlo en
 > cada exportación nueva.

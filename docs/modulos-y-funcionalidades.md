@@ -126,7 +126,9 @@ documento debe reflejar fielmente lo que la aplicación hace.
 - ✅ Listar, crear (varios productos), ver; descuenta del origen y suma al destino en una sola operación.
 - ✅ Valida origen ≠ destino y stock suficiente (transaccional).
 - ✅ Atajo **"Traer de la otra sucursal"** desde Inventario (`inventario.traer`); creación en `TraspasoService`.
-- ✖ **Decisión:** NO se agregan estados ni tránsito (traspaso simple e inmediato). Pendiente: crear desde el buscador/disponibilidad y desde la venta · reporte de traspasos (+ CSV). Ver `docs/modulos/10-traspasos.md`.
+- ✅ **Filtros** del listado (fechas, sucursal, producto) + **scoping** por sucursal (no gerente) + **Export CSV** (RF18).
+- ⬜ **Crear desde la venta** cuando el stock está en la otra sucursal (módulo Ventas).
+- ✖ **Decisión:** NO se agregan estados ni tránsito (traspaso simple e inmediato). Ver `docs/modulos/10-traspasos.md`.
 
 **Compras** — RF11 · CU9
 - ✅ Listar, crear, ver; suma stock y calcula total.
@@ -212,7 +214,7 @@ documento debe reflejar fielmente lo que la aplicación hace.
 
 ## 5. Brechas transversales
 
-- ◐ **Exportaciones (RF18):** Inventario (kardex y bajo mínimo) y Disponibilidad ya exportan (CSV); faltan Ventas y Traspasos. Helper: `App\Support\Csv`.
+- ◐ **Exportaciones (RF18):** ya exportan **Inventario** (kardex y bajo mínimo) y **Traspasos**; faltan **Disponibilidad** y **Ventas**. Helper: `App\Support\Csv`.
 - ⬜ **Baja lógica** de usuario/cliente (hoy borrado físico; existe el campo `activo` en usuarios).
 - ⬜ **Duplicación `Persona` vs `Cliente`:** el cliente no reutiliza los datos de persona (de ahí que le falte la dirección).
 - ⬜ **Entrada tipada/saneada en todos los módulos:** hoy solo **Inventario** usa FormRequests; el resto valida **inline**. Migrar por módulo + sanear el texto libre (política en `docs/modulos/00-contexto.md` §13).
@@ -231,7 +233,7 @@ documento debe reflejar fielmente lo que la aplicación hace.
 5. **Cobro de la OT** (CU14) y reposición de repuestos al borrar la orden.
 6. **Cambios: reembolso** y cantidades variables (CU13).
 7. **Encargos: producto asociado** (CU12) · **Cambios: reembolso informativo** (CU13).
-8. **Exportaciones (RF18)** en disponibilidad y ventas (el kardex y bajo mínimo ya están).
+8. **Exportaciones (RF18)** en disponibilidad y ventas (kardex, bajo mínimo y traspasos ya están).
 9. **CU16 (autenticación)** y **CU18 (perfil)** al modelo PUDS.
 10. 🔧 **Módulo estrella** (CU19) e imágenes y atributos de producto.
 11. 🔧 *(opcional)* Dashboard y anulación de traspasos/compras.

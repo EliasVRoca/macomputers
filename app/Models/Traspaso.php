@@ -36,4 +36,9 @@ class Traspaso extends Model
     {
         return $this->hasMany(TraspasoItem::class);
     }
+
+    public function numero(): string
+    {
+        return 'TR-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+    }
 }

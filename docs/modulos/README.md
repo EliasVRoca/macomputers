@@ -27,7 +27,7 @@ cumple el *Definition of Done* de más abajo.
 | 07 | [Proveedores](07-proveedores.md) | RF10 · CU8 | ✅ | ⬜ | Catálogo |
 | 08 | [Disponibilidad](08-disponibilidad.md) | RF7 · CU17 | ✅ | ⬜ | Inventario |
 | 09 | [Inventario y kardex](09-inventario-kardex.md) | RF8 · CU6 | ✅ | ✅ | Inventario |
-| 10 | [Traspasos](10-traspasos.md) | RF9 · CU7 | ◐ | ⬜ | Inventario |
+| 10 | [Traspasos](10-traspasos.md) | RF9 · CU7 | ✅ | ⬜ | Inventario |
 | 11 | [Compras](11-compras.md) | RF11 · CU9 | ✅ | ⬜ | Inventario |
 | 12 | [Ventas](12-ventas.md) | RF12 · CU10 | ◐ | ⬜ | Ventas |
 | 13 | [Apartados](13-apartados.md) | RF13 · CU11 | ◐ | ⬜ | Ventas |

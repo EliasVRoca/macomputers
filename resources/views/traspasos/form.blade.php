@@ -2,7 +2,7 @@
 
 @section('titulo', 'Nuevo traspaso')
 @section('encabezado', 'Nuevo traspaso')
-@section('subtitulo', 'Descuenta del stock de origen y suma al de destino.')
+@section('subtitulo', 'Descuenta del stock de origen y suma al de destino en una sola operación.')
 @section('acciones')
     <a href="{{ route('traspasos.index') }}" class="btn btn-secondary"><x-icon name="chevron-left" class="size-4" /> Volver</a>
 @endsection
@@ -16,9 +16,9 @@
         <div class="grid gap-5 sm:grid-cols-3">
             <div>
                 <label for="sucursal_origen_id" class="label">Sucursal de origen</label>
-                <select id="sucursal_origen_id" name="sucursal_origen_id" class="input" {{ $puedeElegirOrigen ? 'required' : 'disabled' }}>
-                    @foreach ($sucursales as $sucursal)
-                        <option value="{{ $sucursal->id }}" @selected(old('sucursal_origen_id', $sucursales->first()->id) == $sucursal->id)>{{ $sucursal->nombre }}</option>
+                <select id="sucursal_origen_id" name="sucursal_origen_id" class="input" @disabled(! $puedeElegirOrigen)>
+                    @foreach ($sucursalesOrigen as $sucursal)
+                        <option value="{{ $sucursal->id }}" @selected(old('sucursal_origen_id', $sucursalesOrigen->first()?->id) == $sucursal->id)>{{ $sucursal->nombre }}</option>
                     @endforeach
                 </select>
                 @error('sucursal_origen_id') <p class="error-texto">{{ $message }}</p> @enderror
@@ -27,7 +27,7 @@
                 <label for="sucursal_destino_id" class="label">Sucursal de destino</label>
                 <select id="sucursal_destino_id" name="sucursal_destino_id" class="input" required>
                     <option value="">Seleccione…</option>
-                    @foreach (\App\Models\Sucursal::where('activa', true)->orderBy('nombre')->get() as $sucursal)
+                    @foreach ($sucursalesDestino as $sucursal)
                         <option value="{{ $sucursal->id }}" @selected(old('sucursal_destino_id') == $sucursal->id)>{{ $sucursal->nombre }}</option>
                     @endforeach
                 </select>
@@ -44,14 +44,14 @@
     <section class="space-y-4 border-t border-hairline pt-8">
         <div class="flex items-center justify-between">
             <h2 class="text-sm font-medium text-ink-muted">Productos a trasladar</h2>
-            <button type="button" id="agregar-fila" class="btn btn-secondary btn-sm"><x-icon name="plus" class="size-4" /> Agregar producto</button>
+            <button type="button" data-agregar-fila class="btn btn-secondary btn-sm"><x-icon name="plus" class="size-4" /> Agregar producto</button>
         </div>
-        <div id="filas" class="space-y-3"></div>
+        <div id="filas-traspaso" data-filas="plantilla-traspaso" class="space-y-3"></div>
         @error('items') <p class="error-texto">{{ $message }}</p> @enderror
         @error('stock') <p class="error-texto">{{ $message }}</p> @enderror
     </section>
 
-    <template id="fila-plantilla">
+    <template id="plantilla-traspaso">
         <div class="fila grid items-end gap-3 rounded-lg border border-hairline-soft p-3 sm:grid-cols-12">
             <div class="sm:col-span-8">
                 <label class="label">Producto</label>
@@ -77,24 +77,4 @@
         <a href="{{ route('traspasos.index') }}" class="btn btn-secondary">Cancelar</a>
     </div>
 </form>
-
-<script>
-    (function () {
-        var contenedor = document.getElementById('filas');
-        var plantilla = document.getElementById('fila-plantilla');
-        var indice = 0;
-
-        function agregar() {
-            contenedor.insertAdjacentHTML('beforeend', plantilla.innerHTML.replaceAll('__IDX__', indice++));
-        }
-
-        document.getElementById('agregar-fila').addEventListener('click', agregar);
-        contenedor.addEventListener('click', function (e) {
-            if (e.target.closest('[data-quitar]')) {
-                e.target.closest('.fila').remove();
-            }
-        });
-        agregar();
-    })();
-</script>
 @endsection

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('titulo', 'Traspaso #'.$traspaso->id)
-@section('encabezado', 'Traspaso #'.$traspaso->id)
+@section('titulo', 'Traspaso '.$traspaso->numero())
+@section('encabezado', 'Traspaso '.$traspaso->numero())
 @section('subtitulo', $traspaso->fecha->format('d/m/Y').' · '.$traspaso->origen?->nombre.' → '.$traspaso->destino?->nombre)
 @section('acciones')
     <a href="{{ route('traspasos.index') }}" class="btn btn-secondary"><x-icon name="chevron-left" class="size-4" /> Volver</a>
@@ -20,7 +20,15 @@
             </tr>
         @endforeach
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="2" class="text-right text-ink-muted">Total de unidades</td>
+                <td class="text-right font-medium tabular-nums">{{ (int) $traspaso->items->sum('cantidad') }}</td>
+            </tr>
+        </tfoot>
     </table>
 </div>
-<p class="mt-3 text-sm text-ink-muted">Registrado por {{ $traspaso->usuario?->username }}.</p>
+<p class="mt-3 text-sm text-ink-muted">
+    {{ $traspaso->origen?->nombre }} → {{ $traspaso->destino?->nombre }} · registrado por {{ $traspaso->usuario?->username }}.
+</p>
 @endsection
