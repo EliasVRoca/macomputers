@@ -60,7 +60,21 @@ Formulario con grupos de checkboxes por módulo; `.badge` para "sistema"; `.tabl
 - Mantener `es_sistema` inmutable y el Gerente como único rol de sistema.
 - No usar `Policy`; la autorización es por middleware `permiso:` + lógica en el controlador.
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequest a crear:** `app/Http/Requests/Roles/GuardarRolRequest.php`.
+- **Texto libre a sanear:** `nombre`, `descripcion`.
+- **Reglas tipadas:** `permisos` = array de claves existentes (`Rule::in(array_keys(config('permisos.modulos')))`); `es_sistema` se fuerza a `false`.
+- **Salida/SQL:** escapado con Blade; SQL parametrizado.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `roles/index.blade.php` + `roles/form.blade.php`. ✅
+- **Objetivo:** `index` + `form` + `show` + `_*.blade.php`.
+- **Pendiente:** mover la validación a FormRequest.
+
+## 13. Cómo probar a mano
 
 `gerente`/`password` → **Administración ▸ Roles** → crear uno con permisos parciales → asignarlo a un
 usuario nuevo → verificar que el riel solo muestra esos módulos; intentar editar el rol **Gerente**

@@ -58,12 +58,12 @@ La pestaña activa viaja por `?tab=existencias|historial`.
 - Aislamiento: al **registrar**, el no gerente opera solo su sucursal; en **consulta** ve todas.
 - Tipos manuales: entrada/salida/ajuste. El resto los generan otros módulos (ver `TipoMovimiento`).
 
-## 7. Tipado y saneado (seguridad)
+## 7. UI y patrones
 
-- Ids `integer` + `exists`; `tipo` por lista blanca; `cantidad` entera; fechas `Y-m-d`; `bajo_minimo`
-  booleano; `buscar` `string|max:100`.
-- `referencia` saneada por lista blanca; salida escapada con Blade; SQL parametrizado;
-  **CSV seguro** (BOM UTF-8 + anti-inyección de fórmulas, `App\Support\Csv`).
+KPIs con `.kpi`/`.kpi-icon`; pestañas `.tabs/.tab`; tarjeta de filtros/buscador; tablas `.tabla`;
+modales `<dialog class="modal">` (`.modal-cabecera/cuerpo/pie`); chips de tipo con
+`TipoMovimiento::etiqueta()` y color (`badge-*`); botones de export `.btn-secondary.btn-sm` con icono
+`download`. Todo con tokens de `app.css`; modo claro **y** oscuro.
 
 ## 8. Estado
 
@@ -90,7 +90,24 @@ y `PantallasTest`. Correr: `php artisan test --compact --filter=Inventario`.
   formulario normal de Traspasos, ver `10-traspasos.md`).
 - UI en español; componentes y tokens de `app.css` (no `DESIGN.md`).
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequests:** `RegistrarMovimientoRequest`, `RegistrarTraspasoRapidoRequest`, `FiltrarInventarioRequest`.
+- **Texto libre a sanear:** `referencia` (allowlist de caracteres); `buscar` (trim).
+- **Reglas tipadas:** ids `integer` + `exists`; `tipo` por lista blanca; `cantidad` entera; fechas
+  `date_format:Y-m-d`; `bajo_minimo` booleano; `buscar` `string|max:100`.
+- **Salida/SQL/CSV:** salida escapada con Blade (nunca `{!! !!}` con datos de usuario), SQL
+  parametrizado y **CSV seguro** (`App\Support\Csv`).
+- Este módulo es la **implementación de referencia** de la política (`00-contexto.md` §13).
+
+## 12. Estructura de archivos
+
+- **Actual (conforme ✅):** controlador delgado + `Requests/Inventario/` + `Services/` (stock, resumen)
+  + `Enums/TipoMovimiento` + `Support/Csv` + vistas `index`/`sucursal` con parciales `_*`/modales.
+- **Objetivo:** la convención de `00-contexto.md` §12 — **este módulo la define**.
+- **Pendiente:** ninguno.
+
+## 13. Cómo probar a mano
 
 `vendedor`/`password` → **Inventario** → en **Existencias** buscar un producto y ver su stock por
 sucursal; usar **"Traer"** cuando hay stock en la otra; en **Historial** filtrar y exportar; con

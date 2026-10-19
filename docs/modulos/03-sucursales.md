@@ -63,7 +63,21 @@ Resource `except(['show','destroy'])`, middleware `permiso:sucursales`.
   lo demás igual que categorías/proveedores.
 - Preferir **desactivar** (`activa = false`) antes que borrar cuando haya historial.
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequest a crear:** `app/Http/Requests/Sucursales/GuardarSucursalRequest.php`.
+- **Texto libre a sanear:** `nombre`, `direccion`, `telefono`.
+- **Reglas tipadas:** `activa` booleano; `telefono` `string|max:30`.
+- **Salida/SQL:** escapado con Blade; SQL parametrizado.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `sucursales/index.blade.php` + `sucursales/form.blade.php`. ✅
+- **Objetivo:** `index` + `form` + `show` + `_*.blade.php`.
+- **Pendiente:** mover la validación a FormRequest; `show`/`destroy` (funcionalidad, ver §8).
+
+## 13. Cómo probar a mano
 
 `gerente`/`password` → **Administración ▸ Sucursales** → crear una sucursal → editarla. Al existir
 `destroy`, intentar borrar una sucursal con stock (debe rechazar) y una vacía (debe permitir).

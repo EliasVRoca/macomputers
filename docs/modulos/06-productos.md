@@ -63,7 +63,21 @@ Resource `productos` `except('show')` con `permiso:productos`: `index`, `create`
 - El **stock no se edita** en este formulario (regla de oro: solo `StockService`).
 - Imágenes/atributos **no** van en este módulo: son del buscador (`20-buscador.md`).
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequest a crear:** `app/Http/Requests/Catalogo/GuardarProductoRequest.php`.
+- **Texto libre a sanear:** `nombre`, `marca`, `modelo`, `codigo`.
+- **Reglas tipadas:** `categoria_id` `integer` + `exists`; `codigo` único; `precio_compra`/`precio_venta` numéricos ≥ 0; `stock_minimo` entero ≥ 0; `activo` booleano.
+- **Salida/SQL/CSV:** escapado con Blade; SQL parametrizado; CSV vía `App\Support\Csv`.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `productos/index.blade.php` + `productos/form.blade.php`. ✅
+- **Objetivo:** `index` + `form` + `show` + `_*.blade.php` (+ parciales para imágenes/atributos del buscador).
+- **Pendiente:** mover la validación a FormRequest; `show`.
+
+## 13. Cómo probar a mano
 
 `gerente`/`password` → **Catálogo ▸ Productos** → crear un producto → verificar que aparece con su
 stock total → intentar borrar uno con movimientos (debe rechazar; desactivar).

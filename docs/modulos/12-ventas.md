@@ -72,7 +72,21 @@ vistas `resources/views/ventas/{index,create,show}.blade.php`.
   simple (no PDF complejo) cuando se implemente.
 - No manejar "vuelto"/pago dividido por ahora.
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequest a crear:** `app/Http/Requests/Ventas/GuardarVentaRequest.php`.
+- **Texto libre a sanear:** ninguno (`medio_pago` es lista cerrada; el resto son ids/cantidades).
+- **Reglas tipadas:** `medio_pago` `Rule::in([...])`; `items` array con `items.*.producto_id` `integer`+`exists` y `items.*.cantidad` `integer|min:1`; `cliente_id`/`sucursal_id` `integer`+`exists`.
+- **Salida/SQL:** escapado con Blade; precios y total tomados del producto en servidor.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `ventas/index.blade.php` + `ventas/create.blade.php` + `ventas/show.blade.php`.
+- **Objetivo:** `index` + `form` + `show` + `imprimir` (nota) + `_*.blade.php`.
+- **Pendiente:** **renombrar `create.blade.php` → `form.blade.php`** al tocar el módulo; mover la validación a FormRequest; vista `imprimir`.
+
+## 13. Cómo probar a mano
 
 `vendedor`/`password` → **Ventas ▸ Ventas** → **Nueva venta** (productos con stock) → ver la nota y
 que el stock bajó; **Anular** y ver que el stock vuelve. Intentar vender más que el stock (rechaza).

@@ -86,7 +86,21 @@ revisar esta decisión.
 excepción deliberada a la regla del formulario (donde el origen es la sucursal del usuario), que
 **mantiene** su regla. La creación vive en `App\Services\TraspasoService` y la comparten ambos.
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequest a crear:** `app/Http/Requests/Traspasos/GuardarTraspasoRequest.php` (y `RegistrarTraspasoRapidoRequest`, ya existente para el atajo).
+- **Texto libre a sanear:** ninguno (solo ids, fecha e ítems).
+- **Reglas tipadas:** `items` array con `items.*.producto_id` `integer`+`exists` y `items.*.cantidad` `integer|min:1`; `sucursal_*_id` `integer`+`exists`; `fecha` `date`.
+- **Salida/SQL:** escapado con Blade; SQL parametrizado.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `traspasos/index.blade.php` + `traspasos/create.blade.php` + `traspasos/show.blade.php`.
+- **Objetivo:** `index` + `form` + `show` + `_*.blade.php`.
+- **Pendiente:** **renombrar `create.blade.php` → `form.blade.php`** al tocar el módulo; mover la validación a FormRequest.
+
+## 13. Cómo probar a mano
 
 `vendedor`/`password` → **Inventario ▸ Traspasos** → **Nuevo traspaso** (origen = su sucursal,
 destino = la otra, un producto con stock) → verificar en **Disponibilidad** que bajó en origen y subió

@@ -63,7 +63,7 @@ php artisan tinker --execute '...'          # inspección puntual
 
 ```
 app/
-  Http/Controllers/      # un controlador por módulo (validación inline)
+  Http/Controllers/      # un controlador por módulo (delegada a FormRequests)
   Http/Middleware/EnsurePermiso.php
   Models/                # Eloquent; sin SoftDeletes; $table explícito
   Services/StockService.php     # ÚNICO punto de escritura de stock
@@ -97,8 +97,9 @@ docs/                    # esta documentación
    usuario **nunca** son de sistema.
 4. **Aislamiento por sucursal.** Un usuario **no gerente** opera **forzado a su** `sucursal_id`;
    el **gerente** puede elegir sucursal. Patrón típico: `$sucursalId = $usuario->esGerente() ? (int)$datos['sucursal_id'] : (int)$usuario->sucursal_id;` (y `abort_unless` para vetar otras sucursales en vistas de detalle).
-5. **Validación inline** en el controlador con `$request->validate([...], [...], [ 'campo' => 'nombre en español' ])`.
-   **No** hay `FormRequest` ni `Policy`; no introducirlos salvo que un brief lo pida explícitamente.
+5. **Validación con FormRequest** (fuente única de tipado y saneado; política en §13). Reglas tipadas
+   y saneado del texto libre. **No** se usa `Policy`: la autorización es el middleware `permiso:` + la
+   lógica del controlador (una `Policy` queda como mejora futura).
 6. **Convenciones de dominio en español**: tablas, columnas y métodos de dominio en español
    (`sucursal_origen_id`, `precio_venta`, `esGerente()`); nombres de framework en inglés.
 7. **Sin borrado lógico en la base** (no hay `SoftDeletes`); la baja de usuarios/clientes se hace
@@ -194,3 +195,47 @@ Estas decisiones están cerradas. Cualquier sesión debe respetarlas:
 | **Stock mínimo** | Umbral de bajo stock por producto. |
 | **OT** | Orden de trabajo del servicio técnico (registrada como venta de servicio). |
 | **Requisición** / RF22 | Solicitud de mercadería de una sucursal a otra (opcional, futuro). |
+
+---
+
+## 12. Estructura de archivos (convención del proyecto)
+
+Todo módulo respeta esta estructura, para que cualquiera encuentre las cosas rápido:
+
+```
+app/Http/Controllers/<Modulo>Controller.php        # delgado: orquesta, sin lógica pesada
+app/Http/Requests/<Modulo>/{Accion}Request.php     # uno por formulario
+app/Services/<X>Service.php                        # dominio reutilizable (stock, traspasos, OT…)
+app/Enums/<Enum>.php                               # estados/tipos, con etiqueta()
+app/Support/…                                      # helpers (Menu, Csv…)
+resources/views/<modulo>/
+  index.blade.php                                  # listado
+  form.blade.php                                   # alta y edición (compartido)
+  show.blade.php                                   # ficha/detalle (si aplica)
+  imprimir.blade.php                               # documento imprimible (si aplica)
+  _*.blade.php                                     # parciales (filtros, tablas, kpis, modales)
+tests/Feature/<Modulo>Test.php
+docs/modulos/NN-<modulo>.md
+```
+
+- **Formularios:** un único `form.blade.php` (alta y edición). Los módulos que hoy usan
+  `create.blade.php` (Ventas, Compras, Traspasos, Cambios) se **renombran a `form`** cuando se toquen.
+- **Excepciones documentadas:** `perfil/edit` (cuenta propia) e `inventario/sucursal` (drill-down).
+- **Referencia viva:** el módulo **Inventario** (`resources/views/inventario/`).
+
+## 13. Seguridad de entrada (tipado y saneado)
+
+Toda entrada de datos se valida **tipada y saneada**. Referencia: `app/Http/Requests/Inventario/`.
+
+- **FormRequest por formulario** (nunca `$request->validate()` inline). Nombres en español:
+  `Guardar<Entidad>Request`, `Actualizar<Entidad>Request`, `Filtrar<Modulo>Request`.
+- **Reglas tipadas:** ids `integer` + `exists`; fechas `date_format:Y-m-d`; listas con `Rule::in`;
+  textos `string|max:N`; arrays con reglas por elemento (`items.*.campo`).
+- **Saneado del texto libre** (`nombre`, `descripcion`, `motivo`, `observaciones`, `equipo`,
+  `diagnostico`, `contacto`, `direccion`, `telefono`…): `trim`, colapsar espacios, quitar control y
+  etiquetas, y **allowlist de caracteres**; se hace en `prepareForValidation()`.
+- **Salida** siempre escapada con Blade (`{{ }}`); **prohibido `{!! !!}`** con datos de usuario.
+- **SQL siempre parametrizado** (Eloquent/Query Builder); nunca concatenar.
+- **CSV seguro:** usar `App\Support\Csv` (BOM UTF-8 + anti-inyección de fórmulas).
+- **Solo `StockService` escribe stock** (invariante).
+- Cada módulo debe tener **pruebas** de sus validaciones y del saneado.

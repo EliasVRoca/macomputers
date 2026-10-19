@@ -63,7 +63,20 @@ respeta permisos y filtros, y no rompe con listados vacíos.
 - **No** crear un módulo ni un CU para reportes (criterio del docente).
 - Cada exportación usa los **filtros vigentes** de la pantalla y el helper `App\Support\Csv`.
 
-## 10. Cómo probar a mano
+## 10. Seguridad de entrada (tipado y saneado)
+
+- **Filtros tipados:** reutilizar el `Filtrar<Modulo>Request` de cada módulo (params `integer`/`date`).
+- **Texto libre a sanear:** el término de búsqueda del reporte.
+- **CSV seguro:** siempre `App\Support\Csv` (BOM UTF-8 + anti-inyección de fórmulas).
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 11. Estructura de archivos
+
+- **Actual:** la exportación vive **dentro de cada módulo** (p. ej. `InventarioController::exportKardex/exportExistencias`), sin módulo propio. ✅ (coherente con la decisión de §2).
+- **Objetivo:** un método `export*` por módulo + `App\Support\Csv`.
+- **Pendiente:** sin cambios de estructura; solo agregar los exports que faltan (Disponibilidad, Ventas, Traspasos).
+
+## 12. Cómo probar a mano
 
 Con `gerente`, en Disponibilidad aplicar un filtro y pulsar **Exportar CSV**; abrir el archivo en
 Excel y verificar encabezados y filas. Repetir en Ventas y Kardex.

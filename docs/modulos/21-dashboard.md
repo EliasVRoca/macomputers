@@ -65,7 +65,19 @@ conteo por sucursal respeta el aislamiento.
 - **No** agregar gráficos ni widgets pesados: solo las 5 tarjetas acordadas (RNF10, simplicidad).
 - `/inicio` deja de redirigir para usuarios con módulos; mantiene el fallback para roles sin módulos.
 
-## 10. Cómo probar a mano
+## 10. Seguridad de entrada (tipado y saneado)
+
+- Sin entrada de usuario (panel de solo lectura); si se agrega un selector de sucursal, validarlo `integer` + `exists`.
+- Las métricas respetan el **aislamiento por sucursal**.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 11. Estructura de archivos
+
+- **Actual:** `app/Http/Controllers/InicioController.php` + `resources/views/inicio.blade.php`.
+- **Objetivo:** controlador delgado + `resources/views/inicio.blade.php` (o `dashboard/index.blade.php` con parciales `_kpi*.blade.php`) y un servicio de métricas al estilo `InventarioResumenService`.
+- **Pendiente:** extraer parciales de métricas si el panel crece.
+
+## 12. Cómo probar a mano
 
 Entrar como `gerente` → ver las 5 tarjetas con datos; entrar como `vendedor` → las de su sucursal y
 solo sus módulos; entrar con un rol sin módulos → ver el mensaje de fallback.

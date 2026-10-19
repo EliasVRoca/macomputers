@@ -81,7 +81,22 @@ búsqueda con y sin resultado, imágenes ligadas al producto, y acción de trasp
 - **Sin** motor de búsqueda externo (Elasticsearch/Meilisearch): usar índices de MySQL.
 - El traspaso desde aquí sigue la regla del módulo 10 (**simple, inmediato**).
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequest a crear:** `app/Http/Requests/Buscador/BuscarRequest.php` (texto y atributos).
+- **Texto libre a sanear:** el término de búsqueda y los valores de atributos.
+- **Reglas tipadas:** `termino` `string|max:100`; `producto_id`/`sucursal_id` `integer` + `exists` (cuando apliquen).
+- **Salida/SQL:** resultados escapados con Blade; búsqueda parametrizada con índices.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** no existe (extensión).
+- **Objetivo:** `resources/views/buscador/{index}.blade.php` + `_*.blade.php`; controlador delgado;
+  `app/Http/Requests/Buscador/BuscarRequest.php`; modelos propios (`producto_imagenes`, `producto_atributos`, `busquedas_producto`).
+- **Pendiente:** crear todo conforme a la convención de `00-contexto.md` §12.
+
+## 13. Cómo probar a mano
 
 Buscar "teclado 60%": ver resultados con imagen y stock por sucursal; forzar un caso sin stock local
 pero con stock en la otra → usar "Traer de la otra sucursal"; buscar algo inexistente y confirmar que

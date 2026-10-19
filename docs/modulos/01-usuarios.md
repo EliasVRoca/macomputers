@@ -77,10 +77,24 @@ Tabla `.tabla`, `.card`, `.badge` para estado; formulario con `.input/.label/.er
 
 - **Baja lógica:** usuarios **no se borran**: se **desactivan** con `activo = false` (confirmado). El
   borrado físico se mantiene solo si no hay historial; la acción principal debe ser desactivar.
-- No introducir `FormRequest`/`Policy`.
+- La validación se moverá a `GuardarUsuarioRequest` (ver §11); **sin** `Policy`.
 - Sin git (lo maneja el usuario).
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequest a crear:** `app/Http/Requests/Usuarios/GuardarUsuarioRequest.php` (alta y edición; la contraseña es obligatoria al crear y opcional al editar).
+- **Texto libre a sanear:** `nombre`, `telefono`, `direccion`, `username`, `email`.
+- **Reglas tipadas:** `role_id`/`sucursal_id` `integer` + `exists`; `email` `email`; contraseña `confirmed|min:8`; `activo` booleano.
+- **Salida/SQL/CSV:** escapado con Blade (nunca `{!! !!}` con datos de usuario), SQL parametrizado.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `usuarios/index.blade.php` + `usuarios/form.blade.php` (compartido alta/edición). ✅
+- **Objetivo:** `index` + `form` + `show` + `imprimir` + `_*.blade.php` (convención en `00-contexto.md` §12).
+- **Pendiente:** mover la validación a FormRequest; `show` (opcional).
+
+## 13. Cómo probar a mano
 
 Entrar como `gerente`/`password` → **Administración ▸ Usuarios** → crear (nombre, C.I., username,
 email, contraseña, rol, sucursal) → editar (dejar contraseña vacía = sin cambio) → probar desactivar

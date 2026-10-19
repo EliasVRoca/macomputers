@@ -57,7 +57,21 @@ vistas `resources/views/encargos/{index,form}.blade.php`.
   catálogo). No reservar stock (el producto es justamente **no disponible**).
 - Calcular el saldo desde un precio solo si hay producto asociado.
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequests a crear:** `app/Http/Requests/Encargos/{GuardarEncargoRequest,RegistrarAbonoRequest}.php`.
+- **Texto libre a sanear:** `descripcion` (es el único texto libre del módulo).
+- **Reglas tipadas:** `cliente_id` `integer`+`exists`; `anticipo`/`saldo` numéricos ≥ 0; `abono` numérico > 0 y ≤ saldo; `fecha` `date`.
+- **Salida/SQL:** escapado con Blade; SQL parametrizado.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `encargos/index.blade.php` + `encargos/form.blade.php`. ✅
+- **Objetivo:** `index` + `form` + `show` + `_*.blade.php`.
+- **Pendiente:** mover la validación a FormRequests; `show`.
+
+## 13. Cómo probar a mano
 
 `vendedor`/`password` → **Ventas ▸ Encargos** → **Nuevo encargo** (cliente, descripción, anticipo y
 saldo) → registrar el saldo y ver el cambio a `completado`.

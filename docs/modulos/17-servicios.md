@@ -92,7 +92,21 @@ cancelación devuelve repuestos, impresión, permisos, gerente vs técnico), `Fo
 - **No** agregar presupuesto con firma ni notificaciones por ahora (opcionales futuros).
 - Al implementar `destroy`: **liberar repuestos** (usar `liberarRepuestos`) antes de borrar.
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequests a crear:** `app/Http/Requests/Servicio/{GuardarServicioRequest,ActualizarServicioRequest,CambiarEstadoServicioRequest,AgregarRepuestoRequest}.php`.
+- **Texto libre a sanear:** `equipo`, `diagnostico`, `accesorios_recibidos`, `observaciones`, `cliente_nombre`, `cliente_telefono`, `cliente_carnet`.
+- **Reglas tipadas:** `cliente_id`/`tecnico_id`/`sucursal_id` `integer`+`exists`; `estado` `Rule::in(EstadoServicio)`; `mano_de_obra`/`descuento` numéricos ≥ 0; fechas `date`; `producto_id`/`cantidad` para repuestos `integer|min:1`.
+- **Salida/SQL:** escapado con Blade; SQL parametrizado; total sincronizado en servidor.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `servicios/index.blade.php` + `servicios/form.blade.php` + `servicios/show.blade.php` + `servicios/imprimir.blade.php`. ✅
+- **Objetivo:** `index` + `form` + `show` + `imprimir` + `_*.blade.php`.
+- **Pendiente:** mover la validación a FormRequests (hoy un método `reglas()` inline).
+
+## 13. Cómo probar a mano
 
 `tecnico`/`password` → **Servicio técnico ▸ Servicios** → **Nueva orden** → ficha → avanzar estados
 (no debe dejar marcar `Listo` sin diagnóstico) → agregar repuesto (baja stock) → **Cancelar** (sube

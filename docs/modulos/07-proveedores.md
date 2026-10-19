@@ -48,7 +48,21 @@ CRUD. Al eliminar, bloquea si tiene compras (`QueryException`).
 
 - **No** agregar evaluación/calificación de proveedores (fuera de alcance, lo dice CU8).
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequest a crear:** `app/Http/Requests/Catalogo/GuardarProveedorRequest.php`.
+- **Texto libre a sanear:** `nombre`, `contacto`, `direccion`, `pais_origen`.
+- **Reglas tipadas:** `nombre` `string|max:150` obligatorio; el resto `string|max:N` opcionales.
+- **Salida/SQL:** escapado con Blade; SQL parametrizado.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `proveedores/index.blade.php` + `proveedores/form.blade.php`. ✅
+- **Objetivo:** `index` + `form` + `show` + `_*.blade.php`.
+- **Pendiente:** mover la validación a FormRequest; `show`.
+
+## 13. Cómo probar a mano
 
 `gerente`/`password` → **Catálogo ▸ Proveedores** → crear uno → intentar borrarlo si tiene compras
 (debe rechazar).

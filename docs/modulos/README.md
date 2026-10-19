@@ -54,9 +54,12 @@ Un módulo se marca **Revisión: ✅** cuando cumple todo esto:
 - [ ] Brief del módulo actualizado (estado + decisiones).
 - [ ] Sin pendientes **obligatorios** (los opcionales quedan listados en el brief).
 - [ ] `docs/modulos-y-funcionalidades.md` coherente con el brief.
+- [ ] **Entrada tipada/saneada** (FormRequest) documentada en el brief.
+- [ ] **Estructura de archivos** conforme a la convención (`00-contexto.md` §12).
 
 ## Plantilla de cada brief
 
 1. Resumen (qué es, RF/CU) · 2. Modelo de datos · 3. Rutas y endpoints · 4. Capas y archivos ·
 5. Flujos · 6. Reglas de negocio · 7. UI y patrones · 8. Estado (checklist) · 9. Pruebas ·
-10. Decisiones y restricciones acordadas · 11. Cómo probar a mano.
+10. Decisiones y restricciones acordadas · 11. Seguridad de entrada (tipado y saneado) ·
+12. Estructura de archivos · 13. Cómo probar a mano.

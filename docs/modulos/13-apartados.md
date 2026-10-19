@@ -62,7 +62,21 @@ vistas `resources/views/apartados/{index,form}.blade.php` (form compartido alta/
 - Al **completar** un apartado no se genera automáticamente una venta (el stock ya se reservó); si se
   quiere, se registra la venta aparte. Confirmar con el usuario antes de cambiarlo.
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequests a crear:** `app/Http/Requests/Apartados/{GuardarApartadoRequest,RegistrarAbonoRequest}.php`.
+- **Texto libre a sanear:** ninguno.
+- **Reglas tipadas:** `cliente_id`/`producto_id` `integer`+`exists`; `cantidad` `integer|min:1`; `sena` numérico ≥ 0 y ≤ total; `abono` numérico > 0 y ≤ saldo; `fecha` `date`.
+- **Salida/SQL:** escapado con Blade; total desde `precio_venta` en servidor.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `apartados/index.blade.php` + `apartados/form.blade.php`. ✅
+- **Objetivo:** `index` + `form` + `show` + `_*.blade.php`.
+- **Pendiente:** mover la validación a FormRequests; `show`.
+
+## 13. Cómo probar a mano
 
 `vendedor`/`password` → **Ventas ▸ Apartados** → **Nuevo apartado** (con seña menor al total) → ver
 que el stock bajó; registrar el saldo → estado `completado`; en otro apartado, **Eliminar** y ver que

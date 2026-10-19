@@ -61,7 +61,21 @@ vistas `resources/views/cambios/{index,create,show}.blade.php`.
   (decimal, puede ser 0) al cambio; no genera movimientos de efectivo.
 - Mantener el requisito de que la **venta de origen** y el **producto** deben corresponder.
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequest a crear:** `app/Http/Requests/Cambios/GuardarCambioRequest.php`.
+- **Texto libre a sanear:** `motivo`.
+- **Reglas tipadas:** `venta_id`/`producto_id`/`producto_reemplazo_id` `integer`+`exists`; `tipo` `Rule::in(cambio,devolucion)`; `fecha` `date`.
+- **Salida/SQL:** escapado con Blade; SQL parametrizado.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `cambios/index.blade.php` + `cambios/create.blade.php` + `cambios/show.blade.php`.
+- **Objetivo:** `index` + `form` + `show` + `_*.blade.php`.
+- **Pendiente:** **renombrar `create.blade.php` → `form.blade.php`** al tocar el módulo; mover la validación a FormRequest.
+
+## 13. Cómo probar a mano
 
 `vendedor`/`password` → crear una venta → **Ventas ▸ Cambios** → **Nuevo cambio** (tipo devolución)
 → verificar que el stock del producto **sube**; probar un cambio con reemplazo y ver que baja el

@@ -40,7 +40,7 @@ Riel/panel/topbar/paleta en `layouts/app.blade.php`. Iconos `<x-icon name="..." 
 ## 6. Estado
 
 - ✅ 16 módulos con permiso; riel y paleta filtrados; sesión única; kardex automático.
-- ⬜ *(mejora)* Extraer validación a `FormRequest` y autorización a `Policy` (opcional).
+- ⬜ **FormRequests** por formulario (política en `00-contexto.md` §13) · *(opcional)* `Policy`.
 
 ## 7. Pruebas
 
@@ -49,12 +49,26 @@ negativos).
 
 ## 8. Decisiones y restricciones acordadas
 
-- **No** introducir `FormRequest`/`Policy` salvo que un brief lo pida (validación inline es el
-  patrón del repo).
+- **Validación con FormRequest** por formulario (política en `00-contexto.md` §13). **No** se usa
+  `Policy`; la autorización es middleware `permiso:` + lógica del controlador.
 - Si se agrega un **módulo nuevo** (p. ej. `reportes`), declararlo aquí y en los roles semilla.
 - **La fuente de verdad visual es `app.css`** (no `DESIGN.md`).
 
-## 9. Cómo probar a mano
+## 9. Seguridad de entrada (tipado y saneado)
+
+- No hay formularios de dominio propios: la entrada se valida en **cada módulo** (ver su brief).
+- Reglas transversales que aplican siempre: permisos (`config/permisos.php` + `EnsurePermiso`),
+  aislamiento por sucursal y **solo `StockService` escribe stock**.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 10. Estructura de archivos
+
+- **Piezas transversales:** `app/Support/{Menu,Csv}.php`, `app/Http/Middleware/EnsurePermiso.php`,
+  `app/Services/StockService.php`, `config/permisos.php`, `resources/css/app.css`.
+- **Objetivo:** helpers en `app/Support/`, componentes/tokens en `app.css`, todo formulario con FormRequest.
+- **Pendiente:** nada aquí; es el marco que usan los demás módulos.
+
+## 11. Cómo probar a mano
 
 Iniciar sesión con los tres usuarios semilla y comparar el riel (Gerente ve todo; Vendedor y Técnico,
 solo sus módulos). Provocar un movimiento y ver el registro en `movimientos_inventario`.

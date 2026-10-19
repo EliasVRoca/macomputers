@@ -55,7 +55,21 @@ Formulario con filas de productos; `.tabla`, `.card`, `.input/.label`.
 - **No** agregar órdenes de compra ni pagos a proveedor (fuera de alcance; lo dice CU9).
 - El stock entra **al guardar** (sin estado "pendiente/recibida").
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequest a crear:** `app/Http/Requests/Compras/GuardarCompraRequest.php`.
+- **Texto libre a sanear:** ninguno (ids, fecha e ítems).
+- **Reglas tipadas:** `proveedor_id`/`sucursal_id` `integer`+`exists`; `items.*.producto_id` `integer`+`exists`; `items.*.cantidad` `integer|min:1`; `items.*.precio_compra` numérico ≥ 0; `fecha` `date`.
+- **Salida/SQL:** escapado con Blade; total calculado en servidor.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `compras/index.blade.php` + `compras/create.blade.php` + `compras/show.blade.php`.
+- **Objetivo:** `index` + `form` + `show` + `_*.blade.php`.
+- **Pendiente:** **renombrar `create.blade.php` → `form.blade.php`** al tocar el módulo; mover la validación a FormRequest.
+
+## 13. Cómo probar a mano
 
 Entrar como `gerente` → **Inventario ▸ Compras** → **Nueva compra** (proveedor + productos con
 cantidad y precio) → verificar en **Disponibilidad** que subió el stock y el total de la compra.

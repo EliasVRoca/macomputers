@@ -57,7 +57,21 @@ Resource `clientes` `except('show')` con `permiso:clientes`: `index`, `create`, 
   **no** refactorizar a una relación con `persona` por ahora (mínimo cambio): solo agregar los campos
   faltantes al cliente. Documentar si en el futuro se unifica.
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequest a crear:** `app/Http/Requests/Clientes/GuardarClienteRequest.php`.
+- **Texto libre a sanear:** `nombre`, `telefono`, `carnet`.
+- **Reglas tipadas:** `nombre` `string|max:150`; `telefono` `string|max:30`; `carnet` `string|max:30` único (opcional).
+- **Salida/SQL:** escapado con Blade; SQL parametrizado.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `clientes/index.blade.php` + `clientes/form.blade.php`. ✅
+- **Objetivo:** `index` + `form` + `show` + `_*.blade.php`.
+- **Pendiente:** mover la validación a FormRequest; `show`/historial.
+
+## 13. Cómo probar a mano
 
 `vendedor`/`password` → **Ventas ▸ Clientes** → crear (nombre, teléfono, carnet) → buscar por
 carnet → intentar borrar uno con ventas (debe rechazar → desactivar).

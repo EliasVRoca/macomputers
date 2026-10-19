@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function () {
 
     // Inventario
     Route::get('/disponibilidad', [DisponibilidadController::class, 'index'])->name('disponibilidad.index')->middleware('permiso:disponibilidad');
+    Route::get('/disponibilidad/export', [DisponibilidadController::class, 'exportar'])->name('disponibilidad.export')->middleware('permiso:disponibilidad');
 
     Route::get('/inventario', [InventarioController::class, 'index'])->name('inventario.index')->middleware('permiso:inventario');
     Route::get('/inventario/sucursal/{sucursal}', [InventarioController::class, 'sucursal'])->name('inventario.sucursal')->middleware('permiso:inventario');

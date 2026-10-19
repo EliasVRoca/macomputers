@@ -49,7 +49,21 @@ CRUD. El índice muestra el conteo de productos. Al eliminar, si hay productos a
 
 - El borrado se bloquea con `QueryException` (patrón del repo). Mantener ese patrón.
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequest a crear:** `app/Http/Requests/Categorias/GuardarCategoriaRequest.php`.
+- **Texto libre a sanear:** `nombre`, `descripcion`.
+- **Reglas tipadas:** `nombre` `string|max:100` único; `descripcion` `string|max:255`.
+- **Salida/SQL:** escapado con Blade; SQL parametrizado.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `categorias/index.blade.php` + `categorias/form.blade.php`. ✅
+- **Objetivo:** `index` + `form` + `show` + `_*.blade.php`.
+- **Pendiente:** mover la validación a FormRequest.
+
+## 13. Cómo probar a mano
 
 `gerente`/`password` → **Catálogo ▸ Categorías** → crear "Teclados" → editar → intentar borrar una
 categoría con productos (debe rechazar).

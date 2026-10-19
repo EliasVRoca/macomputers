@@ -71,7 +71,21 @@ regla de **sesión única por usuario**.
 - No cambiar el identificador de login: hoy es **`username`** (no email).
 - Sin 2FA/recuperación por ahora (opcional futuro).
 
-## 11. Cómo probar a mano
+## 11. Seguridad de entrada (tipado y saneado)
+
+- **FormRequests a crear:** `app/Http/Requests/Sesion/{LoginRequest,GuardarPerfilRequest,CambiarPasswordRequest}.php`.
+- **Texto libre a sanear:** `nombre`, `telefono`, `direccion`, `email`; `username` en el login.
+- **Reglas tipadas:** `email` `email` único (ignorando el propio usuario); contraseña `current_password|confirmed|min:8`.
+- **Salida:** escapado con Blade; sesión única ya implementada.
+- Política completa: `docs/modulos/00-contexto.md` §13.
+
+## 12. Estructura de archivos
+
+- **Actual:** `auth/login.blade.php` (layout `blank`) + `perfil/edit.blade.php`.
+- **Objetivo:** `index`/`form`/`show` para módulos; **`perfil/edit` es una excepción documentada** (cuenta propia).
+- **Pendiente:** mover la validación a FormRequests; sin cambios de estructura.
+
+## 13. Cómo probar a mano
 
 Cerrar sesión → entrar con `gerente`/`password` desde dos navegadores y verificar que el segundo
 ingreso invalida el primero. En **Mi perfil**, cambiar datos y contraseña, y "cerrar otras sesiones".

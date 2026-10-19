@@ -56,7 +56,7 @@ documento debe reflejar fielmente lo que la aplicación hace.
 - *Archivos:* `config/permisos.php`, `app/Support/Menu.php`, `app/Http/Middleware/EnsurePermiso.php`, `app/Services/StockService.php`.
 - ✅ 16 módulos con permiso; riel y paleta filtrados por rol; sesión única por usuario.
 - ✅ `StockService`: bloquea la fila, impide saldos negativos y escribe el kardex en cada movimiento.
-- ⬜ *(mejora)* Extraer validación a `FormRequest` y autorización a `Policy`.
+- ⬜ **FormRequests** por módulo (política en `docs/modulos/00-contexto.md` §13) · *(opcional)* `Policy`.
 - ⬜ **Exportación (RF18):** no existe en ningún módulo.
 
 ### Administración
@@ -108,9 +108,9 @@ documento debe reflejar fielmente lo que la aplicación hace.
 
 **Disponibilidad** — RF7 · CU17 *(nuevo)*
 - ✅ Consulta en tiempo real de existencia por sucursal + búsqueda (nombre/código/marca) + alerta de bajo mínimo.
-- ⬜ **Modelar como CU17** (es el núcleo del problema de la tesis y hoy no tiene caso de uso).
-- ⬜ Filtro por sucursal.
-- ⬜ **Exportar** disponibilidad (RF18).
+- ✅ **Filtro por sucursal** (deja los productos con existencia en ella; conserva las columnas de todas).
+- ✅ **Exportar** disponibilidad (CSV, RF18) + entrada tipada/saneada (FormRequest).
+- ⬜ **Modelar como CU17** en la documentación PUDS/UML (documento de tesis, fuera del repo).
 - ⬜ 🔧 Base del **módulo estrella** (buscador, §4).
 
 **Inventario (existencias y kardex)** — RF8 · CU6
@@ -212,10 +212,12 @@ documento debe reflejar fielmente lo que la aplicación hace.
 
 ## 5. Brechas transversales
 
-- ◐ **Exportaciones (RF18):** Inventario ya exporta (kardex y bajo mínimo → CSV); faltan Disponibilidad, Ventas y Traspasos. Helper: `App\Support\Csv`.
+- ◐ **Exportaciones (RF18):** Inventario (kardex y bajo mínimo) y Disponibilidad ya exportan (CSV); faltan Ventas y Traspasos. Helper: `App\Support\Csv`.
 - ⬜ **Baja lógica** de usuario/cliente (hoy borrado físico; existe el campo `activo` en usuarios).
 - ⬜ **Duplicación `Persona` vs `Cliente`:** el cliente no reutiliza los datos de persona (de ahí que le falte la dirección).
-- ⬜ `FormRequest` / `Policy` para centralizar validación y autorización (hoy inline).
+- ⬜ **Entrada tipada/saneada en todos los módulos:** hoy solo **Inventario** usa FormRequests; el resto valida **inline**. Migrar por módulo + sanear el texto libre (política en `docs/modulos/00-contexto.md` §13).
+- ⬜ **Estructura de vistas uniforme:** renombrar `create`→`form` en Ventas, Compras, Traspasos y Cambios (convención en `00-contexto.md` §12).
+- ⬜ *(opcional)* `Policy` para centralizar la autorización (hoy middleware `permiso:` + lógica en el controlador).
 - ⬜ Documentación PUDS: incorporar CU16–CU20 con sus diagramas de actividad y secuencia.
 
 ---

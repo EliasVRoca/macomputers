@@ -1,0 +1,229 @@
+- generic [ref=f2e2]:
+  - navigation "Grupos de navegación" [ref=f2e3]:
+    - link "Inicio" [ref=f2e4] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/inicio
+      - img "M&A Computers" [ref=f2e5]
+    - link "Inicio" [ref=f2e6] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/inicio
+    - link "Inventario" [ref=f2e10] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/disponibilidad
+    - link "Ventas" [ref=f2e13] [cursor=pointer]:
+      - /url: https://macomputers.app.localhost/ventas
+    - generic [ref=f2e18]:
+      - button "Cambiar tema" [ref=f2e19]
+      - group [ref=f2e22]:
+        - generic "Mi cuenta" [ref=f2e23] [cursor=pointer]: V
+  - complementary "Módulos" [ref=f2e25]:
+    - generic [ref=f2e26]:
+      - paragraph [ref=f2e27]: Inventario
+      - list [ref=f2e28]:
+        - listitem [ref=f2e29]:
+          - link "Disponibilidad" [ref=f2e30] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/disponibilidad
+        - listitem [ref=f2e34]:
+          - link "Inventario" [ref=f2e35] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/inventario
+        - listitem [ref=f2e38]:
+          - link "Traspasos" [ref=f2e39] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/traspasos
+  - generic [ref=f2e43]:
+    - banner [ref=f2e44]:
+      - navigation "Migas de pan" [ref=f2e45]:
+        - generic [ref=f2e46]: Inventario
+        - generic [ref=f2e49]: Disponibilidad
+      - generic [ref=f2e50]:
+        - button "Buscar o ir a… Ctrl K" [ref=f2e51]:
+          - generic [ref=f2e55]: Buscar o ir a…
+          - generic [ref=f2e56]: Ctrl K
+        - group [ref=f2e57]:
+          - generic "Mi cuenta" [ref=f2e58] [cursor=pointer]: V
+    - main [ref=f2e59]:
+      - generic [ref=f2e60]:
+        - generic [ref=f2e61]:
+          - heading "Disponibilidad de productos" [level=1] [ref=f2e62]
+          - paragraph [ref=f2e63]: Existencias en tiempo real por sucursal, sin llamar a la otra tienda.
+        - link "Exportar CSV" [ref=f2e65] [cursor=pointer]:
+          - /url: https://macomputers.app.localhost/disponibilidad/export?sucursal_id=2
+      - generic [ref=f2e69]:
+        - generic [ref=f2e70]:
+          - generic [ref=f2e71]: Buscar producto
+          - searchbox "Buscar producto" [ref=f2e72]
+        - generic [ref=f2e73]:
+          - generic [ref=f2e74]: Sucursal
+          - combobox "Sucursal" [ref=f2e75]:
+            - option "Todas las sucursales"
+            - option "Segunda sucursal" [selected]
+            - option "Sucursal principal"
+        - generic [ref=f2e76]:
+          - link "Limpiar" [ref=f2e77] [cursor=pointer]:
+            - /url: https://macomputers.app.localhost/disponibilidad
+          - button "Buscar" [ref=f2e78] [cursor=pointer]
+      - table [ref=f2e83]:
+        - rowgroup [ref=f2e84]:
+          - row [ref=f2e85]:
+            - columnheader "Producto" [ref=f2e86]
+            - columnheader "Código" [ref=f2e87]
+            - columnheader "Segunda sucursal" [ref=f2e88]
+            - columnheader "Sucursal principal" [ref=f2e89]
+            - columnheader "Total" [ref=f2e90]
+        - rowgroup [ref=f2e91]:
+          - row [ref=f2e92]:
+            - cell "Batería para laptop universal Genérica" [ref=f2e93]:
+              - text: Batería para laptop universal
+              - generic [ref=f2e94]: Genérica
+            - cell "REP-BATERIA" [ref=f2e95]
+            - cell "3" [ref=f2e96]
+            - cell "7" [ref=f2e97]
+            - cell "10" [ref=f2e98]
+          - row [ref=f2e99]:
+            - cell "Cargador universal para laptop Genérica" [ref=f2e100]:
+              - text: Cargador universal para laptop
+              - generic [ref=f2e101]: Genérica
+            - cell "REP-CARGUNI" [ref=f2e102]
+            - cell "5" [ref=f2e103]
+            - cell "12" [ref=f2e104]
+            - cell "17" [ref=f2e105]
+          - row [ref=f2e106]:
+            - cell "Cooler de CPU Genérica" [ref=f2e107]:
+              - text: Cooler de CPU
+              - generic [ref=f2e108]: Genérica
+            - cell "REP-COOLER" [ref=f2e109]
+            - cell "5" [ref=f2e110]
+            - cell "10" [ref=f2e111]
+            - cell "15" [ref=f2e112]
+          - row [ref=f2e113]:
+            - cell "Disco duro 1TB 7200RPM Seagate" [ref=f2e114]:
+              - text: Disco duro 1TB 7200RPM
+              - generic [ref=f2e115]: Seagate
+            - cell "ALM-HDD1TB" [ref=f2e116]
+            - cell "4" [ref=f2e117]
+            - cell "10" [ref=f2e118]
+            - cell "14" [ref=f2e119]
+          - row [ref=f2e120]:
+            - cell "Disco SSD 1TB NVMe Western Digital" [ref=f2e121]:
+              - text: Disco SSD 1TB NVMe
+              - generic [ref=f2e122]: Western Digital
+            - cell "ALM-SSD1TBN" [ref=f2e123]
+            - cell "3" [ref=f2e124]
+            - cell "8" [ref=f2e125]
+            - cell "11" [ref=f2e126]
+          - row [ref=f2e127]:
+            - cell "Disco SSD 480GB SATA Kingston" [ref=f2e128]:
+              - text: Disco SSD 480GB SATA
+              - generic [ref=f2e129]: Kingston
+            - cell "ALM-SSD480" [ref=f2e130]
+            - cell "6" [ref=f2e131]
+            - cell "14" [ref=f2e132]
+            - cell "20" [ref=f2e133]
+          - row [ref=f2e134]:
+            - cell "Fuente de poder 500W Sentey" [ref=f2e135]:
+              - text: Fuente de poder 500W
+              - generic [ref=f2e136]: Sentey
+            - cell "REP-FUENT500" [ref=f2e137]
+            - cell "5" [ref=f2e138]
+            - cell "9" [ref=f2e139]
+            - cell "14" [ref=f2e140]
+          - row [ref=f2e141]:
+            - cell "Fuente de poder 600W 80 Plus Cooler Master" [ref=f2e142]:
+              - text: Fuente de poder 600W 80 Plus
+              - generic [ref=f2e143]: Cooler Master
+            - cell "REP-FUENT600" [ref=f2e144]
+            - cell "3" [ref=f2e145]
+            - cell "6" [ref=f2e146]
+            - cell "9" [ref=f2e147]
+          - row [ref=f2e148]:
+            - cell "Laptop Lenovo IdeaPad 3 Lenovo" [ref=f2e149]:
+              - text: Laptop Lenovo IdeaPad 3
+              - generic [ref=f2e150]: Lenovo
+            - cell "LAP-001" [ref=f2e151]
+            - cell "10" [ref=f2e152]
+            - cell "10" [ref=f2e153]
+            - cell "20" [ref=f2e154]
+          - row [ref=f2e155]:
+            - cell "Lector de tarjetas SD/USB Genérica" [ref=f2e156]:
+              - text: Lector de tarjetas SD/USB
+              - generic [ref=f2e157]: Genérica
+            - cell "REP-LECTOR" [ref=f2e158]
+            - cell "8" [ref=f2e159]
+            - cell "15" [ref=f2e160]
+            - cell "23" [ref=f2e161]
+          - row [ref=f2e162]:
+            - cell "Memoria RAM 16GB DDR4 3200MHz Kingston" [ref=f2e163]:
+              - text: Memoria RAM 16GB DDR4 3200MHz
+              - generic [ref=f2e164]: Kingston
+            - cell "MEM-RAM16D4" [ref=f2e165]
+            - cell "4" [ref=f2e166]
+            - cell "10" [ref=f2e167]
+            - cell "14" [ref=f2e168]
+          - row [ref=f2e169]:
+            - cell "Memoria RAM 8GB DDR3 1600MHz Kingston" [ref=f2e170]:
+              - text: Memoria RAM 8GB DDR3 1600MHz
+              - generic [ref=f2e171]: Kingston
+            - cell "MEM-RAM8D3" [ref=f2e172]
+            - cell "6" [ref=f2e173]
+            - cell "12" [ref=f2e174]
+            - cell "18" [ref=f2e175]
+          - row [ref=f2e176]:
+            - cell "Memoria RAM 8GB DDR4 2666MHz Kingston" [ref=f2e177]:
+              - text: Memoria RAM 8GB DDR4 2666MHz
+              - generic [ref=f2e178]: Kingston
+            - cell "MEM-RAM8D4" [ref=f2e179]
+            - cell "8" [ref=f2e180]
+            - cell "19" [ref=f2e181]
+            - cell "27" [ref=f2e182]
+          - row [ref=f2e183]:
+            - cell "Mouse óptico USB Logitech" [ref=f2e184]:
+              - text: Mouse óptico USB
+              - generic [ref=f2e185]: Logitech
+            - cell "ACC-MOUSE" [ref=f2e186]
+            - cell "10" [ref=f2e187]
+            - cell "20" [ref=f2e188]
+            - cell "30" [ref=f2e189]
+          - row [ref=f2e190]:
+            - cell "Pantalla LCD 14\" HD Genérica" [ref=f2e191]:
+              - text: Pantalla LCD 14" HD
+              - generic [ref=f2e192]: Genérica
+            - cell "REP-PANT14" [ref=f2e193]
+            - cell "2" [ref=f2e194]
+            - cell "4" [ref=f2e195]
+            - cell "6" [ref=f2e196]
+          - row [ref=f2e197]:
+            - cell "Pantalla LCD 15.6\" HD Genérica" [ref=f2e198]:
+              - text: Pantalla LCD 15.6" HD
+              - generic [ref=f2e199]: Genérica
+            - cell "REP-PANT156" [ref=f2e200]
+            - cell "2" [ref=f2e201]
+            - cell "4" [ref=f2e202]
+            - cell "6" [ref=f2e203]
+          - row [ref=f2e204]:
+            - cell "Pasta térmica (jeringa) HY510" [ref=f2e205]:
+              - text: Pasta térmica (jeringa)
+              - generic [ref=f2e206]: HY510
+            - cell "REP-PASTA" [ref=f2e207]
+            - cell "14" [ref=f2e208]
+            - cell "30" [ref=f2e209]
+            - cell "44" [ref=f2e210]
+          - row [ref=f2e211]:
+            - cell "Teclado para laptop HP HP" [ref=f2e212]:
+              - text: Teclado para laptop HP
+              - generic [ref=f2e213]: HP
+            - cell "REP-TECHP" [ref=f2e214]
+            - cell "4" [ref=f2e215]
+            - cell "7" [ref=f2e216]
+            - cell "11" [ref=f2e217]
+          - row [ref=f2e218]:
+            - cell "Teclado para laptop Lenovo Lenovo" [ref=f2e219]:
+              - text: Teclado para laptop Lenovo
+              - generic [ref=f2e220]: Lenovo
+            - cell "REP-TECLEN" [ref=f2e221]
+            - cell "4" [ref=f2e222]
+            - cell "8" [ref=f2e223]
+            - cell "12" [ref=f2e224]
+          - row [ref=f2e225]:
+            - cell "Teclado USB Logitech" [ref=f2e226]:
+              - text: Teclado USB
+              - generic [ref=f2e227]: Logitech
+            - cell "ACC-TECUSB" [ref=f2e228]
+            - cell "8" [ref=f2e229]
+            - cell "15" [ref=f2e230]
+            - cell "23" [ref=f2e231]
