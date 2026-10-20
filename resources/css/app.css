@@ -396,3 +396,70 @@
         @apply animate-pulse rounded-md bg-surface-2;
     }
 }
+/*
+ * Landing pública. Se apoya en los tokens de app.css: canvas crema,
+ * superficies blancas, Inter y azul de marca. Sin sombras ni gradientes.
+ */
+html {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+@layer components {
+    .landing-container {
+        @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+    }
+
+    .landing-section {
+        @apply py-16 sm:py-20 lg:py-24;
+    }
+
+    .landing-eyebrow {
+        @apply inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-1 px-3 py-1 text-xs font-medium text-ink-muted;
+    }
+
+    .landing-title {
+        @apply text-4xl leading-[1.05] font-medium tracking-tight text-balance sm:text-5xl lg:text-6xl xl:text-7xl;
+    }
+
+    .landing-h2 {
+        @apply text-3xl leading-[1.1] font-medium tracking-tight text-balance sm:text-4xl lg:text-5xl;
+    }
+
+    .landing-lead {
+        @apply text-base leading-relaxed text-ink-muted sm:text-lg;
+    }
+
+    .landing-nav-link {
+        @apply rounded-md px-3 py-2 text-sm text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink;
+    }
+
+    .landing-mockup {
+        @apply overflow-hidden rounded-2xl border border-hairline bg-surface-1;
+    }
+
+    .landing-mockup-kpi {
+        @apply rounded-lg border border-hairline-soft bg-canvas/60 p-3;
+    }
+
+    .landing-float-card {
+        @apply absolute -bottom-16 -left-6 z-10 max-w-xs items-center gap-3 rounded-xl border border-hairline bg-surface-1 p-3 xl:-left-8;
+    }
+
+    .landing-compare-item {
+        @apply flex items-start gap-3 text-sm leading-relaxed;
+    }
+
+    .landing-icon-tile {
+        @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-ink-muted;
+    }
+
+    .landing-step-number {
+        @apply flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-semibold text-on-primary;
+    }
+}

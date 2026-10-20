@@ -337,3 +337,36 @@ document.addEventListener('submit', (event) => {
         agregar();
     });
 })();
+
+// ------------------------------------------------- Landing pública
+(function () {
+    const overlay = document.querySelector('[data-landing-menu]');
+
+    if (!overlay) {
+        return;
+    }
+
+    const abridor = document.querySelector('[data-landing-menu-abrir]');
+
+    const cerrar = () => {
+        overlay.hidden = true;
+        abridor?.setAttribute('aria-expanded', 'false');
+    };
+
+    abridor?.addEventListener('click', () => {
+        overlay.hidden = false;
+        abridor.setAttribute('aria-expanded', 'true');
+    });
+
+    overlay.addEventListener('click', (event) => {
+        if (event.target.closest('[data-landing-menu-cerrar]') || event.target.closest('[data-landing-menu-link]')) {
+            cerrar();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            cerrar();
+        }
+    });
+})();

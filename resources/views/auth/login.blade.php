@@ -18,7 +18,9 @@
 <body class="flex min-h-screen items-center justify-center bg-canvas px-4 font-sans text-ink antialiased">
 <main class="w-full max-w-sm">
     <div class="mb-8 flex flex-col items-center text-center">
-        <img src="{{ asset('images/logo.jpg') }}" alt="M&amp;A Computers" class="mb-4 h-16 rounded-lg object-contain">
+        <a href="{{ route('landing') }}" class="mb-4 inline-flex" aria-label="Volver a la presentación">
+            <img src="{{ asset('images/logo.jpg') }}" alt="M&amp;A Computers" class="h-16 rounded-lg object-contain">
+        </a>
         <h1 class="text-2xl font-medium tracking-tight">Iniciar sesión</h1>
         <p class="mt-1 text-sm text-ink-muted">Sistema de inventario · M&amp;A Computers</p>
     </div>
@@ -47,6 +49,7 @@
     </form>
 
     <p class="mt-6 text-center text-xs text-ink-subtle">Una sola sesión activa por usuario. Al ingresar en otro equipo se cierra la anterior.</p>
+    <p class="mt-3 text-center text-xs"><a href="{{ route('landing') }}" class="text-ink-muted transition-colors hover:text-ink">Volver a la presentación</a></p>
 </main>
 </body>
 </html>

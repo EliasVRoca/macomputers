@@ -11,6 +11,7 @@ use App\Http\Controllers\DisponibilidadController;
 use App\Http\Controllers\EncargoController;
 use App\Http\Controllers\InicioController;
 use App\Http\Controllers\InventarioController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProductoImagenInternetController;
@@ -24,7 +25,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VentaController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => redirect()->route('inicio'));
+Route::get('/', LandingController::class)->name('landing');
 
 // Autenticación
 Route::middleware('guest')->group(function () {
