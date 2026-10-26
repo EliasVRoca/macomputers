@@ -7,6 +7,38 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Desarrollo con Docker
+
+El proyecto corre en un contenedor de desarrollo (nginx + php-fpm) con el código
+montado desde el host. MariaDB es el contenedor compartido `mariadb` (red `db_net`).
+
+```bash
+# 1. Crear la base de datos la primera vez
+docker exec mariadb mysql -uroot -e \
+  "CREATE DATABASE IF NOT EXISTS macomputers CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 2. Crear .env y la APP_KEY (solo la primera vez)
+cp .env.example .env
+docker compose up -d --build
+docker compose exec -u www-data app php artisan key:generate
+
+# 3. Dependencias frontend y Vite con HMR
+pnpm install
+pnpm dev
+```
+
+Acceso local: <https://macomputers.localhost> (Caddy del host → `127.0.0.1:8084`).
+Vite escucha en `:5175` y HMR sale por `https://macomputers.localhost:5173`.
+
+El `entrypoint` espera MariaDB, instala Composer si cambió el lock, crea el
+symlink de `storage` y ejecuta las migraciones (`AUTO_MIGRATE=true`).
+
+Comandos útiles (requieren `make`):
+
+```bash
+make up | down | logs | sh | migrate | seed | fresh | test | build | db-create
+```
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

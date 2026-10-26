@@ -17,6 +17,16 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
+        host: '0.0.0.0',
+        // Vite escucha en 5175; Caddy ocupa el 5173 para terminar el TLS
+        port: 5175,
+        strictPort: true,
+        allowedHosts: ['macomputers.localhost'],
+        hmr: {
+            host: 'macomputers.localhost',
+            protocol: 'wss',
+            clientPort: 5173,
+        },
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },

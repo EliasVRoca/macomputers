@@ -1,0 +1,42 @@
+name: macomputers
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        # Ajusta estos valores si tu usuario del host no es 1000:1000
+        UID: "1000"
+        GID: "1000"
+    container_name: macomputers
+    restart: unless-stopped
+    working_dir: /var/www/html
+    # Solo lo que necesita el entrypoint. El resto de la configuración la lee
+    # Laravel desde el .env montado; así no se pisan las variables de phpunit.xml.
+    environment:
+      DB_HOST: "${DB_HOST:-mariadb}"
+      DB_PORT: "${DB_PORT:-3306}"
+      AUTO_MIGRATE: "${AUTO_MIGRATE:-true}"
+    ports:
+      # Solo loopback: Caddy del host es quien expone el dominio
+      - "127.0.0.1:8084:80"
+    volumes:
+      - ./:/var/www/html
+      - vendor:/var/www/html/vendor
+    networks:
+      - db_net
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit(@fsockopen('127.0.0.1', 9000) ? 0 : 1);\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    stop_grace_period: 10s
+
+networks:
+  db_net:
+    external: true
+
+volumes:
+  vendor:
