@@ -14,7 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Búsqueda remota del selector de productos (apartados y encargos).
+ * Búsqueda remota del selector de productos (apartados).
  */
 class ProductoOpcionesTest extends TestCase
 {
@@ -175,12 +175,6 @@ class ProductoOpcionesTest extends TestCase
             ->assertOk()
             ->assertSee('data-producto-picker', false)
             ->assertDontSee('Mouse gamer');
-
-        $this->actingAs($this->vendedor)
-            ->get(route('encargos.create'))
-            ->assertOk()
-            ->assertSee('data-producto-picker', false)
-            ->assertDontSee('Mouse gamer');
     }
 
     public function test_la_seleccion_previa_se_conserva_al_volver_con_errores(): void
@@ -201,13 +195,6 @@ class ProductoOpcionesTest extends TestCase
             ->assertSee('name="producto_id" id="producto_id" value="'.$this->teclado->id.'"', false)
             ->assertSee('Teclado mecánico 60%')
             ->assertSee('Stock: 5');
-
-        $this->actingAs($this->vendedor)
-            ->withSession(['_old_input' => $oldInput])
-            ->get(route('encargos.create'))
-            ->assertOk()
-            ->assertSee('name="producto_id" id="producto_id" value="'.$this->teclado->id.'"', false)
-            ->assertSee('Teclado mecánico 60%');
     }
 
     public function test_requiere_autenticacion(): void

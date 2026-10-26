@@ -6,7 +6,6 @@ use App\Models\Apartado;
 use App\Models\Cambio;
 use App\Models\Categoria;
 use App\Models\Cliente;
-use App\Models\Encargo;
 use App\Models\Inventario;
 use App\Models\Producto;
 use App\Models\Sucursal;
@@ -19,8 +18,8 @@ use Tests\TestCase;
 
 /**
  * Comportamientos de los módulos de Ventas tras el cierre del DoD:
- * apartado → venta, cancelación con retención, topes de cambios, encargos con
- * total, alta de cliente en línea, baja lógica y exportaciones.
+ * apartado → venta, cancelación con retención, topes de cambios,
+ * alta de cliente en línea, baja lógica y exportaciones.
  */
 class ModulosVentasTest extends TestCase
 {
@@ -215,23 +214,6 @@ class ModulosVentasTest extends TestCase
         $this->assertSame($cliente->id, Venta::firstOrFail()->cliente_id);
     }
 
-    // -------------------------------------------------------------- Encargos
-
-    public function test_encargo_calcula_saldo_y_asocia_producto(): void
-    {
-        $cliente = Cliente::create(['nombre' => 'Carlos']);
-
-        $this->actingAs($this->vendedor)->post(route('encargos.store'), [
-            'cliente_id' => $cliente->id, 'producto_id' => $this->producto->id,
-            'total' => 1000, 'anticipo' => 400, 'fecha' => now()->toDateString(),
-        ])->assertRedirect(route('encargos.index'));
-
-        $encargo = Encargo::firstOrFail();
-        $this->assertSame(600.0, (float) $encargo->saldo);
-        $this->assertSame($this->producto->id, $encargo->producto_id);
-        $this->assertSame('Laptop Lenovo', $encargo->descripcion);
-    }
-
     // -------------------------------------------------------------- Clientes
 
     public function test_cliente_con_historial_se_desactiva_al_eliminar(): void
@@ -263,7 +245,7 @@ class ModulosVentasTest extends TestCase
     {
         $this->ventaDe($this->producto, 1);
 
-        foreach (['ventas.export', 'apartados.export', 'encargos.export', 'cambios.export', 'clientes.export'] as $ruta) {
+        foreach (['ventas.export', 'apartados.export', 'cambios.export', 'clientes.export'] as $ruta) {
             $this->actingAs($this->gerente)->get(route($ruta))->assertOk();
         }
     }

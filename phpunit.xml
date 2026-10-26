@@ -11,6 +11,18 @@
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
+        <testsuite name="Funcional">
+            <directory>tests/Funcional</directory>
+        </testsuite>
+        <testsuite name="Integracion">
+            <directory>tests/Integracion</directory>
+        </testsuite>
+        <testsuite name="Validacion">
+            <directory>tests/Validacion</directory>
+        </testsuite>
+        <testsuite name="Seguridad">
+            <directory>tests/Seguridad</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>

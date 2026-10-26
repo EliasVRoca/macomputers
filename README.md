@@ -39,6 +39,26 @@ Comandos útiles (requieren `make`):
 make up | down | logs | sh | migrate | seed | fresh | test | build | db-create
 ```
 
+### Pruebas
+
+La suite se organiza en cuatro tipos, además de las pruebas históricas:
+
+| Suite | Qué cubre | Comando |
+|---|---|---|
+| `Funcional` | caja negra (RF/CU) y caja blanca (servicios, enums, helpers) | `make test-funcional` |
+| `Integracion` | flujos entre módulos, BD real, storage y fakes | `make test-integracion` |
+| `Validacion` | FormRequests, límites, tipado y saneado | `make test-validacion` |
+| `Seguridad` | OWASP Top 10:2025: permisos, IDOR, XSS, SQLi, CSRF, uploads, throttle | `make test-seguridad` |
+
+```bash
+make test-nuevas     # las cuatro suites nuevas
+make test            # históricas + nuevas
+make db-test-create  # base macomputers_test (solo para MariaDB)
+make test-mariadb    # integración contra el motor real
+```
+
+Plan, matriz de trazabilidad, hallazgos e informe: [`docs/pruebas/`](docs/pruebas/).
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

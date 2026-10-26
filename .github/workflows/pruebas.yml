@@ -1,0 +1,37 @@
+name: Pruebas
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: pdo_sqlite, sqlite3, gd, intl, zip, bcmath
+          coverage: none
+
+      - name: Instalar dependencias
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Preparar entorno
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Formato (Pint)
+        run: vendor/bin/pint --test tests/Seguridad tests/Validacion tests/Funcional tests/Integracion tests/Support
+
+      - name: Pruebas históricas
+        run: php artisan test tests/Unit tests/Feature --compact
+
+      - name: Pruebas nuevas (funcionales, integración, validación y seguridad)
+        run: php artisan test tests/Funcional tests/Integracion tests/Validacion tests/Seguridad --compact

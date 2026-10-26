@@ -7,7 +7,6 @@ use App\Models\Cambio;
 use App\Models\Categoria;
 use App\Models\Cliente;
 use App\Models\Compra;
-use App\Models\Encargo;
 use App\Models\Producto;
 use App\Models\Proveedor;
 use App\Models\Servicio;
@@ -67,12 +66,6 @@ class PantallasTest extends TestCase
         ])->assertRedirect();
         $apartado = Apartado::firstOrFail();
 
-        $this->actingAs($gerente)->post(route('encargos.store'), [
-            'cliente_id' => $cliente->id, 'sucursal_id' => $principal->id, 'descripcion' => 'Monitor 27 pulgadas',
-            'total' => 500, 'anticipo' => 100, 'saldo' => 400, 'fecha' => now()->toDateString(),
-        ])->assertRedirect();
-        $encargo = Encargo::firstOrFail();
-
         $this->actingAs($gerente)->post(route('cambios.store'), [
             'venta_id' => $venta->id, 'producto_id' => $producto->id, 'tipo' => 'devolucion',
             'cantidad' => 1, 'motivo' => 'Pantalla con falla', 'fecha' => now()->toDateString(),
@@ -99,7 +92,6 @@ class PantallasTest extends TestCase
             'compras.index', 'compras.create', 'compras.show',
             'ventas.index', 'ventas.create', 'ventas.show', 'ventas.imprimir',
             'apartados.index', 'apartados.create', 'apartados.edit',
-            'encargos.index', 'encargos.create', 'encargos.edit',
             'cambios.index', 'cambios.create', 'cambios.show',
             'clientes.index', 'clientes.create', 'clientes.edit',
             'servicios.index', 'servicios.create', 'servicios.edit', 'servicios.show', 'servicios.imprimir',
@@ -120,8 +112,6 @@ class PantallasTest extends TestCase
             'ventas.imprimir' => [$venta],
             'apartados.edit' => [$apartado],
             'apartados.show' => [$apartado],
-            'encargos.edit' => [$encargo],
-            'encargos.show' => [$encargo],
             'cambios.show' => [Cambio::firstOrFail()],
             'clientes.edit' => [$cliente],
             'clientes.show' => [$cliente],

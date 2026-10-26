@@ -7,7 +7,6 @@ use App\Models\Cambio;
 use App\Models\Categoria;
 use App\Models\Cliente;
 use App\Models\Compra;
-use App\Models\Encargo;
 use App\Models\Inventario;
 use App\Models\Producto;
 use App\Models\Proveedor;
@@ -122,7 +121,7 @@ class FormulariosTest extends TestCase
 
     // --------------------------------------------------------- Vendedor
 
-    public function test_vendedor_crea_cliente_apartado_encargo(): void
+    public function test_vendedor_crea_cliente_y_apartado(): void
     {
         $this->actingAs($this->vendedor)->post(route('clientes.store'), [
             'nombre' => 'Cliente Nuevo', 'telefono' => '70011223', 'carnet' => '5555555',
@@ -135,12 +134,6 @@ class FormulariosTest extends TestCase
         ])->assertRedirect(route('apartados.index'));
         $this->assertSame(18, $this->stock($this->principal));
         $this->assertSame(1, Apartado::count());
-
-        $this->actingAs($this->vendedor)->post(route('encargos.store'), [
-            'cliente_id' => $cliente->id, 'descripcion' => 'Monitor 27"', 'total' => 1000,
-            'anticipo' => 200, 'saldo' => 800, 'fecha' => now()->toDateString(),
-        ])->assertRedirect(route('encargos.index'));
-        $this->assertSame(1, Encargo::count());
     }
 
     public function test_vendedor_registra_venta_y_cambio(): void

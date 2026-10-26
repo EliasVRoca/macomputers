@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CabecerasSeguridad;
 use App\Http\Middleware\EnsurePermiso;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Caddy termina TLS y envía X-Forwarded-Proto; así los assets salen como https.
         $middleware->trustProxies(at: '*');
+
+        $middleware->append(CabecerasSeguridad::class);
 
         $middleware->alias([
             'permiso' => EnsurePermiso::class,
