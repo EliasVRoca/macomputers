@@ -48,7 +48,8 @@ para no depender de llamadas o traslados físicos. Ver `docs/descripcion-sistema
 ```sh
 php artisan migrate                         # migraciones
 php artisan db:seed                         # roles, sucursales, usuarios semilla
-php artisan db:seed --class=CatalogoPiezasSeeder   # catálogo de ejemplo
+php artisan db:seed --class=CatalogoCompletoSeeder   # catálogo completo + proveedores
+php artisan db:seed --class=ImagenesCatalogoSeeder   # imágenes de productos (Wikimedia)
 php artisan test --compact                  # pruebas (o vendor/bin/phpunit)
 vendor/bin/pint --dirty --format agent      # formato de PHP (obligatorio tras editar PHP)
 npm run build                               # compilar assets (si el cambio no se ve, o error de Vite manifest)
@@ -72,7 +73,7 @@ app/
   Support/Menu.php       # construye navegación/paleta según permisos
 config/permisos.php      # FUENTE ÚNICA de módulos, grupos, acciones y roles
 database/migrations/     # esquema
-database/seeders/        # DatabaseSeeder (roles/sucursales/usuarios), CatalogoPiezasSeeder
+database/seeders/        # DatabaseSeeder, CatalogoCompletoSeeder, ImagenesCatalogoSeeder, ProveedoresSeeder
 resources/views/         # Blade (+ components/, layouts/, errors/)
 resources/css/app.css    # tokens de diseño y clases de componentes (Tailwind v4)
 resources/js/app.js      # interacciones (tema, paleta de comandos)
