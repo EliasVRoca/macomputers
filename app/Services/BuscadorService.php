@@ -342,11 +342,42 @@ class BuscadorService
     }
 
     /**
+     * Mapea productos por ID con el mismo formato que una búsqueda clásica,
+     * respetando el orden dado. Lo usa el Modo IA para convertir los IDs que
+     * devuelve el modelo en el payload estándar del buscador.
+     *
+     * @param  array<int, int>  $ids
+     * @return array{productos: array<int, array<string, mixed>>, sucursales: array<int, array{id: int, nombre: string}>}
+     */
+    public function productosPorIds(array $ids, ?int $sucursalId): array
+    {
+        $sucursales = Sucursal::where('activa', true)->orderBy('nombre')->get();
+
+        if ($ids === []) {
+            return ['productos' => [], 'sucursales' => $this->sucursalesData($sucursales)];
+        }
+
+        $orden = array_flip(array_map('intval', $ids));
+
+        $productos = Producto::query()
+            ->where('activo', true)
+            ->whereIn('id', $ids)
+            ->with(['categoria', 'inventarios', 'imagenes', 'atributos'])
+            ->get()
+            ->sortBy(fn (Producto $producto): int => $orden[$producto->id] ?? PHP_INT_MAX)
+            ->map(fn (Producto $producto): array => $this->productoData($producto, $sucursales, $sucursalId))
+            ->values()
+            ->all();
+
+        return ['productos' => $productos, 'sucursales' => $this->sucursalesData($sucursales)];
+    }
+
+    /**
      * Sucursal de contexto: gerente puede elegir; el resto queda en la suya.
      *
      * @param  array<string, mixed>  $filtros
      */
-    private function sucursalContexto(array $filtros, User $usuario): ?int
+    public function sucursalContexto(array $filtros, User $usuario): ?int
     {
         if ($usuario->esGerente() && ! empty($filtros['sucursal_id'])) {
             return (int) $filtros['sucursal_id'];

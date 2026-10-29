@@ -90,13 +90,16 @@
     <template id="fila-plantilla">
         <div class="fila grid items-end gap-3 rounded-lg border border-hairline-soft p-3 sm:grid-cols-12">
             <div class="sm:col-span-7">
-                <label class="label">Producto</label>
-                <select name="items[__IDX__][producto_id]" class="input" data-producto required>
-                    <option value="">Seleccione…</option>
-                    @foreach ($productos as $producto)
-                        <option value="{{ $producto->id }}" data-precio="{{ $producto->precio_venta }}">{{ $producto->nombre }} · Bs {{ number_format($producto->precio_venta, 2, ',', '.') }}</option>
-                    @endforeach
-                </select>
+                <x-producto-picker
+                    name="items[__IDX__][producto_id]"
+                    id="producto-__IDX__"
+                    label="Producto"
+                    :url="route('productos.opciones')"
+                    sucursal-selector="#sucursal_id"
+                    :limpiar-al-cambiar-sucursal="false"
+                    :ayuda="false"
+                    required
+                />
             </div>
             <div class="sm:col-span-2">
                 <label class="label">Cantidad</label>
@@ -129,23 +132,30 @@
         var contenedor = document.getElementById('filas');
         var plantilla = document.getElementById('fila-plantilla');
         var totalEl = document.getElementById('total');
+        var productoInicial = @json($productoInicial);
         var indice = 0;
 
-        function money(n) { return 'Bs ' + n.toFixed(2).replace('.', ','); }
+        function money(n) { return 'Bs ' + n.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
         function stockDe(pid, sid) { return pid && stockMapa[pid] && stockMapa[pid][sid] ? parseInt(stockMapa[pid][sid], 10) : 0; }
         function primeraOtraSucursal(pid, sid) {
             var s = stockMapa[pid] || {};
             for (var k in s) { if (String(k) !== String(sid) && parseInt(s[k], 10) > 0) return k; }
             return null;
         }
+        function productoId(fila) {
+            var valor = fila.querySelector('[data-picker-value]');
+            return valor ? valor.value : '';
+        }
+        function precioDe(fila) {
+            return parseFloat(fila.dataset.precio || '0') || 0;
+        }
 
         function recalcular() {
             var total = 0;
             contenedor.querySelectorAll('.fila').forEach(function (fila) {
-                var sel = fila.querySelector('[data-producto]');
+                var pid = productoId(fila);
                 var cant = fila.querySelector('[data-cantidad]');
-                var opcion = sel.options[sel.selectedIndex];
-                var precio = opcion && opcion.dataset.precio ? parseFloat(opcion.dataset.precio) : 0;
+                var precio = precioDe(fila);
                 var cantidad = parseInt(cant.value, 10) || 0;
                 var subtotal = precio * cantidad;
                 total += subtotal;
@@ -153,23 +163,23 @@
 
                 var aviso = fila.querySelector('[data-aviso]');
                 aviso.innerHTML = '';
-                if (!sel.value) return;
+                if (!pid) return;
 
                 var sid = sucursal ? sucursal.value : null;
-                var disponible = stockDe(sel.value, sid);
+                var disponible = stockDe(pid, sid);
                 if (disponible < cantidad) {
                     var p = document.createElement('p');
                     p.className = 'error-texto';
                     p.textContent = 'Stock insuficiente en la sucursal (disponible: ' + disponible + ').';
                     aviso.appendChild(p);
                     if (puedeTraspasar) {
-                        var origen = primeraOtraSucursal(sel.value, sid);
+                        var origen = primeraOtraSucursal(pid, sid);
                         if (origen) {
                             var btn = document.createElement('button');
                             btn.type = 'button';
                             btn.className = 'btn btn-secondary btn-sm mt-1';
                             btn.textContent = 'Traer de la otra sucursal';
-                            btn.addEventListener('click', function () { traer(fila, sel.value, cantidad || 1, origen, sid, btn); });
+                            btn.addEventListener('click', function () { traer(fila, pid, cantidad || 1, origen, sid, btn); });
                             aviso.appendChild(btn);
                         }
                     }
@@ -202,12 +212,49 @@
 
         function agregar() {
             contenedor.insertAdjacentHTML('beforeend', plantilla.innerHTML.replaceAll('__IDX__', indice++));
+
+            var fila = contenedor.lastElementChild;
+            if (!fila) return;
+
+            var picker = fila.querySelector('[data-producto-picker]');
+            var iniciar = window.iniciarProductoPicker;
+
+            if (picker && typeof iniciar === 'function') {
+                iniciar(picker);
+            }
+
+            if (productoInicial && picker && picker.productoPicker) {
+                picker.productoPicker.seleccionar(productoInicial);
+                productoInicial = null;
+            }
+
+            var buscador = picker ? picker.querySelector('[data-picker-input]') : null;
+            if (buscador && !fila.dataset.precio) {
+                buscador.focus();
+            }
+
             recalcular();
         }
 
         document.getElementById('agregar-fila').addEventListener('click', agregar);
         contenedor.addEventListener('input', recalcular);
         contenedor.addEventListener('change', recalcular);
+
+        contenedor.addEventListener('producto-seleccionado', function (e) {
+            var fila = e.target.closest('.fila');
+            if (!fila) return;
+
+            var producto = e.detail ? e.detail.producto : null;
+            fila.dataset.precio = producto ? String(producto.precio_venta) : '';
+
+            if (producto) {
+                var cantidad = fila.querySelector('[data-cantidad]');
+                if (cantidad) { cantidad.focus(); cantidad.select(); }
+            }
+
+            recalcular();
+        });
+
         contenedor.addEventListener('click', function (e) {
             if (e.target.closest('[data-quitar]')) {
                 e.target.closest('.fila').remove();
@@ -227,7 +274,13 @@
         }
         nuevo.addEventListener('change', alternarCliente);
         alternarCliente();
-        agregar();
+
+        // El picker vive en app.js (módulo diferido): esperamos a que el DOM esté listo.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', agregar);
+        } else {
+            agregar();
+        }
     })();
 </script>
 @endsection

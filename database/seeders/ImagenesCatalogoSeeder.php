@@ -236,7 +236,7 @@ class ImagenesCatalogoSeeder extends Seeder
             // una placa o unos auriculares solo porque la foto es vistosa.
             $ajenas = [
                 'keyboard' => ['keyboard', 'teclado', 'combo'],
-                'motherboard' => ['motherboard', 'placa'],
+                'motherboard' => ['motherboard', 'placa', 'cooler', 'aio', 'liquid', 'cpu'],
                 'headset' => ['headset', 'audifono', 'auricular'],
                 'webcam' => ['webcam', 'camara'],
             ];
@@ -267,6 +267,13 @@ class ImagenesCatalogoSeeder extends Seeder
                 continue;
             }
 
+            // Para módulos DIMM de escritorio no queremos una foto de SODIMM.
+            if (str_contains($consultaNormalizada, 'dimm')
+                && ! str_contains($consultaNormalizada, 'sodimm')
+                && (str_contains($titulo, 'so-dimm') || str_contains($titulo, 'sodimm'))) {
+                continue;
+            }
+
             $ancho = (int) ($resultado['ancho'] ?? 0);
             $alto = (int) ($resultado['alto'] ?? 0);
 
@@ -279,9 +286,19 @@ class ImagenesCatalogoSeeder extends Seeder
 
             foreach ($tokens as $token) {
                 if (str_contains($titulo, $token)) {
-                    $puntaje += 8;
+                    $puntaje += 12;
                     $coincidencias[] = $token;
                 }
+            }
+
+            // Bonus por coincidir con todos los términos relevantes de la consulta.
+            if ($tokens !== [] && count($coincidencias) === count($tokens)) {
+                $puntaje += 6;
+            }
+
+            // Bonus fuerte si el título contiene la consulta completa.
+            if ($consultaNormalizada !== '' && str_contains($titulo, $consultaNormalizada)) {
+                $puntaje += 15;
             }
 
             // Si la consulta incluye un modelo (E14, RTX 4060, B650M...), exigimos
@@ -297,17 +314,17 @@ class ImagenesCatalogoSeeder extends Seeder
             }
 
             if ($ancho >= 1000) {
-                $puntaje += 4;
+                $puntaje += 3;
             }
 
             if ($ancho >= $alto) {
                 $puntaje += 2;
             } else {
-                $puntaje -= 4;
+                $puntaje -= 2;
             }
 
             if (preg_match('/\b(photo|product|front|top|white background)\b/', $titulo) === 1) {
-                $puntaje += 3;
+                $puntaje += 2;
             }
 
             $candidatos[] = ['resultado' => $resultado, 'puntaje' => $puntaje];
@@ -328,7 +345,7 @@ class ImagenesCatalogoSeeder extends Seeder
             'schematic', 'drawing', 'blueprint', 'benchmark', 'chart', 'graph', 'video',
             'youtube', 'teardown', 'disassembly', 'label', 'sticker', 'poster',
             'advertisement', 'wallpaper', 'artwork', 'render', 'unboxing', 'badge',
-            'comparison', 'microscope', 'silicon', 'closed', 'схема', 'тест',
+            'comparison', 'microscope', 'silicon', 'closed', 'kabel', 'схема', 'тест',
         ];
 
         if (preg_match('/\d{2}:\d{2}:\d{2}/', $titulo) === 1) {

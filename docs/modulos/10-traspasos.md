@@ -64,6 +64,11 @@ Encabezado con "Nuevo traspaso" + "Exportar CSV"; barra de filtros (`.card`); ta
 `TR-######`, productos, unidades; estado vacío con acción. Formulario con **filas dinámicas** (JS
 genérico `[data-filas]` en `app.js`). Tokens de `app.css`; claro y oscuro.
 
+El producto de cada fila se elige con `<x-producto-picker>` (búsqueda remota contra
+`productos.opciones`), inicializado también para las filas nuevas desde `app.js`; no se carga el
+catálogo completo en el HTML. Muestra el stock de la sucursal de origen y el submit se bloquea si una
+fila queda sin producto.
+
 ## 8. Estado
 
 - ✅ Listar (con filtros y scoping por sucursal), crear (varios productos), ver; descuenta origen y suma destino atómicamente.

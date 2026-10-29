@@ -8,15 +8,24 @@ const formatearBs = (valor) => {
 };
 
 const iniciarProductoPicker = (root) => {
+    if (!root) {
+        return null;
+    }
+
+    if (root.dataset.pickerIniciado === 'true') {
+        return root.productoPicker ?? null;
+    }
+
     const input = root.querySelector('[data-picker-input]');
     const hidden = root.querySelector('[data-picker-value]');
     const lista = root.querySelector('[data-picker-lista]');
     const limpiar = root.querySelector('[data-picker-limpiar]');
     const resumen = root.querySelector('[data-picker-resumen]');
     const estado = root.querySelector('[data-picker-estado]');
+    const error = root.querySelector('[data-picker-error]');
 
     if (!input || !hidden || !lista) {
-        return;
+        return null;
     }
 
     const url = root.dataset.url;
@@ -24,6 +33,8 @@ const iniciarProductoPicker = (root) => {
         ? document.querySelector(root.dataset.sucursalSelector)
         : null;
     const sucursalFija = root.dataset.sucursal ? Number(root.dataset.sucursal) : null;
+    const requerido = root.dataset.pickerRequerido === 'true';
+    const limpiarAlCambiarSucursal = root.dataset.pickerLimpiarSucursal !== '0';
 
     let resultados = [];
     let activo = -1;
@@ -83,6 +94,16 @@ const iniciarProductoPicker = (root) => {
         resumen.textContent = partes.join(' · ');
         resumen.classList.remove('hidden', 'text-danger', 'text-ink-subtle');
         resumen.classList.add(tieneStock && producto.stock <= 0 ? 'text-danger' : 'text-ink-subtle');
+    };
+
+    const ocultarError = () => {
+        error?.classList.add('hidden');
+        input.removeAttribute('aria-invalid');
+    };
+
+    const mostrarError = () => {
+        error?.classList.remove('hidden');
+        input.setAttribute('aria-invalid', 'true');
     };
 
     const marcarActivo = (indice) => {
@@ -161,6 +182,7 @@ const iniciarProductoPicker = (root) => {
 
     const buscar = (termino) => {
         cancelarPeticion();
+        window.clearTimeout(temporizador);
 
         const parametros = new URLSearchParams({ q: termino });
         const sucursalId = sucursalActual();
@@ -175,7 +197,7 @@ const iniciarProductoPicker = (root) => {
         controlador = controladorPeticion;
         mostrarCargando();
 
-        fetch(`${url}?${parametros.toString()}`, {
+        return fetch(`${url}?${parametros.toString()}`, {
             headers: { Accept: 'application/json' },
             signal: controladorPeticion.signal,
         })
@@ -194,8 +216,8 @@ const iniciarProductoPicker = (root) => {
                 resultados = Array.isArray(datos.data) ? datos.data : [];
                 pintar();
             })
-            .catch((error) => {
-                if (error.name === 'AbortError' || peticionActual !== peticion) {
+            .catch((errorBusqueda) => {
+                if (errorBusqueda.name === 'AbortError' || peticionActual !== peticion) {
                     return;
                 }
 
@@ -211,16 +233,11 @@ const iniciarProductoPicker = (root) => {
             });
     };
 
-    const seleccionar = (indice) => {
-        const producto = resultados[indice];
-
-        if (!producto) {
-            return;
-        }
-
+    const aplicarSeleccion = (producto) => {
         hidden.value = producto.id;
         input.value = producto.nombre;
         resultados = [];
+        ocultarError();
         mostrarResumen(producto);
         actualizarBotonLimpiar();
         cerrar();
@@ -231,6 +248,16 @@ const iniciarProductoPicker = (root) => {
             bubbles: true,
             detail: { producto },
         }));
+    };
+
+    const seleccionar = (indice) => {
+        const producto = resultados[indice];
+
+        if (!producto) {
+            return;
+        }
+
+        aplicarSeleccion(producto);
     };
 
     const limpiarSeleccion = ({ enfocar = true } = {}) => {
@@ -253,6 +280,24 @@ const iniciarProductoPicker = (root) => {
         }));
     };
 
+    const autoSeleccionar = (termino) => {
+        if (resultados.length === 0) {
+            return;
+        }
+
+        const codigo = termino.toLowerCase();
+        const exacto = resultados.findIndex((producto) => String(producto.codigo ?? '').toLowerCase() === codigo);
+
+        if (exacto >= 0) {
+            seleccionar(exacto);
+            return;
+        }
+
+        if (resultados.length === 1) {
+            seleccionar(0);
+        }
+    };
+
     input.addEventListener('focus', () => {
         if (hidden.value !== '') {
             input.select();
@@ -263,6 +308,7 @@ const iniciarProductoPicker = (root) => {
         const termino = input.value.trim();
 
         actualizarBotonLimpiar();
+        ocultarError();
 
         if (hidden.value !== '') {
             hidden.value = '';
@@ -321,7 +367,7 @@ const iniciarProductoPicker = (root) => {
             const termino = input.value.trim();
 
             if (termino.length >= 2) {
-                buscar(termino);
+                buscar(termino).then(() => autoSeleccionar(termino));
             }
 
             return;
@@ -366,11 +412,54 @@ const iniciarProductoPicker = (root) => {
         }
     });
 
-    selectorSucursal?.addEventListener('change', () => {
-        limpiarSeleccion({ enfocar: false });
+    if (limpiarAlCambiarSucursal) {
+        selectorSucursal?.addEventListener('change', () => {
+            limpiarSeleccion({ enfocar: false });
+        });
+    }
+
+    root.closest('form')?.addEventListener('submit', (event) => {
+        if (!requerido || hidden.value !== '') {
+            ocultarError();
+
+            return;
+        }
+
+        event.preventDefault();
+        mostrarError();
+        cerrar();
+
+        const pickers = Array.from(event.target.querySelectorAll('[data-producto-picker]'));
+        const primeroVacio = pickers.find((picker) => picker.querySelector('[data-picker-value]')?.value === '');
+
+        if (primeroVacio === root) {
+            input.focus();
+        }
     });
 
     actualizarBotonLimpiar();
+    ocultarError();
+
+    root.dataset.pickerIniciado = 'true';
+    root.productoPicker = {
+        seleccionar: (producto) => {
+            if (!producto) {
+                limpiarSeleccion({ enfocar: false });
+
+                return;
+            }
+
+            aplicarSeleccion(producto);
+        },
+        limpiar: limpiarSeleccion,
+        enfocar: () => input.focus(),
+    };
+
+    return root.productoPicker;
 };
 
+window.iniciarProductoPicker = iniciarProductoPicker;
+
 document.querySelectorAll('[data-producto-picker]').forEach(iniciarProductoPicker);
+
+export { iniciarProductoPicker };

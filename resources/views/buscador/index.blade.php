@@ -19,10 +19,13 @@
 <div
     data-buscador
     data-url="{{ route('buscador.json') }}"
+    data-ia-url="{{ route('buscador.ia') }}"
+    data-ia-habilitado="{{ $iaHabilitada ? '1' : '0' }}"
     data-termino="{{ $termino }}"
     data-sucursal="{{ $sucursalUsuarioId }}"
     data-puede-traspasar="{{ $puedeTraspasar ? '1' : '0' }}"
     data-puede-ver-ficha="{{ $puedeVerFicha ? '1' : '0' }}"
+    data-puede-vender="{{ $puedeVender ? '1' : '0' }}"
     data-puede-encargar="{{ $puedeEncargar ? '1' : '0' }}"
     data-puede-comprar="{{ $puedeComprar ? '1' : '0' }}"
 >
@@ -53,16 +56,44 @@
             <button type="button" data-buscador-limpiar class="btn btn-ghost btn-icon {{ $termino === '' ? 'invisible' : '' }}" aria-label="Limpiar búsqueda">
                 <x-icon name="x" class="size-4" />
             </button>
+            @if ($iaHabilitada)
+                <button type="button" class="btn btn-primary btn-sm shrink-0" data-buscador-preguntar hidden>
+                    <x-icon name="sparkles" class="size-4" /> Preguntar
+                </button>
+            @endif
         </div>
 
-        <p class="mt-3 text-xs text-ink-subtle">
+        <p class="mt-3 text-xs text-ink-subtle" data-buscador-hint data-hint-modo="clasico">
             Escribí y los resultados aparecen al instante. <span class="kbd">/</span> enfoca la búsqueda · <span class="kbd">Esc</span> limpia.
         </p>
+        @if ($iaHabilitada)
+            <p class="mt-3 text-xs text-ink-subtle" data-buscador-hint data-hint-modo="ia" hidden>
+                Escribí tu pregunta en lenguaje natural y presioná <span class="kbd">Enter</span> o el botón Preguntar. Cada consulta llama al asistente.
+            </p>
+
+            <div class="mt-4 flex justify-center" data-buscador-modo>
+                <div class="buscador-modo" role="group" aria-label="Modo de búsqueda">
+                    <button type="button" class="activo" data-modo="clasico" aria-pressed="true">Clásico</button>
+                    <button type="button" data-modo="ia" aria-pressed="false"><x-icon name="sparkles" class="mr-1 inline size-3.5" />Modo IA</button>
+                </div>
+            </div>
+        @endif
 
         <div class="mt-6 flex flex-wrap justify-center gap-2" data-buscador-sugerencias>
             @foreach (['teclado 60%', 'laptop lenovo', 'RAM 8GB', 'impresora', 'monitor'] as $sugerencia)
-                <button type="button" class="buscador-sugerencia" data-sugerencia="{{ $sugerencia }}">{{ $sugerencia }}</button>
+                <button type="button" class="buscador-sugerencia" data-sugerencia="{{ $sugerencia }}" data-sugerencia-modo="clasico">{{ $sugerencia }}</button>
             @endforeach
+            @if ($iaHabilitada)
+                @foreach ([
+                    'estoy buscando un teclado inalámbrico para la oficina',
+                    'qué me sirve para armar una PC gamer',
+                    'tienen memoria RAM DDR4 de 8GB',
+                    'necesito una impresora multifunción',
+                    'qué monitor me recomendás para diseño',
+                ] as $sugerencia)
+                    <button type="button" class="buscador-sugerencia" data-sugerencia="{{ $sugerencia }}" data-sugerencia-modo="ia" hidden>{{ $sugerencia }}</button>
+                @endforeach
+            @endif
         </div>
 
         <div class="mt-5 items-center justify-center gap-2 text-xs text-ink-subtle" data-buscador-recientes hidden>
@@ -133,7 +164,32 @@
             <button type="button" class="btn btn-ghost btn-sm" data-buscador-limpiar>Limpiar búsqueda</button>
         </div>
 
+        <div class="buscador-ia-burbuja" data-buscador-ia-respuesta hidden>
+            <div class="flex items-start gap-3">
+                <span class="kpi-icon shrink-0"><x-icon name="sparkles" class="size-4" /></span>
+                <div class="min-w-0">
+                    <p class="text-xs font-medium uppercase tracking-wide text-ink-tertiary">Asistente de ventas</p>
+                    <p class="mt-1 whitespace-pre-line text-sm leading-relaxed text-ink" data-ia-texto></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-6 flex items-center gap-2 text-sm text-ink-muted" data-buscador-ia-pensando hidden>
+            <span class="inline-block animate-pulse"><x-icon name="sparkles" class="size-4 text-brand" /></span>
+            Pensando tu consulta…
+        </div>
+
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" data-buscador-resultados id="buscador-resultados"></div>
+
+        <div class="mt-6" data-buscador-ia-alternativas hidden>
+            <div class="mb-3 flex items-end justify-between gap-3">
+                <div>
+                    <h2 class="text-sm font-medium">También te puede servir</h2>
+                    <p class="text-xs text-ink-subtle">Otras opciones que sugirió la IA.</p>
+                </div>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" data-ia-alternativas></div>
+        </div>
 
         <div data-buscador-cargando aria-live="polite" hidden>
             <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

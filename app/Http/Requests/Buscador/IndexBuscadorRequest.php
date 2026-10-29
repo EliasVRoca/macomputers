@@ -25,7 +25,7 @@ class IndexBuscadorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'termino' => ['nullable', 'string', 'max:100'],
+            'termino' => ['nullable', 'string', 'max:300'],
             'categoria_id' => ['nullable', 'integer', Rule::exists('categorias', 'id')],
             'marca' => ['nullable', 'string', 'max:100'],
             'condicion' => ['nullable', Rule::in(CondicionProducto::valores())],

@@ -70,6 +70,7 @@ Route::middleware('auth')->group(function () {
     // Inventario
     Route::get('/buscador', [BuscadorController::class, 'index'])->name('buscador.index')->middleware('permiso:buscador');
     Route::get('/buscador/json', [BuscadorController::class, 'json'])->name('buscador.json')->middleware('permiso:buscador');
+    Route::get('/buscador/ia', [BuscadorController::class, 'ia'])->name('buscador.ia')->middleware(['permiso:buscador', 'throttle:20,1']);
     Route::get('/buscador/reporte', [BuscadorController::class, 'reporte'])->name('buscador.reporte')->middleware('permiso:buscador');
     Route::get('/buscador/reporte/export', [BuscadorController::class, 'exportReporte'])->name('buscador.reporte.export')->middleware('permiso:buscador');
 

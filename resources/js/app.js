@@ -1,3 +1,5 @@
+import { iniciarProductoPicker } from './producto-picker.js';
+
 // ---------------------------------------------------------------- Tema
 document.addEventListener('click', (event) => {
     const boton = event.target.closest('[data-toggle-tema]');
@@ -325,6 +327,13 @@ document.addEventListener('submit', (event) => {
 
         const agregar = () => {
             contenedor.insertAdjacentHTML('beforeend', plantilla.innerHTML.replaceAll('__IDX__', indice++));
+
+            const fila = contenedor.lastElementChild;
+            const picker = fila?.querySelector('[data-producto-picker]');
+
+            if (picker) {
+                iniciarProductoPicker(picker);
+            }
         };
 
         boton?.addEventListener('click', agregar);

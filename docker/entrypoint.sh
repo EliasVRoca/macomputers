@@ -62,6 +62,7 @@ fi
 # 5. Limpiar cachés de ejecuciones anteriores
 # ------------------------------------------------------------------
 su -s /bin/sh www-data -c \
-    'cd /var/www/html && php artisan optimize:clear' >/dev/null 2>&1 || true
-
+    'cd /var/www/html && php artisan optimize:clear' >/dev/null 2>&1 || true \
+    '&& cd /var/www/html && php artisan storage:link' >/dev/null 2>&1 || true \
+    
 exec "$@"

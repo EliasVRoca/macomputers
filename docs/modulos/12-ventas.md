@@ -56,6 +56,14 @@ vistas `resources/views/ventas/{index,create,show}.blade.php`.
 
 `.tabla`, `.card`, `.badge` (estado); formulario con filas dinámicas; nota en `show`.
 
+Cada fila elige el producto con `<x-producto-picker>` (`resources/js/producto-picker.js`): combobox con
+búsqueda remota contra `productos.opciones` (nombre/código/marca/modelo, debounce, navegación por
+teclado y selección automática al escanear un código exacto + Enter). Ya no se carga el catálogo
+completo en el HTML; el precio y el id viajan en el hidden del picker y el subtotal/total se calculan
+en vivo. Muestra el stock de la sucursal en el desplegable; el aviso de stock insuficiente y "Traer de
+la otra sucursal" siguen calculándose con el mapa de stock del formulario. Cambiar de sucursal no
+borra la selección. El submit se bloquea si queda una fila sin producto.
+
 ## 8. Estado
 
 - ✅ Listar/crear/ver + anular (devuelve stock) + correlativo `NV-######`.

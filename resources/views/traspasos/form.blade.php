@@ -54,13 +54,16 @@
     <template id="plantilla-traspaso">
         <div class="fila grid items-end gap-3 rounded-lg border border-hairline-soft p-3 sm:grid-cols-12">
             <div class="sm:col-span-8">
-                <label class="label">Producto</label>
-                <select name="items[__IDX__][producto_id]" class="input" required>
-                    <option value="">Seleccione…</option>
-                    @foreach ($productos as $producto)
-                        <option value="{{ $producto->id }}">{{ $producto->nombre }} ({{ $producto->codigo }})</option>
-                    @endforeach
-                </select>
+                <x-producto-picker
+                    name="items[__IDX__][producto_id]"
+                    id="producto-__IDX__"
+                    label="Producto"
+                    :url="route('productos.opciones')"
+                    sucursal-selector="#sucursal_origen_id"
+                    :limpiar-al-cambiar-sucursal="false"
+                    :ayuda="false"
+                    required
+                />
             </div>
             <div class="sm:col-span-3">
                 <label class="label">Cantidad</label>

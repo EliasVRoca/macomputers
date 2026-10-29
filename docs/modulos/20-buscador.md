@@ -74,8 +74,9 @@ Imágenes y atributos (con `permiso:productos`):
 - **Buscar:** debounce 350 ms, mínimo 2 caracteres, `AbortController`; búsqueda por tokens en **AND**
   sobre nombre/código/marca/modelo/atributos; coincidencia exacta de código primero; tope 24.
 - **Resultados:** tarjetas con imagen principal, condición, bajo mínimo, precio, stock por sucursal
-  (se resalta la del usuario) y acciones: **Traer de la otra sucursal**, **Disponibilidad** y
-  **Ver ficha** (solo gerente).
+  (se resalta la del usuario) y acciones: **Vender** (abre Nueva venta con el producto precargado;
+  requiere permiso `ventas`), **Traer de la otra sucursal**, **Disponibilidad** y **Ver ficha**
+  (solo con permiso `productos`).
 - **Filtros:** colapsables; categoría, marca, condición, sucursal de referencia (gerente) y “solo con
   stock”. Se reflejan en la URL (`?termino=...`).
 - **Similares:** si no hay coincidencias completas, productos de la misma categoría con atributos
@@ -119,6 +120,7 @@ Imágenes y atributos (con `permiso:productos`):
 - ✅ Endpoint AJAX con debounce, índices, stock por sucursal y bajo mínimo.
 - ✅ Similares, registro de búsquedas y reporte “lo más buscado que no tenemos” + export CSV.
 - ✅ “Traer de la otra sucursal” reutilizando el modal de Inventario.
+- ✅ “Vender” abre Nueva venta (`?producto=`) con el producto ya seleccionado y la cantidad enfocada.
 - ✅ Filtros, búsquedas recientes y diseño claro/oscuro.
 - ✅ FormRequests y permisos.
 
@@ -168,7 +170,8 @@ WebP, atribución y redirect). También `FormulariosTest.php`, `PantallasTest.ph
 ## 13. Cómo probar a mano
 
 `vendedor`/`password` → **Inventario ▸ Buscador** → buscar “teclado 60%”: ver imagen, stock por
-sucursal y chips. Forzar un producto sin stock local con stock en la otra → **Traer de la otra
-sucursal**. Buscar algo inexistente → ver similares y CTAs. Con `gerente`, abrir **Lo más buscado**,
+sucursal y chips. Pulsar **Vender** → la venta abre con ese producto elegido y la cantidad enfocada.
+Forzar un producto sin stock local con stock en la otra → **Traer de la otra sucursal**. Buscar algo
+inexistente → ver similares y CTAs. Con `gerente`, abrir **Lo más buscado**,
 ver el término y exportar CSV; en la ficha de un producto, subir una imagen, marcar principal y
 agregar atributos. Repetir en claro y oscuro.

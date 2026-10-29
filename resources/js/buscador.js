@@ -1,5 +1,6 @@
 const ICON_PACKAGE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="size-10" aria-hidden="true"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z"/><path d="M12 22V12"/><path d="m3.3 7 7.7 4.7a2 2 0 0 0 2 0L20.7 7"/></svg>';
 const ICON_TRANSFER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="size-4" aria-hidden="true"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>';
+const ICON_CART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="size-4" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>';
 
 const ENTIDADES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const escapeHtml = (valor) => String(valor ?? '').replace(/[&<>"']/g, (caracter) => ENTIDADES[caracter]);
@@ -37,16 +38,29 @@ const iniciarBuscador = () => {
     const ctaEncargo = root.querySelector('[data-cta-encargo]');
     const ctaCompra = root.querySelector('[data-cta-compra]');
     const ctaDisponibilidad = root.querySelector('[data-cta-disponibilidad]');
+    const botonesModo = root.querySelectorAll('[data-modo]');
+    const botonPreguntar = root.querySelector('[data-buscador-preguntar]');
+    const iaRespuesta = root.querySelector('[data-buscador-ia-respuesta]');
+    const iaTexto = root.querySelector('[data-ia-texto]');
+    const iaPensando = root.querySelector('[data-buscador-ia-pensando]');
+    const iaAlternativas = root.querySelector('[data-buscador-ia-alternativas]');
+    const iaAlternativasGrid = root.querySelector('[data-ia-alternativas]');
 
     const url = root.dataset.url;
+    const iaUrl = root.dataset.iaUrl;
+    const iaHabilitada = root.dataset.iaHabilitado === '1';
     const sucursalUsuario = Number(root.dataset.sucursal || 0);
     const puedeTraspasar = root.dataset.puedeTraspasar === '1';
     const puedeVerFicha = root.dataset.puedeVerFicha === '1';
+    const puedeVender = root.dataset.puedeVender === '1';
     const CLAVE_RECIENTES = 'buscador-recientes';
+    const CLAVE_MODO = 'buscador-modo';
+    const CLAVE_SESION_IA = 'buscador-ia-sesion';
 
     let controlador = null;
     let temporizador = null;
     let sucursalesMap = {};
+    let modo = iaHabilitada && localStorage.getItem(CLAVE_MODO) === 'ia' ? 'ia' : 'clasico';
 
     const filtros = () => {
         const datos = {};
@@ -117,7 +131,78 @@ const iniciarBuscador = () => {
         input.value = termino;
         actualizarBotonLimpiar();
         input.focus();
-        buscar(termino);
+
+        if (modo === 'ia') {
+            preguntar();
+        } else {
+            buscar(termino);
+        }
+    };
+
+    const aplicarModo = () => {
+        botonesModo.forEach((boton) => {
+            const activo = boton.dataset.modo === modo;
+            boton.classList.toggle('activo', activo);
+            boton.setAttribute('aria-pressed', activo ? 'true' : 'false');
+        });
+
+        root.querySelectorAll('[data-hint-modo]').forEach((parrafo) => {
+            parrafo.hidden = parrafo.dataset.hintModo !== modo;
+        });
+
+        root.querySelectorAll('[data-sugerencia-modo]').forEach((boton) => {
+            boton.hidden = boton.dataset.sugerenciaModo !== modo;
+        });
+
+        input.placeholder = modo === 'ia'
+            ? 'Ej.: estoy buscando un teclado inalámbrico para la oficina…'
+            : 'Ej.: teclado 60%, laptop lenovo, RAM 8GB…';
+
+        if (botonPreguntar) {
+            botonPreguntar.hidden = modo !== 'ia';
+        }
+    };
+
+    const cambiarModo = (nuevoModo) => {
+        if (nuevoModo === modo) {
+            return;
+        }
+
+        modo = nuevoModo;
+        localStorage.setItem(CLAVE_MODO, modo);
+        window.clearTimeout(temporizador);
+
+        if (controlador) {
+            controlador.abort();
+            controlador = null;
+        }
+
+        resultados.innerHTML = '';
+        resumen.hidden = true;
+        cargando.hidden = true;
+        vacio.hidden = true;
+        error.hidden = true;
+        similares.hidden = true;
+        iaRespuesta.hidden = true;
+        iaPensando.hidden = true;
+        iaAlternativas.hidden = true;
+        iaAlternativasGrid.innerHTML = '';
+        sugerencias.hidden = input.value.trim() !== '';
+        aplicarModo();
+        renderRecientes();
+        estado.textContent = modo === 'ia' ? 'Modo IA: escribí tu pregunta.' : 'Escribí para buscar.';
+        input.focus();
+    };
+
+    const obtenerSesionIa = () => {
+        let sesion = localStorage.getItem(CLAVE_SESION_IA);
+
+        if (!sesion) {
+            sesion = crypto.randomUUID();
+            localStorage.setItem(CLAVE_SESION_IA, sesion);
+        }
+
+        return sesion;
     };
 
     const renderRecientes = () => {
@@ -145,10 +230,14 @@ const iniciarBuscador = () => {
         vacio.hidden = true;
         error.hidden = true;
         similares.hidden = true;
+        iaRespuesta.hidden = true;
+        iaPensando.hidden = true;
+        iaAlternativas.hidden = true;
+        iaAlternativasGrid.innerHTML = '';
         sugerencias.hidden = false;
         actualizarBotonLimpiar();
         renderRecientes();
-        estado.textContent = 'Escribí para buscar.';
+        estado.textContent = modo === 'ia' ? 'Modo IA: escribí tu pregunta.' : 'Escribí para buscar.';
     };
 
     const limpiar = () => {
@@ -227,6 +316,9 @@ const iniciarBuscador = () => {
         const botonTraer = puedeTraer
             ? `<button type="button" class="btn btn-secondary btn-sm" data-traer-info data-producto="${producto.id}" data-nombre="${escapeAttr(producto.nombre)}" data-stock="${escapeAttr(JSON.stringify(producto.stock || {}))}">${ICON_TRANSFER} Traer</button>`
             : '';
+        const botonVender = puedeVender && producto.venta_url
+            ? `<a href="${escapeAttr(producto.venta_url)}" class="btn btn-primary btn-sm">${ICON_CART} Vender</a>`
+            : '';
         const botonFicha = puedeVerFicha && producto.ficha_url
             ? `<a href="${escapeAttr(producto.ficha_url)}" class="btn btn-ghost btn-sm">Ver ficha</a>`
             : '';
@@ -261,6 +353,7 @@ const iniciarBuscador = () => {
                 <div class="stock-chips">${chips}</div>
                 ${atributos ? `<div class="flex flex-wrap gap-1.5">${atributos}</div>` : ''}
                 <div class="mt-auto flex flex-wrap gap-2 border-t border-hairline-soft pt-3">
+                    ${botonVender}
                     ${botonTraer}
                     ${botonDisponibilidad}
                     ${botonFicha}
@@ -309,6 +402,131 @@ const iniciarBuscador = () => {
         estado.textContent = 'Sin resultados.';
     };
 
+    const renderIa = (datos) => {
+        cargando.hidden = true;
+        iaPensando.hidden = true;
+        error.hidden = true;
+        sucursalesMap = Object.fromEntries((datos.sucursales || []).map((sucursal) => [String(sucursal.id), sucursal.nombre]));
+
+        guardarReciente(datos.termino);
+
+        const respuesta = String(datos.respuesta || '').trim();
+
+        if (respuesta !== '') {
+            iaTexto.textContent = respuesta;
+            iaRespuesta.hidden = false;
+        } else {
+            iaRespuesta.hidden = true;
+        }
+
+        const hayProductos = (datos.productos || []).length > 0;
+
+        if (hayProductos) {
+            resumen.hidden = false;
+            vacio.hidden = true;
+            conteo.textContent = `${datos.productos.length} ${datos.productos.length === 1 ? 'resultado sugerido' : 'resultados sugeridos'} por la IA`;
+            resultado.textContent = 'Respondido por el asistente.';
+            resultados.innerHTML = datos.productos.map((producto) => renderProducto(producto)).join('');
+            prepararTraer(resultados);
+        } else {
+            resumen.hidden = true;
+            resultados.innerHTML = '';
+            vacio.hidden = false;
+            vacioTermino.textContent = datos.termino;
+            actualizarCta(datos.termino);
+            similares.hidden = true;
+            similaresGrid.innerHTML = '';
+        }
+
+        const hayAlternativas = (datos.alternativas || []).length > 0;
+        iaAlternativas.hidden = !hayAlternativas;
+        iaAlternativasGrid.innerHTML = hayAlternativas
+            ? datos.alternativas.map((producto) => renderProducto(producto, true)).join('')
+            : '';
+
+        if (hayAlternativas) {
+            prepararTraer(iaAlternativasGrid);
+        }
+
+        estado.textContent = hayProductos
+            ? `${datos.productos.length} resultados sugeridos.`
+            : 'El asistente no encontró coincidencias.';
+    };
+
+    const preguntar = () => {
+        const termino = String(input.value || '').trim();
+
+        if (termino.length < 4) {
+            mostrarInicio();
+            estado.textContent = 'La pregunta debe tener al menos 4 caracteres.';
+
+            return;
+        }
+
+        actualizarUrl(termino);
+        sugerencias.hidden = termino !== '';
+        recientes.hidden = termino !== '' || leerRecientes().length === 0;
+
+        if (controlador) {
+            controlador.abort();
+        }
+
+        controlador = new AbortController();
+        iaPensando.hidden = false;
+        iaRespuesta.hidden = true;
+        iaAlternativas.hidden = true;
+        iaAlternativasGrid.innerHTML = '';
+        resultados.innerHTML = '';
+        resumen.hidden = true;
+        vacio.hidden = true;
+        error.hidden = true;
+        similares.hidden = true;
+        cargando.hidden = true;
+        estado.textContent = 'Preguntando a la IA…';
+
+        fetch(`${iaUrl}?${parametros(termino).toString()}`, {
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-Buscador-Sesion': obtenerSesionIa(),
+            },
+            signal: controlador.signal,
+            cache: 'no-store',
+        })
+            .then(async (respuesta) => {
+                if (!respuesta.ok) {
+                    let mensaje = 'No se pudo consultar la IA. Intentá de nuevo.';
+
+                    try {
+                        const datos = await respuesta.json();
+                        mensaje = datos.message || mensaje;
+                    } catch {
+                        // Sin cuerpo JSON: se usa el mensaje genérico.
+                    }
+
+                    throw new Error(mensaje);
+                }
+
+                return respuesta.json();
+            })
+            .then((datos) => {
+                controlador = null;
+                renderIa(datos);
+            })
+            .catch((excepcion) => {
+                if (excepcion.name === 'AbortError') {
+                    return;
+                }
+
+                controlador = null;
+                iaPensando.hidden = true;
+                cargando.hidden = true;
+                error.hidden = false;
+                error.textContent = excepcion.message || 'No se pudo consultar la IA.';
+                estado.textContent = 'Error del asistente.';
+            });
+    };
+
     const buscar = (valor) => {
         const termino = String(valor || '').trim();
 
@@ -334,6 +552,10 @@ const iniciarBuscador = () => {
         vacio.hidden = true;
         error.hidden = true;
         similares.hidden = true;
+        iaRespuesta.hidden = true;
+        iaPensando.hidden = true;
+        iaAlternativas.hidden = true;
+        iaAlternativasGrid.innerHTML = '';
         estado.textContent = 'Buscando…';
 
         fetch(`${url}?${parametros(termino).toString()}`, {
@@ -380,6 +602,11 @@ const iniciarBuscador = () => {
         actualizarBotonLimpiar();
         sugerencias.hidden = input.value.trim() !== '';
         recientes.hidden = input.value.trim() !== '' || leerRecientes().length === 0;
+
+        if (modo === 'ia') {
+            return;
+        }
+
         temporizador = window.setTimeout(() => buscar(input.value), 350);
     });
 
@@ -387,7 +614,12 @@ const iniciarBuscador = () => {
         if (evento.key === 'Enter') {
             evento.preventDefault();
             window.clearTimeout(temporizador);
-            buscar(input.value);
+
+            if (modo === 'ia') {
+                preguntar();
+            } else {
+                buscar(input.value);
+            }
         }
 
         if (evento.key === 'Escape') {
@@ -398,13 +630,21 @@ const iniciarBuscador = () => {
 
     botonesLimpiar.forEach((boton) => boton.addEventListener('click', limpiar));
 
+    botonesModo.forEach((boton) => {
+        boton.addEventListener('click', () => cambiarModo(boton.dataset.modo === 'ia' ? 'ia' : 'clasico'));
+    });
+
+    if (botonPreguntar) {
+        botonPreguntar.addEventListener('click', preguntar);
+    }
+
     document.querySelectorAll('[data-sugerencia]').forEach((boton) => {
         boton.addEventListener('click', () => usarSugerencia(boton.dataset.sugerencia));
     });
 
     root.querySelectorAll('[data-filtro]').forEach((campo) => {
         campo.addEventListener('change', () => {
-            if (input.value.trim().length >= 2) {
+            if (input.value.trim().length >= 2 && modo !== 'ia') {
                 buscar(input.value);
             } else {
                 actualizarUrl(input.value.trim());
@@ -424,11 +664,12 @@ const iniciarBuscador = () => {
     });
 
     renderRecientes();
+    aplicarModo();
     actualizarBotonLimpiar();
 
     const inicial = input.value.trim();
 
-    if (inicial.length >= 2) {
+    if (inicial.length >= 2 && modo !== 'ia') {
         buscar(inicial);
     } else {
         mostrarInicio();

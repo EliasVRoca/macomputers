@@ -364,6 +364,22 @@
         @apply rounded-full border border-hairline bg-surface-1 px-3 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:border-ink-tertiary hover:text-ink;
     }
 
+    .buscador-modo {
+        @apply inline-flex rounded-full border border-hairline bg-surface-1 p-1 text-xs font-medium;
+    }
+
+    .buscador-modo button {
+        @apply rounded-full px-3 py-1.5 text-ink-muted transition-colors hover:text-ink;
+    }
+
+    .buscador-modo button.activo {
+        @apply bg-surface-2 font-semibold text-ink shadow-sm;
+    }
+
+    .buscador-ia-burbuja {
+        @apply mx-auto mb-6 max-w-3xl rounded-xl border border-hairline bg-surface-1 p-4 text-left;
+    }
+
     .producto-card {
         @apply flex flex-col overflow-hidden rounded-xl border border-hairline bg-surface-1 transition-colors hover:border-ink-tertiary;
     }

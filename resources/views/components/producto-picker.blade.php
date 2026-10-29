@@ -1,5 +1,6 @@
 @props([
     'name' => 'producto_id',
+    'id' => null,
     'label' => 'Producto',
     'value' => null,
     'producto' => null,
@@ -7,13 +8,16 @@
     'url',
     'sucursalId' => null,
     'sucursalSelector' => null,
+    'limpiarAlCambiarSucursal' => true,
     'required' => false,
     'optional' => false,
+    'ayuda' => true,
     'placeholder' => 'Buscar por nombre, código o marca…',
 ])
 
 @php
     $seleccionadoId = $value ?? $producto?->id;
+    $pickerId = $id ?? $name;
 
     $detalle = [];
 
@@ -42,9 +46,11 @@
     data-producto-picker
     data-url="{{ $url }}"
     data-sucursal="{{ $sucursalId }}"
+    data-picker-requerido="{{ $required ? 'true' : 'false' }}"
+    data-picker-limpiar-sucursal="{{ $limpiarAlCambiarSucursal ? '1' : '0' }}"
     @if ($sucursalSelector) data-sucursal-selector="{{ $sucursalSelector }}" @endif
 >
-    <label for="{{ $name }}-buscar" class="label">
+    <label for="{{ $pickerId }}-buscar" class="label">
         {{ $label }}
         @if ($optional)
             <span class="font-normal text-ink-subtle">(opcional)</span>
@@ -55,7 +61,7 @@
         <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-muted" />
 
         <input
-            id="{{ $name }}-buscar"
+            id="{{ $pickerId }}-buscar"
             type="text"
             class="input pr-10 pl-9"
             value="{{ $producto?->nombre }}"
@@ -64,8 +70,8 @@
             aria-autocomplete="list"
             aria-expanded="false"
             aria-haspopup="listbox"
-            aria-controls="{{ $name }}-lista"
-            aria-describedby="{{ $name }}-ayuda"
+            aria-controls="{{ $pickerId }}-lista"
+            @if ($ayuda) aria-describedby="{{ $pickerId }}-ayuda" @endif
             aria-required="{{ $required ? 'true' : 'false' }}"
             autocomplete="off"
             spellcheck="false"
@@ -82,23 +88,27 @@
         </button>
 
         <div
-            id="{{ $name }}-lista"
+            id="{{ $pickerId }}-lista"
             role="listbox"
             class="absolute top-full right-0 left-0 z-30 mt-1 hidden max-h-72 overflow-y-auto rounded-lg border border-hairline bg-surface-1 p-1 shadow-xl"
             data-picker-lista
         ></div>
     </div>
 
-    <input type="hidden" name="{{ $name }}" id="{{ $name }}" value="{{ $seleccionadoId }}" data-picker-value>
+    <input type="hidden" name="{{ $name }}" id="{{ $id ? $pickerId.'-valor' : $name }}" value="{{ $seleccionadoId }}" data-picker-value>
 
     <p
         class="mt-1.5 text-xs {{ $detalleInicial === '' ? 'hidden' : '' }} {{ $sinStock ? 'text-danger' : 'text-ink-subtle' }}"
         data-picker-resumen
     >{{ $detalleInicial }}</p>
 
-    <p id="{{ $name }}-ayuda" class="mt-1 text-xs text-ink-subtle">
-        Escribí al menos 2 letras. Usá ↑/↓ para navegar y Enter para elegir.
-    </p>
+    @if ($ayuda)
+        <p id="{{ $pickerId }}-ayuda" class="mt-1 text-xs text-ink-subtle">
+            Escribí al menos 2 letras. Usá ↑/↓ para navegar y Enter para elegir.
+        </p>
+    @endif
+
+    <p class="mt-1 hidden text-xs text-danger" data-picker-error>Seleccioná un producto de la lista.</p>
 
     <p class="sr-only" aria-live="polite" data-picker-estado></p>
 

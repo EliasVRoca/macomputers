@@ -94,7 +94,7 @@ return [
             'marca' => 'ASUS', 'modelo' => 'TUF Gaming F15 FX506HF', 'condicion' => 'nuevo',
             'compra' => 5600, 'venta' => 6890, 'min' => 2, 'principal' => 4, 'segunda' => 2,
             'atributos' => ['procesador' => 'Intel Core i5-11400H', 'memoria' => '8 GB DDR4', 'almacenamiento' => '512 GB SSD NVMe', 'pantalla' => '15.6" Full HD 144Hz', 'graficos' => 'NVIDIA GeForce RTX 3050 4GB'],
-            'img' => 'ASUS ROG laptop',
+            'img' => 'ASUS ROG Strix Scar laptop',
         ],
         [
             'codigo' => 'LAP-ACE-ASPIRE3', 'cat' => 'Laptops',
@@ -190,7 +190,7 @@ return [
             'marca' => 'AMD', 'modelo' => 'Ryzen 5 5600', 'condicion' => 'nuevo',
             'compra' => 900, 'venta' => 1150, 'min' => 2, 'principal' => 8, 'segunda' => 4,
             'atributos' => ['socket' => 'AM4', 'nucleos' => '6', 'hilos' => '12', 'frecuencia' => '3.5 GHz - 4.4 GHz', 'cache' => '32 MB L3', 'tdp' => '65W'],
-            'img' => 'AMD Ryzen 5 5600',
+            'img' => 'AMD Ryzen 5 7600',
         ],
         [
             'codigo' => 'CPU-AMD-R7-5700X', 'cat' => 'Procesadores',
@@ -198,7 +198,7 @@ return [
             'marca' => 'AMD', 'modelo' => 'Ryzen 7 5700X', 'condicion' => 'nuevo',
             'compra' => 1300, 'venta' => 1590, 'min' => 2, 'principal' => 6, 'segunda' => 3,
             'atributos' => ['socket' => 'AM4', 'nucleos' => '8', 'hilos' => '16', 'frecuencia' => '3.4 GHz - 4.6 GHz', 'cache' => '32 MB L3', 'tdp' => '65W'],
-            'img' => 'AMD Ryzen 7 5700X',
+            'img' => 'AMD Ryzen 7 3700X',
         ],
         [
             'codigo' => 'CPU-AMD-R7-7800X3D', 'cat' => 'Procesadores',
@@ -214,7 +214,7 @@ return [
             'marca' => 'AMD', 'modelo' => 'Ryzen 9 7950X', 'condicion' => 'nuevo',
             'compra' => 4200, 'venta' => 4990, 'min' => 1, 'principal' => 2, 'segunda' => 1,
             'atributos' => ['socket' => 'AM5', 'nucleos' => '16', 'hilos' => '32', 'frecuencia' => '4.5 GHz - 5.7 GHz', 'cache' => '64 MB L3', 'tdp' => '170W'],
-            'img' => 'AMD Ryzen 9 7950X',
+            'img' => 'AMD Ryzen 9',
         ],
         [
             'codigo' => 'CPU-INT-I3-12100F', 'cat' => 'Procesadores',
@@ -222,7 +222,7 @@ return [
             'marca' => 'Intel', 'modelo' => 'Core i3-12100F', 'condicion' => 'nuevo',
             'compra' => 600, 'venta' => 790, 'min' => 3, 'principal' => 10, 'segunda' => 5,
             'atributos' => ['socket' => 'LGA1700', 'nucleos' => '4', 'hilos' => '8', 'frecuencia' => '3.3 GHz - 4.3 GHz', 'cache' => '12 MB L3', 'tdp' => '58W'],
-            'img' => 'Intel Core i3-12100',
+            'img' => 'Intel Core i3',
         ],
         [
             'codigo' => 'CPU-INT-I5-12400F', 'cat' => 'Procesadores',
@@ -230,7 +230,7 @@ return [
             'marca' => 'Intel', 'modelo' => 'Core i5-12400F', 'condicion' => 'nuevo',
             'compra' => 950, 'venta' => 1190, 'min' => 3, 'principal' => 9, 'segunda' => 4,
             'atributos' => ['socket' => 'LGA1700', 'nucleos' => '6', 'hilos' => '12', 'frecuencia' => '2.5 GHz - 4.4 GHz', 'cache' => '18 MB L3', 'tdp' => '65W'],
-            'img' => 'Intel Core i5-12400',
+            'img' => 'Intel Core i5 13600K',
         ],
         [
             'codigo' => 'CPU-INT-I5-13400F', 'cat' => 'Procesadores',
@@ -238,7 +238,7 @@ return [
             'marca' => 'Intel', 'modelo' => 'Core i5-13400F', 'condicion' => 'nuevo',
             'compra' => 1350, 'venta' => 1650, 'min' => 2, 'principal' => 6, 'segunda' => 3,
             'atributos' => ['socket' => 'LGA1700', 'nucleos' => '10', 'hilos' => '16', 'frecuencia' => '2.5 GHz - 4.6 GHz', 'cache' => '20 MB L3', 'tdp' => '65W'],
-            'img' => 'Intel Core i5-13400',
+            'img' => 'Intel Core i5 13600K',
         ],
         [
             'codigo' => 'CPU-INT-I5-14600K', 'cat' => 'Procesadores',
@@ -274,7 +274,7 @@ return [
             'marca' => 'ASUS', 'modelo' => 'Prime A520M-K', 'condicion' => 'nuevo',
             'compra' => 450, 'venta' => 590, 'min' => 3, 'principal' => 9, 'segunda' => 4,
             'atributos' => ['socket' => 'AM4', 'chipset' => 'A520', 'formato' => 'mATX', 'memoria' => 'DDR4 hasta 64GB', 'almacenamiento' => '1x M.2 NVMe'],
-            'img' => 'ASUS Prime A520M motherboard',
+            'img' => 'ASUS ROG Strix Z690-A',
         ],
         [
             'codigo' => 'MBO-ASU-B550M', 'cat' => 'Tarjetas madre',
@@ -282,7 +282,7 @@ return [
             'marca' => 'ASUS', 'modelo' => 'TUF Gaming B550M-Plus', 'condicion' => 'nuevo',
             'compra' => 650, 'venta' => 820, 'min' => 2, 'principal' => 7, 'segunda' => 3,
             'atributos' => ['socket' => 'AM4', 'chipset' => 'B550', 'formato' => 'mATX', 'memoria' => 'DDR4 hasta 128GB', 'almacenamiento' => '2x M.2 NVMe'],
-            'img' => 'ASUS TUF Gaming B550M motherboard',
+            'img' => 'ASUS ROG Strix Z690-A',
         ],
         [
             'codigo' => 'MBO-ASU-B650M', 'cat' => 'Tarjetas madre',
@@ -290,7 +290,7 @@ return [
             'marca' => 'ASUS', 'modelo' => 'TUF Gaming B650M-Plus', 'condicion' => 'nuevo',
             'compra' => 1100, 'venta' => 1350, 'min' => 2, 'principal' => 5, 'segunda' => 2,
             'atributos' => ['socket' => 'AM5', 'chipset' => 'B650', 'formato' => 'mATX', 'memoria' => 'DDR5 hasta 128GB', 'almacenamiento' => '2x M.2 NVMe'],
-            'img' => 'ASUS TUF Gaming B650M motherboard',
+            'img' => 'ASUS ROG Strix Z690-A',
         ],
         [
             'codigo' => 'MBO-ASU-X670E', 'cat' => 'Tarjetas madre',
@@ -298,7 +298,7 @@ return [
             'marca' => 'ASUS', 'modelo' => 'ROG Strix X670E-E', 'condicion' => 'nuevo',
             'compra' => 2400, 'venta' => 2890, 'min' => 1, 'principal' => 2, 'segunda' => 1,
             'atributos' => ['socket' => 'AM5', 'chipset' => 'X670E', 'formato' => 'ATX', 'memoria' => 'DDR5 hasta 128GB', 'almacenamiento' => '4x M.2 NVMe'],
-            'img' => 'ASUS ROG Strix X670E motherboard',
+            'img' => 'ASUS ROG Strix Z690-A',
         ],
         [
             'codigo' => 'MBO-GIG-H610M', 'cat' => 'Tarjetas madre',
@@ -306,7 +306,7 @@ return [
             'marca' => 'Gigabyte', 'modelo' => 'H610M H', 'condicion' => 'nuevo',
             'compra' => 550, 'venta' => 690, 'min' => 3, 'principal' => 8, 'segunda' => 4,
             'atributos' => ['socket' => 'LGA1700', 'chipset' => 'H610', 'formato' => 'mATX', 'memoria' => 'DDR4 hasta 64GB', 'almacenamiento' => '1x M.2 NVMe'],
-            'img' => 'Gigabyte H610M motherboard',
+            'img' => 'Gigabyte B550 motherboard',
         ],
         [
             'codigo' => 'MBO-GIG-B660M', 'cat' => 'Tarjetas madre',
@@ -314,7 +314,7 @@ return [
             'marca' => 'Gigabyte', 'modelo' => 'B660M DS3H', 'condicion' => 'nuevo',
             'compra' => 800, 'venta' => 990, 'min' => 2, 'principal' => 6, 'segunda' => 3,
             'atributos' => ['socket' => 'LGA1700', 'chipset' => 'B660', 'formato' => 'mATX', 'memoria' => 'DDR4 hasta 128GB', 'almacenamiento' => '2x M.2 NVMe'],
-            'img' => 'Gigabyte B660M motherboard',
+            'img' => 'Gigabyte B550 motherboard',
         ],
         [
             'codigo' => 'MBO-MSI-B760M', 'cat' => 'Tarjetas madre',
@@ -322,7 +322,7 @@ return [
             'marca' => 'MSI', 'modelo' => 'PRO B760M-A WiFi', 'condicion' => 'nuevo',
             'compra' => 1050, 'venta' => 1290, 'min' => 2, 'principal' => 5, 'segunda' => 2,
             'atributos' => ['socket' => 'LGA1700', 'chipset' => 'B760', 'formato' => 'mATX', 'memoria' => 'DDR5 hasta 128GB', 'almacenamiento' => '2x M.2 NVMe'],
-            'img' => 'MSI PRO B760M motherboard',
+            'img' => 'MSI Trident X motherboard',
         ],
         [
             'codigo' => 'MBO-MSI-Z790', 'cat' => 'Tarjetas madre',
@@ -330,7 +330,7 @@ return [
             'marca' => 'MSI', 'modelo' => 'MAG Z790 Tomahawk', 'condicion' => 'nuevo',
             'compra' => 2100, 'venta' => 2590, 'min' => 1, 'principal' => 3, 'segunda' => 1,
             'atributos' => ['socket' => 'LGA1700', 'chipset' => 'Z790', 'formato' => 'ATX', 'memoria' => 'DDR5 hasta 192GB', 'almacenamiento' => '4x M.2 NVMe'],
-            'img' => 'MSI MAG Z790 motherboard',
+            'img' => 'MSI Trident X motherboard',
         ],
         [
             'codigo' => 'MBO-ASU-A620M', 'cat' => 'Tarjetas madre',
@@ -338,7 +338,7 @@ return [
             'marca' => 'ASUS', 'modelo' => 'Prime A620M-K', 'condicion' => 'nuevo',
             'compra' => 800, 'venta' => 990, 'min' => 2, 'principal' => 6, 'segunda' => 3,
             'atributos' => ['socket' => 'AM5', 'chipset' => 'A620', 'formato' => 'mATX', 'memoria' => 'DDR5 hasta 96GB', 'almacenamiento' => '1x M.2 NVMe'],
-            'img' => 'ASUS Prime A620M motherboard',
+            'img' => 'ASUS ROG Strix Z690-A',
         ],
         [
             'codigo' => 'MBO-ASU-X570', 'cat' => 'Tarjetas madre',
@@ -346,7 +346,7 @@ return [
             'marca' => 'ASUS', 'modelo' => 'TUF Gaming X570-Plus', 'condicion' => 'nuevo',
             'compra' => 1400, 'venta' => 1690, 'min' => 1, 'principal' => 4, 'segunda' => 2,
             'atributos' => ['socket' => 'AM4', 'chipset' => 'X570', 'formato' => 'ATX', 'memoria' => 'DDR4 hasta 128GB', 'almacenamiento' => '2x M.2 NVMe'],
-            'img' => 'ASUS TUF Gaming X570 motherboard',
+            'img' => 'ASUS ROG Strix Z690-A',
         ],
 
         // ---------------------------------------------------------------
@@ -358,7 +358,7 @@ return [
             'marca' => 'NVIDIA', 'modelo' => 'GeForce RTX 3050', 'condicion' => 'nuevo',
             'compra' => 1800, 'venta' => 2300, 'min' => 2, 'principal' => 6, 'segunda' => 3,
             'atributos' => ['memoria' => '6 GB GDDR6', 'bus' => '96-bit', 'interfaz' => 'PCIe 4.0 x8', 'salidas' => 'HDMI 2.1 / DisplayPort 1.4a', 'consumo' => '70W'],
-            'img' => 'NVIDIA GeForce RTX 3050 graphics card',
+            'img' => 'Zotac RTX 3050',
         ],
         [
             'codigo' => 'GPU-NVI-RTX3060', 'cat' => 'Tarjetas de video',
@@ -366,7 +366,7 @@ return [
             'marca' => 'NVIDIA', 'modelo' => 'GeForce RTX 3060', 'condicion' => 'nuevo',
             'compra' => 2400, 'venta' => 2990, 'min' => 2, 'principal' => 5, 'segunda' => 2,
             'atributos' => ['memoria' => '12 GB GDDR6', 'bus' => '192-bit', 'interfaz' => 'PCIe 4.0 x16', 'salidas' => 'HDMI 2.1 / 3x DisplayPort 1.4a', 'consumo' => '170W'],
-            'img' => 'NVIDIA GeForce RTX 3060 graphics card',
+            'img' => 'NVIDIA GeForce RTX 3060',
         ],
         [
             'codigo' => 'GPU-NVI-RTX4060', 'cat' => 'Tarjetas de video',
@@ -374,7 +374,7 @@ return [
             'marca' => 'NVIDIA', 'modelo' => 'GeForce RTX 4060', 'condicion' => 'nuevo',
             'compra' => 2600, 'venta' => 3190, 'min' => 2, 'principal' => 5, 'segunda' => 2,
             'atributos' => ['memoria' => '8 GB GDDR6', 'bus' => '128-bit', 'interfaz' => 'PCIe 4.0 x8', 'salidas' => 'HDMI 2.1 / 3x DisplayPort 1.4a', 'consumo' => '115W'],
-            'img' => 'NVIDIA GeForce RTX 4060 graphics card',
+            'img' => 'Gigabyte GeForce RTX 4070',
         ],
         [
             'codigo' => 'GPU-NVI-RTX4060TI', 'cat' => 'Tarjetas de video',
@@ -382,7 +382,7 @@ return [
             'marca' => 'NVIDIA', 'modelo' => 'GeForce RTX 4060 Ti', 'condicion' => 'nuevo',
             'compra' => 3600, 'venta' => 4390, 'min' => 1, 'principal' => 3, 'segunda' => 1,
             'atributos' => ['memoria' => '16 GB GDDR6', 'bus' => '128-bit', 'interfaz' => 'PCIe 4.0 x8', 'salidas' => 'HDMI 2.1 / 3x DisplayPort 1.4a', 'consumo' => '165W'],
-            'img' => 'NVIDIA GeForce RTX 4060 Ti graphics card',
+            'img' => 'Gigabyte GeForce RTX 4070',
         ],
         [
             'codigo' => 'GPU-NVI-RTX4070S', 'cat' => 'Tarjetas de video',
@@ -390,7 +390,7 @@ return [
             'marca' => 'NVIDIA', 'modelo' => 'GeForce RTX 4070 Super', 'condicion' => 'nuevo',
             'compra' => 5400, 'venta' => 6490, 'min' => 1, 'principal' => 2, 'segunda' => 1,
             'atributos' => ['memoria' => '12 GB GDDR6X', 'bus' => '192-bit', 'interfaz' => 'PCIe 4.0 x16', 'salidas' => 'HDMI 2.1 / 3x DisplayPort 1.4a', 'consumo' => '220W'],
-            'img' => 'NVIDIA GeForce RTX 4070 Super graphics card',
+            'img' => 'Gigabyte GeForce RTX 4070',
         ],
         [
             'codigo' => 'GPU-NVI-RTX4080S', 'cat' => 'Tarjetas de video',
@@ -398,7 +398,7 @@ return [
             'marca' => 'NVIDIA', 'modelo' => 'GeForce RTX 4080 Super', 'condicion' => 'nuevo',
             'compra' => 8500, 'venta' => 9990, 'min' => 1, 'principal' => 1, 'segunda' => 1,
             'atributos' => ['memoria' => '16 GB GDDR6X', 'bus' => '256-bit', 'interfaz' => 'PCIe 4.0 x16', 'salidas' => 'HDMI 2.1 / 3x DisplayPort 1.4a', 'consumo' => '320W'],
-            'img' => 'NVIDIA GeForce RTX 4080 Super graphics card',
+            'img' => 'NVIDIA GeForce RTX 4090 Founders Edition',
         ],
         [
             'codigo' => 'GPU-NVI-RTX4090', 'cat' => 'Tarjetas de video',
@@ -406,7 +406,7 @@ return [
             'marca' => 'NVIDIA', 'modelo' => 'GeForce RTX 4090', 'condicion' => 'nuevo',
             'compra' => 14000, 'venta' => 16500, 'min' => 1, 'principal' => 1, 'segunda' => 0,
             'atributos' => ['memoria' => '24 GB GDDR6X', 'bus' => '384-bit', 'interfaz' => 'PCIe 4.0 x16', 'salidas' => 'HDMI 2.1 / 3x DisplayPort 1.4a', 'consumo' => '450W'],
-            'img' => 'NVIDIA GeForce RTX 4090 graphics card',
+            'img' => 'NVIDIA GeForce RTX 4090 Founders Edition',
         ],
         [
             'codigo' => 'GPU-AMD-RX6600', 'cat' => 'Tarjetas de video',
@@ -422,7 +422,7 @@ return [
             'marca' => 'AMD', 'modelo' => 'Radeon RX 7600', 'condicion' => 'nuevo',
             'compra' => 2300, 'venta' => 2790, 'min' => 2, 'principal' => 4, 'segunda' => 2,
             'atributos' => ['memoria' => '8 GB GDDR6', 'bus' => '128-bit', 'interfaz' => 'PCIe 4.0 x8', 'salidas' => 'HDMI 2.1 / 3x DisplayPort 2.1', 'consumo' => '165W'],
-            'img' => 'AMD Radeon RX 7600 graphics card',
+            'img' => 'Radeon RX 6600 XT',
         ],
         [
             'codigo' => 'GPU-AMD-RX7800XT', 'cat' => 'Tarjetas de video',
@@ -430,7 +430,7 @@ return [
             'marca' => 'AMD', 'modelo' => 'Radeon RX 7800 XT', 'condicion' => 'nuevo',
             'compra' => 4300, 'venta' => 5190, 'min' => 1, 'principal' => 3, 'segunda' => 1,
             'atributos' => ['memoria' => '16 GB GDDR6', 'bus' => '256-bit', 'interfaz' => 'PCIe 4.0 x16', 'salidas' => 'HDMI 2.1 / 2x DisplayPort 2.1', 'consumo' => '263W'],
-            'img' => 'AMD Radeon RX 7800 XT graphics card',
+            'img' => 'Sapphire AMD Radeon RX 7900 XTX',
         ],
 
         // ---------------------------------------------------------------
@@ -450,7 +450,7 @@ return [
             'marca' => 'Kingston', 'modelo' => 'KF426C16BB/8', 'condicion' => 'nuevo',
             'compra' => 180, 'venta' => 280, 'min' => 5, 'principal' => 20, 'segunda' => 8,
             'atributos' => ['tipo' => 'DDR4', 'capacidad' => '8 GB', 'velocidad' => '2666 MHz', 'formato' => 'DIMM 288 pines', 'perfil' => 'XMP 2.0'],
-            'img' => 'Kingston Fury DDR4 RAM',
+            'img' => 'DDR4 DIMM',
         ],
         [
             'codigo' => 'RAM-KIN-DDR4-16', 'cat' => 'Memorias RAM',
@@ -458,7 +458,7 @@ return [
             'marca' => 'Kingston', 'modelo' => 'KF432C16BB/16', 'condicion' => 'nuevo',
             'compra' => 330, 'venta' => 450, 'min' => 3, 'principal' => 10, 'segunda' => 4,
             'atributos' => ['tipo' => 'DDR4', 'capacidad' => '16 GB', 'velocidad' => '3200 MHz', 'formato' => 'DIMM 288 pines', 'perfil' => 'XMP 2.0'],
-            'img' => 'Kingston Fury DDR4 RAM',
+            'img' => 'DDR4 DIMM',
         ],
         [
             'codigo' => 'RAM-COR-DDR4-32', 'cat' => 'Memorias RAM',
@@ -474,7 +474,7 @@ return [
             'marca' => 'Kingston', 'modelo' => 'KF556C40BB-16', 'condicion' => 'nuevo',
             'compra' => 500, 'venta' => 650, 'min' => 2, 'principal' => 8, 'segunda' => 3,
             'atributos' => ['tipo' => 'DDR5', 'capacidad' => '16 GB', 'velocidad' => '5600 MHz', 'formato' => 'DIMM 288 pines', 'perfil' => 'EXPO/XMP 3.0'],
-            'img' => 'Kingston Fury DDR5 RAM',
+            'img' => 'DDR5 SDRAM',
         ],
         [
             'codigo' => 'RAM-COR-DDR5-32', 'cat' => 'Memorias RAM',
@@ -574,7 +574,7 @@ return [
             'marca' => 'Crucial', 'modelo' => 'CT1000T700SSD3', 'condicion' => 'nuevo',
             'compra' => 900, 'venta' => 1150, 'min' => 1, 'principal' => 3, 'segunda' => 1,
             'atributos' => ['tipo' => 'SSD NVMe Gen5', 'capacidad' => '1 TB', 'formato' => 'M.2 2280', 'interfaz' => 'PCIe 5.0 x4', 'velocidad' => '11700 MB/s lectura'],
-            'img' => 'Crucial T700 NVMe SSD',
+            'img' => 'Samsung 990 Pro',
         ],
         [
             'codigo' => 'ALM-HDD-1TB', 'cat' => 'Almacenamiento',
@@ -650,7 +650,7 @@ return [
             'marca' => 'Corsair', 'modelo' => 'CV650', 'condicion' => 'nuevo',
             'compra' => 500, 'venta' => 690, 'min' => 2, 'principal' => 7, 'segunda' => 3,
             'atributos' => ['potencia' => '650W', 'certificacion' => '80 Plus Bronze', 'formato' => 'ATX', 'conectores' => '20+4 pines / PCIe / SATA', 'ventilador' => '120 mm'],
-            'img' => 'Corsair CV650 power supply',
+            'img' => 'Corsair VS650',
         ],
         [
             'codigo' => 'PSU-COR-750', 'cat' => 'Fuentes de poder',
@@ -658,7 +658,7 @@ return [
             'marca' => 'Corsair', 'modelo' => 'RM750e', 'condicion' => 'nuevo',
             'compra' => 800, 'venta' => 1050, 'min' => 2, 'principal' => 5, 'segunda' => 2,
             'atributos' => ['potencia' => '750W', 'certificacion' => '80 Plus Gold', 'formato' => 'ATX', 'modular' => 'Full modular', 'ventilador' => '120 mm'],
-            'img' => 'Corsair RM750e power supply',
+            'img' => 'Corsair power supply',
         ],
         [
             'codigo' => 'PSU-COR-850', 'cat' => 'Fuentes de poder',
@@ -666,7 +666,7 @@ return [
             'marca' => 'Corsair', 'modelo' => 'RM850e', 'condicion' => 'nuevo',
             'compra' => 1050, 'venta' => 1350, 'min' => 1, 'principal' => 4, 'segunda' => 2,
             'atributos' => ['potencia' => '850W', 'certificacion' => '80 Plus Gold', 'formato' => 'ATX', 'modular' => 'Full modular', 'ventilador' => '120 mm'],
-            'img' => 'Corsair RM850e power supply',
+            'img' => 'Corsair power supply',
         ],
         [
             'codigo' => 'PSU-SEA-1000', 'cat' => 'Fuentes de poder',
@@ -674,7 +674,7 @@ return [
             'marca' => 'Seasonic', 'modelo' => 'PRIME-PX-1000', 'condicion' => 'nuevo',
             'compra' => 1800, 'venta' => 2290, 'min' => 1, 'principal' => 2, 'segunda' => 1,
             'atributos' => ['potencia' => '1000W', 'certificacion' => '80 Plus Platinum', 'formato' => 'ATX', 'modular' => 'Full modular', 'ventilador' => '135 mm'],
-            'img' => 'Seasonic power supply unit',
+            'img' => 'Seasonic SS-200PS',
         ],
 
         // ---------------------------------------------------------------
@@ -726,7 +726,7 @@ return [
             'marca' => 'Genérica', 'modelo' => 'Gamer 4F', 'condicion' => 'nuevo',
             'compra' => 900, 'venta' => 1190, 'min' => 1, 'principal' => 3, 'segunda' => 1,
             'atributos' => ['formato' => 'ATX / mATX / ITX', 'bahias' => '2x 3.5" / 4x 2.5"', 'ventiladores' => '4x 120 mm ARGB incluidos', 'fuente' => 'No incluida', 'panel' => 'Vidrio templado'],
-            'img' => 'gaming PC case ARGB',
+            'img' => 'Kolink Observatory RGB',
         ],
 
         // ---------------------------------------------------------------
@@ -762,7 +762,7 @@ return [
             'marca' => 'Cooler Master', 'modelo' => 'MasterLiquid ML240L', 'condicion' => 'nuevo',
             'compra' => 750, 'venta' => 980, 'min' => 2, 'principal' => 5, 'segunda' => 2,
             'atributos' => ['tipo' => 'Líquida AIO', 'radiador' => '240 mm', 'socket' => 'AM4 / AM5 / LGA1700', 'ventiladores' => '2x 120 mm ARGB', 'tdp' => 'Hasta 200W'],
-            'img' => '240mm AIO liquid CPU cooler',
+            'img' => 'Corsair H100i',
         ],
         [
             'codigo' => 'REF-AIO-360', 'cat' => 'Refrigeración',
@@ -770,7 +770,7 @@ return [
             'marca' => 'Corsair', 'modelo' => 'iCUE H150i Elite', 'condicion' => 'nuevo',
             'compra' => 1200, 'venta' => 1490, 'min' => 1, 'principal' => 3, 'segunda' => 1,
             'atributos' => ['tipo' => 'Líquida AIO', 'radiador' => '360 mm', 'socket' => 'AM4 / AM5 / LGA1700', 'ventiladores' => '3x 120 mm ARGB', 'tdp' => 'Hasta 300W'],
-            'img' => '360mm AIO liquid CPU cooler',
+            'img' => 'Corsair H100i',
         ],
         [
             'codigo' => 'REF-FAN-3', 'cat' => 'Refrigeración',
@@ -778,7 +778,7 @@ return [
             'marca' => 'Genérica', 'modelo' => 'Fan Kit 3x120', 'condicion' => 'nuevo',
             'compra' => 280, 'venta' => 390, 'min' => 2, 'principal' => 8, 'segunda' => 4,
             'atributos' => ['tipo' => 'Ventilador de gabinete', 'tamaño' => '120 mm', 'iluminacion' => 'RGB', 'conexion' => '3 pines / Molex', 'cantidad' => '3 unidades'],
-            'img' => 'RGB case fans 120mm',
+            'img' => 'Arctic P12 A-RGB',
         ],
         [
             'codigo' => 'REF-PASTA', 'cat' => 'Refrigeración',
@@ -794,7 +794,7 @@ return [
             'marca' => 'Genérica', 'modelo' => 'Laptop Cooler 2F', 'condicion' => 'nuevo',
             'compra' => 120, 'venta' => 190, 'min' => 3, 'principal' => 10, 'segunda' => 5,
             'atributos' => ['tipo' => 'Base refrigerante', 'ventiladores' => '2x 120 mm', 'conexion' => 'USB', 'tamaño' => 'Hasta 15.6"', 'regulacion' => 'Velocidad variable'],
-            'img' => 'laptop cooling pad',
+            'img' => 'laptop cooler',
         ],
 
         // ---------------------------------------------------------------
@@ -806,7 +806,7 @@ return [
             'marca' => 'Genérica', 'modelo' => 'LED 19', 'condicion' => 'nuevo',
             'compra' => 650, 'venta' => 850, 'min' => 2, 'principal' => 8, 'segunda' => 4,
             'atributos' => ['tamaño' => '19 pulgadas', 'resolucion' => '1366 x 768 HD', 'refresco' => '75 Hz', 'panel' => 'TN', 'conexiones' => 'HDMI / VGA'],
-            'img' => '19 inch computer monitor',
+            'img' => 'Dell Computer Monitor',
         ],
         [
             'codigo' => 'MON-GEN-22', 'cat' => 'Monitores',
@@ -814,7 +814,7 @@ return [
             'marca' => 'Genérica', 'modelo' => 'LED 22', 'condicion' => 'nuevo',
             'compra' => 800, 'venta' => 1050, 'min' => 2, 'principal' => 7, 'segunda' => 3,
             'atributos' => ['tamaño' => '22 pulgadas', 'resolucion' => '1920 x 1080 Full HD', 'refresco' => '75 Hz', 'panel' => 'IPS', 'conexiones' => 'HDMI / VGA'],
-            'img' => '22 inch computer monitor',
+            'img' => 'Dell Computer Monitor',
         ],
         [
             'codigo' => 'MON-SAM-24-75', 'cat' => 'Monitores',
@@ -822,7 +822,7 @@ return [
             'marca' => 'Samsung', 'modelo' => 'LS24C310EA', 'condicion' => 'nuevo',
             'compra' => 950, 'venta' => 1250, 'min' => 2, 'principal' => 6, 'segunda' => 3,
             'atributos' => ['tamaño' => '24 pulgadas', 'resolucion' => '1920 x 1080 Full HD', 'refresco' => '75 Hz', 'panel' => 'IPS', 'conexiones' => 'HDMI / VGA'],
-            'img' => 'Samsung 24 inch monitor',
+            'img' => 'Samsung Monitor 1 2018-11-19',
         ],
         [
             'codigo' => 'MON-LG-24-165', 'cat' => 'Monitores',
@@ -922,7 +922,7 @@ return [
             'marca' => 'Logitech', 'modelo' => 'MK270', 'condicion' => 'nuevo',
             'compra' => 120, 'venta' => 190, 'min' => 5, 'principal' => 15, 'segunda' => 8,
             'atributos' => ['tipo' => 'Combo teclado + mouse', 'conexion' => 'Inalámbrico 2.4 GHz', 'teclado' => 'Full size', 'mouse' => 'Óptico 1000 DPI', 'alimentacion' => 'Pilas AA / AAA'],
-            'img' => 'Logitech MK270 keyboard mouse combo',
+            'img' => 'Logitech K120 keyboard',
         ],
         [
             'codigo' => 'PER-MOU-WIRED', 'cat' => 'Periféricos',
@@ -962,7 +962,7 @@ return [
             'marca' => 'HyperX', 'modelo' => 'Cloud Stinger 2', 'condicion' => 'nuevo',
             'compra' => 150, 'venta' => 250, 'min' => 3, 'principal' => 8, 'segunda' => 4,
             'atributos' => ['tipo' => 'Audífonos gamer', 'conexion' => 'USB / 3.5 mm', 'audio' => 'Estéreo 7.1 virtual', 'microfono' => 'Con cancelación de ruido', 'compatibilidad' => 'PC / consola'],
-            'img' => 'HyperX Cloud gaming headset',
+            'img' => 'RGB gaming headset',
         ],
         [
             'codigo' => 'PER-SPEAK-20', 'cat' => 'Periféricos',
@@ -970,7 +970,7 @@ return [
             'marca' => 'Logitech', 'modelo' => 'Z150', 'condicion' => 'nuevo',
             'compra' => 180, 'venta' => 280, 'min' => 2, 'principal' => 8, 'segunda' => 4,
             'atributos' => ['tipo' => 'Parlantes 2.0', 'potencia' => '6W RMS', 'conexion' => 'USB / 3.5 mm', 'controles' => 'Volumen y encendido', 'uso' => 'PC / laptop'],
-            'img' => 'Logitech Z150 speakers',
+            'img' => 'computer speakers',
         ],
         [
             'codigo' => 'PER-WEB-1080', 'cat' => 'Periféricos',
@@ -978,7 +978,7 @@ return [
             'marca' => 'Logitech', 'modelo' => 'C920e', 'condicion' => 'nuevo',
             'compra' => 180, 'venta' => 290, 'min' => 2, 'principal' => 7, 'segunda' => 3,
             'atributos' => ['tipo' => 'Cámara web', 'resolucion' => '1080p Full HD', 'fps' => '30 fps', 'microfono' => 'Estéreo integrado', 'conexion' => 'USB'],
-            'img' => 'Logitech C920 webcam',
+            'img' => 'USB webcam for PC',
         ],
         [
             'codigo' => 'PER-MOUSEPAD', 'cat' => 'Periféricos',
@@ -986,7 +986,7 @@ return [
             'marca' => 'Redragon', 'modelo' => 'P006', 'condicion' => 'nuevo',
             'compra' => 50, 'venta' => 95, 'min' => 5, 'principal' => 15, 'segunda' => 8,
             'atributos' => ['tipo' => 'Mousepad', 'tamaño' => 'XXL 800 x 300 mm', 'superficie' => 'Tela', 'base' => 'Antideslizante', 'bordes' => 'Cosidos'],
-            'img' => 'large mousepad',
+            'img' => 'gaming mousepad',
         ],
         [
             'codigo' => 'PER-CONTROL', 'cat' => 'Periféricos',
@@ -994,7 +994,7 @@ return [
             'marca' => 'Genérica', 'modelo' => 'Gamepad Pro', 'condicion' => 'nuevo',
             'compra' => 250, 'venta' => 380, 'min' => 2, 'principal' => 6, 'segunda' => 3,
             'atributos' => ['tipo' => 'Gamepad', 'conexion' => 'Bluetooth / USB-C', 'compatibilidad' => 'PC / Android / Switch', 'vibracion' => 'Sí', 'bateria' => 'Recargable'],
-            'img' => 'wireless game controller',
+            'img' => 'game controller',
         ],
         [
             'codigo' => 'PER-HUB-USB', 'cat' => 'Periféricos',
@@ -1038,7 +1038,7 @@ return [
             'marca' => 'TP-Link', 'modelo' => 'TL-SG108', 'condicion' => 'nuevo',
             'compra' => 220, 'venta' => 340, 'min' => 2, 'principal' => 8, 'segunda' => 4,
             'atributos' => ['tipo' => 'Switch', 'puertos' => '8x Gigabit', 'gestion' => 'No administrable', 'formato' => 'Escritorio / pared', 'alimentacion' => 'Externa'],
-            'img' => 'TP-Link 8 port gigabit switch',
+            'img' => 'network switch',
         ],
         [
             'codigo' => 'RED-TP-AP', 'cat' => 'Redes y conectividad',
@@ -1054,7 +1054,7 @@ return [
             'marca' => 'TP-Link', 'modelo' => 'Archer T3U', 'condicion' => 'nuevo',
             'compra' => 120, 'venta' => 190, 'min' => 4, 'principal' => 12, 'segunda' => 6,
             'atributos' => ['tipo' => 'Adaptador USB Wi-Fi', 'estandar' => 'Wi-Fi 5 AC1300', 'bandas' => '2.4 GHz / 5 GHz', 'conexion' => 'USB 3.0', 'antena' => 'Interna'],
-            'img' => 'TP-Link Archer T3U USB Wi-Fi adapter',
+            'img' => 'TP-Link USB Wi-Fi adapter',
         ],
         [
             'codigo' => 'RED-TP-PLC', 'cat' => 'Redes y conectividad',
@@ -1090,7 +1090,7 @@ return [
             'marca' => 'Epson', 'modelo' => 'EcoTank L3250', 'condicion' => 'nuevo',
             'compra' => 1100, 'venta' => 1450, 'min' => 2, 'principal' => 6, 'segunda' => 3,
             'atributos' => ['tipo' => 'Multifunción', 'funciones' => 'Imprimir / copiar / escanear', 'tecnologia' => 'Inyección de tinta', 'conexion' => 'Wi-Fi / USB', 'sistema' => 'Tanque de tinta'],
-            'img' => 'Epson EcoTank L3250 printer',
+            'img' => 'Epson L1218 printer',
         ],
         [
             'codigo' => 'IMP-EPS-L5290', 'cat' => 'Impresoras y consumibles',
@@ -1098,7 +1098,7 @@ return [
             'marca' => 'Epson', 'modelo' => 'EcoTank L5290', 'condicion' => 'nuevo',
             'compra' => 1900, 'venta' => 2390, 'min' => 1, 'principal' => 4, 'segunda' => 2,
             'atributos' => ['tipo' => 'Multifunción', 'funciones' => 'Imprimir / copiar / escanear / fax', 'tecnologia' => 'Inyección de tinta', 'conexion' => 'Wi-Fi / Ethernet / USB', 'adf' => 'Alimentador automático'],
-            'img' => 'Epson EcoTank L5290 printer',
+            'img' => 'Epson L1218 printer',
         ],
         [
             'codigo' => 'IMP-HP-4155', 'cat' => 'Impresoras y consumibles',
@@ -1106,7 +1106,7 @@ return [
             'marca' => 'HP', 'modelo' => 'DeskJet 4155e', 'condicion' => 'nuevo',
             'compra' => 850, 'venta' => 1090, 'min' => 2, 'principal' => 6, 'segunda' => 3,
             'atributos' => ['tipo' => 'Multifunción', 'funciones' => 'Imprimir / copiar / escanear', 'tecnologia' => 'Inyección de tinta', 'conexion' => 'Wi-Fi / USB', 'cartuchos' => 'HP 67'],
-            'img' => 'HP DeskJet 4155 printer',
+            'img' => 'HP DeskJet',
         ],
         [
             'codigo' => 'IMP-HP-M141', 'cat' => 'Impresoras y consumibles',
@@ -1122,7 +1122,7 @@ return [
             'marca' => 'Canon', 'modelo' => 'PIXMA G3110', 'condicion' => 'nuevo',
             'compra' => 1200, 'venta' => 1550, 'min' => 1, 'principal' => 4, 'segunda' => 2,
             'atributos' => ['tipo' => 'Multifunción', 'funciones' => 'Imprimir / copiar / escanear', 'tecnologia' => 'Inyección de tinta', 'conexion' => 'Wi-Fi / USB', 'sistema' => 'Tanque de tinta'],
-            'img' => 'Canon PIXMA G3110 printer',
+            'img' => 'Canon PIXMA',
         ],
         [
             'codigo' => 'IMP-TONER-105A', 'cat' => 'Impresoras y consumibles',
@@ -1174,7 +1174,7 @@ return [
             'marca' => 'Genérica', 'modelo' => 'USB-C Hub 7P', 'condicion' => 'nuevo',
             'compra' => 180, 'venta' => 290, 'min' => 3, 'principal' => 10, 'segunda' => 5,
             'atributos' => ['tipo' => 'Hub USB-C', 'puertos' => 'HDMI / 2x USB 3.0 / USB-C / SD / microSD', 'video' => '4K 30Hz', 'alimentacion' => 'PD 100W', 'conexion' => 'USB-C'],
-            'img' => 'USB-C hub',
+            'img' => 'USB C Hub',
         ],
         [
             'codigo' => 'ACC-DOCK-USBC', 'cat' => 'Accesorios y cables',
@@ -1182,7 +1182,7 @@ return [
             'marca' => 'Genérica', 'modelo' => 'USB-C Dock', 'condicion' => 'nuevo',
             'compra' => 750, 'venta' => 980, 'min' => 1, 'principal' => 4, 'segunda' => 2,
             'atributos' => ['tipo' => 'Dock USB-C', 'puertos' => '2x HDMI / 3x USB / Ethernet / audio / SD', 'video' => 'Doble 4K 60Hz', 'alimentacion' => 'PD 100W', 'conexion' => 'USB-C'],
-            'img' => 'USB-C docking station',
+            'img' => 'Delock 87772',
         ],
         [
             'codigo' => 'ACC-CHARGER-65', 'cat' => 'Accesorios y cables',
@@ -1222,7 +1222,7 @@ return [
             'marca' => 'Genérica', 'modelo' => 'Fan Splitter 1-3', 'condicion' => 'nuevo',
             'compra' => 35, 'venta' => 70, 'min' => 5, 'principal' => 15, 'segunda' => 8,
             'atributos' => ['tipo' => 'Splitter de ventiladores', 'conexion' => '4 pines PWM', 'salidas' => '3', 'longitud' => '30 cm', 'uso' => 'Gabinete / CPU'],
-            'img' => 'fan splitter cable',
+            'img' => 'fan cable',
         ],
         [
             'codigo' => 'ACC-ORGANIZER', 'cat' => 'Accesorios y cables',
@@ -1230,7 +1230,7 @@ return [
             'marca' => 'Genérica', 'modelo' => 'Cable Clips', 'condicion' => 'nuevo',
             'compra' => 20, 'venta' => 45, 'min' => 8, 'principal' => 25, 'segunda' => 12,
             'atributos' => ['tipo' => 'Organizador de cables', 'cantidad' => '10 unidades', 'material' => 'Silicona', 'instalacion' => 'Adhesivo', 'color' => 'Negro'],
-            'img' => 'cable organizer clips',
+            'img' => 'cable clips',
         ],
 
         // ---------------------------------------------------------------
@@ -1266,7 +1266,7 @@ return [
             'marca' => 'HP', 'modelo' => 'HP 15-fd', 'condicion' => 'nuevo',
             'compra' => 150, 'venta' => 265, 'min' => 3, 'principal' => 8, 'segunda' => 4,
             'atributos' => ['tipo' => 'Teclado de laptop', 'compatibilidad' => 'HP 15-fd / 15-fc', 'distribucion' => 'Español Latinoamérica', 'conexion' => 'Flex interno', 'retroiluminacion' => 'No'],
-            'img' => 'laptop keyboard replacement',
+            'img' => 'HP Compaq 6910p keyboard',
         ],
         [
             'codigo' => 'REP-TEC-LEN', 'cat' => 'Repuestos para laptops',
@@ -1274,7 +1274,7 @@ return [
             'marca' => 'Lenovo', 'modelo' => 'IdeaPad 3 15', 'condicion' => 'nuevo',
             'compra' => 160, 'venta' => 280, 'min' => 3, 'principal' => 8, 'segunda' => 4,
             'atributos' => ['tipo' => 'Teclado de laptop', 'compatibilidad' => 'Lenovo IdeaPad 3 15', 'distribucion' => 'Español Latinoamérica', 'conexion' => 'Flex interno', 'retroiluminacion' => 'No'],
-            'img' => 'laptop keyboard replacement',
+            'img' => 'Lenovo classic laptop keyboard',
         ],
         [
             'codigo' => 'REP-BAT-UNI', 'cat' => 'Repuestos para laptops',
@@ -1282,7 +1282,7 @@ return [
             'marca' => 'Genérica', 'modelo' => 'Universal 4400mAh', 'condicion' => 'nuevo',
             'compra' => 220, 'venta' => 360, 'min' => 3, 'principal' => 7, 'segunda' => 3,
             'atributos' => ['tipo' => 'Batería de laptop', 'capacidad' => '4400 mAh', 'voltaje' => '11.1V', 'compatibilidad' => 'Universal con adaptadores', 'celdas' => 'Litio-ion'],
-            'img' => 'laptop battery',
+            'img' => 'laptop battery pack',
         ],
         [
             'codigo' => 'REP-CARG-UNI', 'cat' => 'Repuestos para laptops',

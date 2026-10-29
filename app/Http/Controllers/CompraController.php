@@ -6,7 +6,6 @@ use App\Http\Requests\Compras\AnularCompraRequest;
 use App\Http\Requests\Compras\FiltrarComprasRequest;
 use App\Http\Requests\Compras\GuardarCompraRequest;
 use App\Models\Compra;
-use App\Models\Producto;
 use App\Models\Proveedor;
 use App\Models\Sucursal;
 use App\Models\User;
@@ -42,7 +41,6 @@ class CompraController extends Controller
 
         return view('compras.form', [
             'proveedores' => Proveedor::orderBy('nombre')->get(),
-            'productos' => Producto::where('activo', true)->orderBy('nombre')->get(),
             'sucursales' => $this->sucursalesVisibles($usuario),
             'puedeElegirSucursal' => $usuario->esGerente(),
         ]);

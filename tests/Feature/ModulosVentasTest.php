@@ -263,6 +263,42 @@ class ModulosVentasTest extends TestCase
         $this->assertSame(2, $this->stockEn($this->segunda));
     }
 
+    public function test_formulario_de_venta_precarga_el_producto_desde_el_buscador(): void
+    {
+        $respuesta = $this->actingAs($this->vendedor)
+            ->get(route('ventas.create', ['producto' => $this->producto->id]));
+
+        $respuesta->assertOk();
+        $this->assertSame($this->producto->id, $respuesta->viewData('productoSugerido'));
+        $this->assertSame($this->producto->id, $respuesta->viewData('productoInicial')?->id);
+        $respuesta->assertSee('data-producto-picker', false);
+    }
+
+    public function test_formulario_de_venta_no_carga_el_catalogo_completo(): void
+    {
+        $this->actingAs($this->vendedor)
+            ->get(route('ventas.create'))
+            ->assertOk()
+            ->assertSee('data-producto-picker', false)
+            ->assertDontSee('Laptop Lenovo')
+            ->assertViewHas('productoInicial', null);
+    }
+
+    public function test_formulario_de_venta_ignora_productos_inexistentes_o_inactivos(): void
+    {
+        $this->actingAs($this->vendedor)
+            ->get(route('ventas.create', ['producto' => 999999]))
+            ->assertOk()
+            ->assertViewHas('productoSugerido', null);
+
+        $this->producto->update(['activo' => false]);
+
+        $this->actingAs($this->vendedor)
+            ->get(route('ventas.create', ['producto' => $this->producto->id]))
+            ->assertOk()
+            ->assertViewHas('productoSugerido', null);
+    }
+
     private function ventaDe(Producto $producto, int $cantidad, ?Cliente $cliente = null): Venta
     {
         $this->actingAs($this->gerente)->post(route('ventas.store'), [

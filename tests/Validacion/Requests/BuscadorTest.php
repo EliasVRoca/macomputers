@@ -24,7 +24,7 @@ class BuscadorTest extends TestCase
     public static function casosFiltro(): array
     {
         return [
-            'término de 101 caracteres' => ['termino', ['termino' => str_repeat('a', 101)]],
+            'término de 301 caracteres' => ['termino', ['termino' => str_repeat('a', 301)]],
             'categoría inexistente' => ['categoria_id', ['categoria_id' => 99999]],
             'condición inválida' => ['condicion', ['condicion' => 'usado']],
             'sucursal inexistente' => ['sucursal_id', ['sucursal_id' => 99999]],

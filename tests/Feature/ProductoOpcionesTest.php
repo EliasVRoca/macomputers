@@ -170,8 +170,16 @@ class ProductoOpcionesTest extends TestCase
 
     public function test_las_pantallas_de_alta_no_cargan_todo_el_catalogo(): void
     {
-        $this->actingAs($this->vendedor)
-            ->get(route('apartados.create'))
+        foreach (['apartados.create', 'ventas.create', 'traspasos.create'] as $ruta) {
+            $this->actingAs($this->vendedor)
+                ->get(route($ruta))
+                ->assertOk()
+                ->assertSee('data-producto-picker', false)
+                ->assertDontSee('Mouse gamer');
+        }
+
+        $this->actingAs($this->gerente)
+            ->get(route('compras.create'))
             ->assertOk()
             ->assertSee('data-producto-picker', false)
             ->assertDontSee('Mouse gamer');

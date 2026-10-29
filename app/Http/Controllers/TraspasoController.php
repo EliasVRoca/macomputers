@@ -50,7 +50,6 @@ class TraspasoController extends Controller
                 ? Sucursal::where('activa', true)->orderBy('nombre')->get()
                 : Sucursal::whereKey($usuario->sucursal_id)->get(),
             'sucursalesDestino' => Sucursal::where('activa', true)->orderBy('nombre')->get(),
-            'productos' => Producto::where('activo', true)->orderBy('nombre')->get(),
             'puedeElegirOrigen' => $usuario->esGerente(),
         ]);
     }

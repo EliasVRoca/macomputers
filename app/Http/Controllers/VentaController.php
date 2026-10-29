@@ -48,11 +48,19 @@ class VentaController extends Controller
     public function create(Request $request): View
     {
         $usuario = $request->user();
+        $productoId = $request->integer('producto');
+        $productoInicial = $productoId > 0
+            ? Producto::query()
+                ->select(['id', 'nombre', 'codigo', 'marca', 'precio_venta'])
+                ->where('activo', true)
+                ->find($productoId)
+            : null;
 
         return view('ventas.form', [
             'sucursales' => $this->sucursales($request),
             'clientes' => Cliente::where('activo', true)->orderBy('nombre')->get(),
-            'productos' => Producto::where('activo', true)->orderBy('nombre')->get(),
+            'productoInicial' => $productoInicial,
+            'productoSugerido' => $productoInicial?->id,
             'medios' => Venta::MEDIOS_PAGO,
             'puedeElegirSucursal' => $usuario->esGerente(),
             'stockMapa' => $this->stockMapa($usuario),

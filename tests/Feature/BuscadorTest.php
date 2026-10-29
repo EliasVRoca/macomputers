@@ -225,6 +225,22 @@ class BuscadorTest extends TestCase
         $this->actingAs($usuario)->getJson(route('buscador.json', ['termino' => 'teclado']))->assertForbidden();
     }
 
+    public function test_expone_el_acceso_a_vender_solo_con_permiso_de_ventas(): void
+    {
+        $this->actingAs($this->vendedor)
+            ->getJson(route('buscador.json', ['termino' => 'teclado']))
+            ->assertOk()
+            ->assertJsonPath('productos.0.venta_url', route('ventas.create', ['producto' => $this->teclado->id]));
+
+        $this->actingAs($this->tecnico)
+            ->getJson(route('buscador.json', ['termino' => 'teclado']))
+            ->assertOk()
+            ->assertJsonPath('productos.0.venta_url', null);
+
+        $this->assertTrue($this->actingAs($this->vendedor)->get(route('buscador.index'))->viewData('puedeVender'));
+        $this->assertFalse($this->actingAs($this->tecnico)->get(route('buscador.index'))->viewData('puedeVender'));
+    }
+
     public function test_los_filtros_iniciales_se_tipan_y_sanean(): void
     {
         $this->actingAs($this->gerente)

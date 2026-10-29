@@ -70,6 +70,10 @@ vistas `resources/views/compras/{index,form,show}.blade.php`.
 (Anulada, con la fila atenuada); exportar con `.btn-secondary` + icono `download`; anular con
 `.btn-danger` + confirmación nativa; el input de motivo ocupa `.input`.
 
+El producto de cada fila se elige con `<x-producto-picker>` (búsqueda remota contra
+`productos.opciones`), inicializado también para las filas nuevas desde `app.js`; no se carga el
+catálogo completo en el HTML. El submit se bloquea si una fila queda sin producto.
+
 ## 8. Estado
 
 - ✅ Listar (con filtros y estado), crear (suma stock + total), ver.
