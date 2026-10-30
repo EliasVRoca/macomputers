@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\DashboardRequest;
 use App\Models\Sucursal;
 use App\Services\DashboardService;
+use App\Services\ReporteService;
 use App\Support\Menu;
 use Illuminate\Contracts\View\View;
 
 class InicioController extends Controller
 {
-    public function __invoke(DashboardRequest $request, DashboardService $dashboard): View
+    public function __invoke(DashboardRequest $request, DashboardService $dashboard, ReporteService $reportes): View
     {
         $usuario = $request->user();
 
@@ -26,6 +27,7 @@ class InicioController extends Controller
 
         return view('dashboard.index', [
             'metricas' => $dashboard->metricas($usuario, $sucursalId),
+            'graficos' => $reportes->mini($usuario, $sucursalId),
             'sucursalActual' => $sucursalId ? Sucursal::find($sucursalId) : null,
             'sucursales' => $puedeElegirSucursal
                 ? Sucursal::where('activa', true)->orderBy('nombre')->get()

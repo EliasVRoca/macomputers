@@ -84,6 +84,10 @@ class Menu
     {
         $entradas = [];
 
+        if ($user) {
+            $entradas[] = ['label' => 'Reportes', 'grupo' => null, 'url' => route('reportes.index')];
+        }
+
         foreach (self::para($user) as $grupo) {
             foreach ($grupo['modulos'] as $modulo) {
                 $entradas[] = [

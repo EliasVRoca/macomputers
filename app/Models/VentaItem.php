@@ -9,11 +9,17 @@ class VentaItem extends Model
 {
     protected $table = 'venta_items';
 
-    protected $fillable = ['venta_id', 'producto_id', 'descripcion', 'cantidad', 'precio_unitario', 'subtotal'];
+    protected $fillable = [
+        'venta_id', 'producto_id', 'descripcion', 'cantidad', 'precio_unitario', 'costo_unitario', 'subtotal',
+    ];
 
     protected function casts(): array
     {
-        return ['precio_unitario' => 'decimal:2', 'subtotal' => 'decimal:2'];
+        return [
+            'precio_unitario' => 'decimal:2',
+            'costo_unitario' => 'decimal:2',
+            'subtotal' => 'decimal:2',
+        ];
     }
 
     public function venta(): BelongsTo

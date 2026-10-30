@@ -37,6 +37,12 @@
             <x-icon name="home" />
         </a>
 
+        <a href="{{ route('reportes.index') }}"
+           class="rail-link {{ request()->routeIs('reportes.index') ? 'active' : '' }}"
+           title="Reportes" aria-label="Reportes">
+            <x-icon name="chart-column" />
+        </a>
+
         @foreach ($grupos as $grupo)
             <a href="{{ route($grupo['modulos'][0]['route']) }}"
                data-grupo="{{ $grupo['nombre'] }}"
@@ -115,7 +121,7 @@
         {{-- Barra superior de escritorio --}}
         <header class="topbar sticky top-0 z-20 hidden md:flex">
             <nav class="flex min-w-0 items-center gap-2 text-sm" aria-label="Migas de pan">
-                <span class="text-ink-muted">{{ $grupoActivo['nombre'] ?? 'Inicio' }}</span>
+                <span class="text-ink-muted">{{ $grupoActivo['nombre'] ?? (request()->routeIs('reportes.index') ? 'Reportes' : 'Inicio') }}</span>
                 @if ($moduloActivo)
                     <x-icon name="chevron-right" class="size-4 shrink-0 text-ink-tertiary" />
                     <span class="truncate font-medium">{{ $moduloActivo['label'] }}</span>
@@ -189,6 +195,10 @@
             </button>
         </div>
         <nav class="p-3">
+            <p class="px-2 pt-2 pb-1 text-xs font-medium tracking-wide text-ink-tertiary uppercase">General</p>
+            <a href="{{ route('reportes.index') }}" class="nav-link {{ request()->routeIs('reportes.index') ? 'active' : '' }}">
+                <x-icon name="chart-column" class="size-4 shrink-0" /> Reportes
+            </a>
             @foreach ($grupos as $grupo)
                 <p class="px-2 pt-4 pb-1 text-xs font-medium tracking-wide text-ink-tertiary uppercase">{{ $grupo['nombre'] }}</p>
                 @foreach ($grupo['modulos'] as $modulo)

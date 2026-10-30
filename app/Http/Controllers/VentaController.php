@@ -211,6 +211,7 @@ class VentaController extends Controller
                 'descripcion' => $producto->nombre,
                 'cantidad' => $cantidad,
                 'precio_unitario' => $producto->precio_venta,
+                'costo_unitario' => $producto->precio_compra,
                 'subtotal' => $subtotal,
             ]);
 

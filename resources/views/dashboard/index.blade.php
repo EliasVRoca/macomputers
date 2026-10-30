@@ -130,4 +130,39 @@
         @endisset
     </div>
 @endif
+
+@if ($graficos !== [])
+    <div class="mt-8">
+        <div class="mb-4 flex items-center justify-between gap-3">
+            <h2 class="text-lg font-medium">Resumen</h2>
+            <a href="{{ route('reportes.index') }}" class="text-sm font-medium text-brand hover:underline">Ver todos los reportes</a>
+        </div>
+        <div class="grid gap-4 lg:grid-cols-3">
+            @isset($graficos['ventas'])
+                <x-grafico
+                    titulo="{{ $graficos['ventas']['titulo'] }}"
+                    :config="$graficos['ventas']"
+                    enlace="{{ route('reportes.index') }}"
+                    enlace-etiqueta="Ver reportes"
+                />
+            @endisset
+            @isset($graficos['servicios'])
+                <x-grafico
+                    titulo="{{ $graficos['servicios']['titulo'] }}"
+                    :config="$graficos['servicios']"
+                    enlace="{{ route('reportes.index') }}"
+                    enlace-etiqueta="Ver reportes"
+                />
+            @endisset
+            @isset($graficos['busquedas'])
+                <x-grafico
+                    titulo="{{ $graficos['busquedas']['titulo'] }}"
+                    :config="$graficos['busquedas']"
+                    enlace="{{ route('reportes.index') }}"
+                    enlace-etiqueta="Ver reportes"
+                />
+            @endisset
+        </div>
+    </div>
+@endif
 @endsection

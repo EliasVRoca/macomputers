@@ -17,6 +17,7 @@ use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProductoImagenInternetController;
 use App\Http\Controllers\ProductoMediaController;
 use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\SucursalController;
@@ -37,6 +38,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 
 Route::middleware('auth')->group(function () {
     Route::get('/inicio', InicioController::class)->name('inicio');
+    Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
 
     // Perfil personal (cada usuario administra su propia cuenta)
     Route::get('/perfil', [PerfilController::class, 'edit'])->name('perfil.edit');

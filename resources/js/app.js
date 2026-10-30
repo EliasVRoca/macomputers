@@ -1,4 +1,5 @@
 import { iniciarProductoPicker } from './producto-picker.js';
+import { iniciarGraficos } from './graficos.js';
 
 // ---------------------------------------------------------------- Tema
 document.addEventListener('click', (event) => {
@@ -379,3 +380,6 @@ document.addEventListener('submit', (event) => {
         }
     });
 })();
+
+// --------------------------------------------------------------- Gráficos
+iniciarGraficos();
